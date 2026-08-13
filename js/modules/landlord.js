@@ -144,12 +144,47 @@ export function renderRegisteredLessorsList() {
         <div class="text-[11px] text-stone-600">🆔 บัตรประชาชน: ${prof.idCard || '-'}</div>
         <div class="text-[11px] text-stone-600">📞 โทร: ${prof.phone || '-'}</div>
         <div class="text-[11px] text-stone-500 truncate">🏠 ที่อยู่: ${prof.address || '-'}</div>
-        <button onclick="window.editRegisteredLessor('${key}')" class="w-full mt-1.5 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 text-[10px] font-bold rounded transition-colors">
-          ✏️ แก้ไขข้อมูลผู้ให้เช่านี้
-        </button>
+        <div class="flex gap-2 pt-1">
+          <button onclick="window.editRegisteredLessor('${key}')" class="flex-1 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 text-[10px] font-bold rounded transition-colors">
+            ✏️ แก้ไข
+          </button>
+          <button onclick="window.deleteRegisteredLessor('${key}')" class="py-1 px-2.5 bg-rose-100 hover:bg-rose-200 text-rose-700 text-[10px] font-bold rounded transition-colors">
+            🗑️ ลบ
+          </button>
+        </div>
       </div>
     `;
   });
+}
+
+export async function deleteRegisteredLessor(key) {
+  const profiles = (state && state.lessorProfiles) ? state.lessorProfiles : JSON.parse(localStorage.getItem('property_os_lessors') || '{}');
+  const prof = profiles[key];
+  if (!prof) return;
+
+  if (!confirm(`คุณต้องการลบข้อมูลผู้ให้เช่า "${prof.name}" ออกจากระบบใช่หรือไม่?`)) return;
+
+  if (state.lessorProfiles) delete state.lessorProfiles[key];
+  if (window.state && window.state.lessorProfiles) delete window.state.lessorProfiles[key];
+
+  let fromStorage = {};
+  try { fromStorage = JSON.parse(localStorage.getItem('property_os_lessors') || '{}'); } catch(e) {}
+  delete fromStorage[key];
+  localStorage.setItem('property_os_lessors', JSON.stringify(fromStorage));
+
+  renderRegisteredLessorsList();
+  if (window.renderLessorSelectOptions) window.renderLessorSelectOptions();
+  if (window.renderPropertyDetailView) window.renderPropertyDetailView();
+  if (window.renderContractView) window.renderContractView();
+  renderAdminData();
+
+  alert(`ลบข้อมูลผู้ให้เช่า "${prof.name}" เรียบร้อยแล้ว!`);
+
+  try {
+    await fetch(`/api/lessors?id=${key}`, { method: 'DELETE' });
+  } catch (err) {
+    console.warn('D1 Lessor Delete Warning:', err);
+  }
 }
 
 export async function handleAddPropertySubmit(e) {

@@ -46,25 +46,34 @@ export function initTenantFormDates() {
 }
 
 export function handleTenantSubmit(e) {
-  e.preventDefault();
-  const bindPropId = document.getElementById('t-property-bind').value;
+  if (e) e.preventDefault();
+  const bindPropId = document.getElementById('t-property-bind')?.value;
   const bindProp = state.propertiesState.find(p => p.id === bindPropId) || state.propertiesState[0];
 
-  const startDateVal = document.getElementById('t-startdate').value;
-  const durationVal = document.getElementById('t-duration').value;
+  const startDateVal = document.getElementById('t-startdate')?.value || '';
+  const durationVal = document.getElementById('t-duration')?.value || '1';
   const endDateVal = calculateLeaseEndDate();
+  const editingKeyEl = document.getElementById('editing-tenant-key');
 
-  const tKey = 'tenant-' + Date.now();
+  const fullNameVal = document.getElementById('t-fullname')?.value.trim();
+  if (!fullNameVal) {
+    alert('กรุณากรอกชื่อ-นามสกุล ผู้เช่า');
+    return;
+  }
+
+  const isEditing = editingKeyEl && editingKeyEl.value.trim();
+  const tKey = isEditing ? editingKeyEl.value.trim() : ('tenant-' + Date.now());
+
   state.currentTenant = {
-    fullName: document.getElementById('t-fullname').value,
-    age: document.getElementById('t-age').value,
-    idCard: document.getElementById('t-idcard').value,
-    phone: document.getElementById('t-phone').value,
-    address: document.getElementById('t-address').value,
+    fullName: fullNameVal,
+    age: document.getElementById('t-age')?.value || '35',
+    idCard: document.getElementById('t-idcard')?.value || '',
+    phone: document.getElementById('t-phone')?.value || '',
+    address: document.getElementById('t-address')?.value || '',
     startDate: startDateVal,
     duration: durationVal,
     endDate: endDateVal,
-    imageUrl: state.currentTenant ? state.currentTenant.imageUrl : CONFIG.PLACEHOLDER_SVG
+    imageUrl: state.tenantDatabase[tKey]?.imageUrl || CONFIG.PLACEHOLDER_SVG
   };
 
   state.tenantDatabase[tKey] = {
@@ -80,24 +89,125 @@ export function handleTenantSubmit(e) {
     startDate: startDateVal,
     duration: durationVal,
     endDate: endDateVal,
-    monthsPaidCount: 1,
+    monthsPaidCount: state.tenantDatabase[tKey]?.monthsPaidCount || 1,
     payDay: 5,
     propId: bindPropId,
     inventory: bindProp ? bindProp.inventoryList : [],
-    paymentHistory: [{ month: 'เดือนปัจจุบัน (งวดที่ 1)', amount: bindProp ? bindProp.rent : 0, datePaid: startDateVal }]
+    paymentHistory: state.tenantDatabase[tKey]?.paymentHistory || [{ month: 'เดือนปัจจุบัน (งวดที่ 1)', amount: bindProp ? bindProp.rent : 0, datePaid: startDateVal }]
   };
 
   saveStateToLocalStorage();
+
+  if (editingKeyEl) editingKeyEl.value = '';
+  const btn = document.getElementById('btn-submit-tenant');
+  if (btn) {
+    btn.innerText = `💾 บันทึกผู้เช่าลงระบบ & ออกสัญญาเช่าทันที`;
+    btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+    btn.classList.add('youestates-btn-coral');
+  }
+
+  renderRegisteredTenantsList();
   if (window.renderContractView) window.renderContractView();
+
+  const msg = isEditing ? `อัปเดตข้อมูลผู้เช่า "${fullNameVal}" เรียบร้อยแล้ว!` : `บันทึกข้อมูลผู้เช่า "${fullNameVal}" ลงระบบเรียบร้อยแล้ว!`;
+  alert(msg);
 
   if (state.currentRole === 'tenant') {
     state.currentTenantId = tKey;
-    alert(`ยินดีต้อนรับคุณ ${state.currentTenant.fullName}! ลงทะเบียนข้อมูลผู้เช่าและสร้างสัญญา (เริ่ม ${startDateVal} ถึง ${endDateVal}) เรียบร้อยแล้ว`);
     confirmTenantLoginDirect(tKey);
-  } else {
-    if (window.switchTab) window.switchTab('contract');
-    alert('บันทึกผู้เช่าลงระบบเรียบร้อยแล้ว!');
   }
+}
+
+export function renderRegisteredTenantsList() {
+  const container = document.getElementById('registered-tenants-container');
+  if (!container) return;
+  container.innerHTML = '';
+  const tenants = (state && state.tenantDatabase) ? state.tenantDatabase : JSON.parse(localStorage.getItem('property_os_tenants') || '{}');
+  const keys = Object.keys(tenants);
+
+  if (keys.length === 0) {
+    container.innerHTML = `<div class="col-span-full text-stone-400 font-bold p-4 bg-stone-50 rounded-xl border border-stone-200 text-center text-xs">ยังไม่มีผู้เช่าที่ลงทะเบียนในระบบ</div>`;
+    return;
+  }
+
+  keys.forEach(key => {
+    const t = tenants[key];
+    container.innerHTML += `
+      <div class="p-3 bg-stone-100 border border-stone-300 rounded-xl space-y-1.5 shadow-sm text-xs">
+        <div class="font-extrabold text-stone-800 flex justify-between items-center">
+          <span>👤 ${t.fullName} (${t.age || '-'} ปี)</span>
+          <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] rounded font-bold"> active</span>
+        </div>
+        <div class="text-[11px] text-stone-600">🏠 เช่าอสังหาฯ: <strong>${t.unitName || '-'}</strong> ${t.houseNo ? `(${t.houseNo})` : ''}</div>
+        <div class="text-[11px] text-stone-600">🆔 บัตรประชาชน: ${t.idCard || '-'}</div>
+        <div class="text-[11px] text-stone-600">📞 โทร: ${t.phone || '-'}</div>
+        <div class="text-[11px] text-stone-500">🗓️ สัญญา: ${t.startDate || '-'} ถึง ${t.endDate || '-'}</div>
+        <div class="flex gap-2 pt-1">
+          <button onclick="window.editRegisteredTenant('${key}')" class="flex-1 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 text-[10px] font-bold rounded transition-colors">
+            ✏️ แก้ไข
+          </button>
+          <button onclick="window.deleteRegisteredTenant('${key}')" class="py-1 px-2.5 bg-rose-100 hover:bg-rose-200 text-rose-700 text-[10px] font-bold rounded transition-colors">
+            🗑️ ลบ
+          </button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+export function editRegisteredTenant(tKey) {
+  const tenants = (state && state.tenantDatabase) ? state.tenantDatabase : JSON.parse(localStorage.getItem('property_os_tenants') || '{}');
+  const t = tenants[tKey];
+  if (!t) return;
+
+  const keyEl = document.getElementById('editing-tenant-key');
+  if (keyEl) keyEl.value = tKey;
+
+  if (document.getElementById('t-fullname')) document.getElementById('t-fullname').value = t.fullName || '';
+  if (document.getElementById('t-age')) document.getElementById('t-age').value = t.age || 35;
+  if (document.getElementById('t-idcard')) document.getElementById('t-idcard').value = t.idCard || '';
+  if (document.getElementById('t-phone')) document.getElementById('t-phone').value = t.phone || '';
+  if (document.getElementById('t-address')) document.getElementById('t-address').value = t.address || '';
+  if (document.getElementById('t-startdate')) document.getElementById('t-startdate').value = t.startDate || '';
+  if (document.getElementById('t-duration')) document.getElementById('t-duration').value = t.duration || '1';
+  if (document.getElementById('t-property-bind') && t.propId) document.getElementById('t-property-bind').value = t.propId;
+
+  calculateLeaseEndDate();
+
+  const btn = document.getElementById('btn-submit-tenant');
+  if (btn) {
+    btn.innerText = `✏️ บันทึกอัปเดตการแก้ไขข้อมูลผู้เช่า (${t.fullName})`;
+    btn.classList.remove('youestates-btn-coral');
+    btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+export function deleteRegisteredTenant(tKey) {
+  const tenants = (state && state.tenantDatabase) ? state.tenantDatabase : JSON.parse(localStorage.getItem('property_os_tenants') || '{}');
+  const t = tenants[tKey];
+  if (!t) return;
+
+  if (!confirm(`คุณต้องการลบข้อมูลผู้เช่า "${t.fullName}" ออกจากระบบใช่หรือไม่?`)) return;
+
+  if (state.tenantDatabase) delete state.tenantDatabase[tKey];
+  if (window.state && window.state.tenantDatabase) delete window.state.tenantDatabase[tKey];
+
+  let fromStorage = {};
+  try { fromStorage = JSON.parse(localStorage.getItem('property_os_tenants') || '{}'); } catch(e) {}
+  delete fromStorage[tKey];
+  localStorage.setItem('property_os_tenants', JSON.stringify(fromStorage));
+
+  if (state.currentTenantId === tKey) {
+    state.currentTenantId = '';
+    state.currentTenant = null;
+  }
+
+  renderRegisteredTenantsList();
+  if (window.renderContractView) window.renderContractView();
+
+  alert(`ลบข้อมูลผู้เช่า "${t.fullName}" เรียบร้อยแล้ว!`);
 }
 
 export function confirmTenantLoginDirect(tKey) {

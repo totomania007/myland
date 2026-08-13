@@ -5,8 +5,8 @@
 
 import { CONFIG, state, saveStateToLocalStorage } from './config.js';
 import { applyRolePermissions, checkTabAccess, checkSubTabAccess, verifyAdminPinSubmit, renderAdminAccountsList, handleAddAdminSubmit, deleteAdminAccount, getCurrentRole, setCurrentRole } from './modules/auth.js';
-import { renderAdminData, renderRegisteredLessorsList, getCurrentProperty, calculateMortgage, handleAddPropertySubmit, handleLessorRegisterTabSubmit, editRegisteredLessor, uploadToCloudinaryAndPreview, addFurnitureEditRow, handleEditPropertyDetailSubmit } from './modules/landlord.js';
-import { calculateLeaseEndDate, initTenantFormDates, handleTenantSubmit, confirmTenantLoginDirect } from './modules/tenant.js';
+import { renderAdminData, renderRegisteredLessorsList, getCurrentProperty, calculateMortgage, handleAddPropertySubmit, handleLessorRegisterTabSubmit, editRegisteredLessor, deleteRegisteredLessor, uploadToCloudinaryAndPreview, addFurnitureEditRow, handleEditPropertyDetailSubmit } from './modules/landlord.js';
+import { calculateLeaseEndDate, initTenantFormDates, handleTenantSubmit, confirmTenantLoginDirect, renderRegisteredTenantsList, editRegisteredTenant, deleteRegisteredTenant } from './modules/tenant.js';
 import { renderPropertyGallery, filterGalleryPhotos, copyPropertyPromoLink } from './modules/gallery.js';
 import { renderContractView } from './modules/contract.js';
 
@@ -25,6 +25,7 @@ window.deleteAdminAccount = deleteAdminAccount;
 
 window.renderAdminData = renderAdminData;
 window.renderRegisteredLessorsList = renderRegisteredLessorsList;
+window.deleteRegisteredLessor = deleteRegisteredLessor;
 window.getCurrentProperty = getCurrentProperty;
 window.handleAddPropertySubmit = handleAddPropertySubmit;
 window.handleLessorRegisterTabSubmit = handleLessorRegisterTabSubmit;
@@ -40,6 +41,9 @@ window.calculateLeaseEndDate = calculateLeaseEndDate;
 window.initTenantFormDates = initTenantFormDates;
 window.handleTenantSubmit = handleTenantSubmit;
 window.confirmTenantLoginDirect = confirmTenantLoginDirect;
+window.renderRegisteredTenantsList = renderRegisteredTenantsList;
+window.editRegisteredTenant = editRegisteredTenant;
+window.deleteRegisteredTenant = deleteRegisteredTenant;
 
 window.renderPropertyGallery = renderPropertyGallery;
 window.filterGalleryPhotos = filterGalleryPhotos;
@@ -116,6 +120,7 @@ window.switchTab = function(tab) {
   else if (tab === 'tenant') {
     renderTenantPropertyDropdown();
     initTenantFormDates();
+    renderRegisteredTenantsList();
   } else if (tab === 'contract') renderContractView();
 
   applyRolePermissions();
@@ -307,6 +312,7 @@ async function initApp() {
   renderPropertyDetailView();
   renderContractView();
   renderRegisteredLessorsList();
+  renderRegisteredTenantsList();
   renderAdminAccountsList();
   renderLessorSelectOptions();
   initTenantFormDates();

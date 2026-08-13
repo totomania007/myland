@@ -115,12 +115,38 @@
             <div class="text-[11px] text-stone-600">🆔 บัตรประชาชน: ${prof.idCard || '-'}</div>
             <div class="text-[11px] text-stone-600">📞 โทร: ${prof.phone || '-'}</div>
             <div class="text-[11px] text-stone-500 truncate">🏠 ที่อยู่: ${prof.address || '-'}</div>
-            <button onclick="window.editRegisteredLessor('${key}')" class="w-full mt-1.5 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 text-[10px] font-bold rounded transition-colors">
-              ✏️ แก้ไขข้อมูลผู้ให้เช่านี้
-            </button>
+            <div class="flex gap-2 pt-1">
+              <button onclick="window.editRegisteredLessor('${key}')" class="flex-1 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 text-[10px] font-bold rounded transition-colors">
+                ✏️ แก้ไข
+              </button>
+              <button onclick="window.deleteRegisteredLessor('${key}')" class="py-1 px-2.5 bg-rose-100 hover:bg-rose-200 text-rose-700 text-[10px] font-bold rounded transition-colors">
+                🗑️ ลบ
+              </button>
+            </div>
           </div>
         `;
       });
+    };
+    window.deleteRegisteredLessor = window.deleteRegisteredLessor || function(key) {
+      const profiles = (window.state && window.state.lessorProfiles) ? window.state.lessorProfiles : JSON.parse(localStorage.getItem('property_os_lessors') || '{}');
+      const prof = profiles[key];
+      if (!prof) return;
+      if (!confirm(`คุณต้องการลบข้อมูลผู้ให้เช่า "${prof.name}" ออกจากระบบใช่หรือไม่?`)) return;
+
+      if (window.state && window.state.lessorProfiles) delete window.state.lessorProfiles[key];
+      let fromStorage = {};
+      try { fromStorage = JSON.parse(localStorage.getItem('property_os_lessors') || '{}'); } catch(e) {}
+      delete fromStorage[key];
+      localStorage.setItem('property_os_lessors', JSON.stringify(fromStorage));
+
+      if (window.renderRegisteredLessorsList) window.renderRegisteredLessorsList();
+      if (window.renderLessorSelectOptions) window.renderLessorSelectOptions();
+      if (window.renderPropertyDetailView) window.renderPropertyDetailView();
+      if (window.renderContractView) window.renderContractView();
+      if (window.renderAdminData) window.renderAdminData();
+
+      alert(`ลบข้อมูลผู้ให้เช่า "${prof.name}" เรียบร้อยแล้ว!`);
+      try { fetch(`/api/lessors?id=${key}`, { method: 'DELETE' }); } catch(e) {}
     };
     window.handleLessorRegisterTabSubmit = function(e) {
       if (e) e.preventDefault();
@@ -180,6 +206,60 @@
       if (idCardEl) idCardEl.value = '';
       if (addressEl) addressEl.value = '';
       if (phoneEl) phoneEl.value = '';
+    };
+    window.renderRegisteredTenantsList = window.renderRegisteredTenantsList || function() {
+      const container = document.getElementById('registered-tenants-container');
+      if (!container) return;
+      container.innerHTML = '';
+      const tenants = (window.state && window.state.tenantDatabase) ? window.state.tenantDatabase : JSON.parse(localStorage.getItem('property_os_tenants') || '{}');
+      const keys = Object.keys(tenants);
+
+      if (keys.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-stone-400 font-bold p-4 bg-stone-50 rounded-xl border border-stone-200 text-center text-xs">ยังไม่มีผู้เช่าที่ลงทะเบียนในระบบ</div>`;
+        return;
+      }
+
+      keys.forEach(key => {
+        const t = tenants[key];
+        container.innerHTML += `
+          <div class="p-3 bg-stone-100 border border-stone-300 rounded-xl space-y-1.5 shadow-sm text-xs">
+            <div class="font-extrabold text-stone-800 flex justify-between items-center">
+              <span>👤 ${t.fullName} (${t.age || '-'} ปี)</span>
+              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] rounded font-bold"> active</span>
+            </div>
+            <div class="text-[11px] text-stone-600">🏠 เช่าอสังหาฯ: <strong>${t.unitName || '-'}</strong> ${t.houseNo ? `(${t.houseNo})` : ''}</div>
+            <div class="text-[11px] text-stone-600">🆔 บัตรประชาชน: ${t.idCard || '-'}</div>
+            <div class="text-[11px] text-stone-600">📞 โทร: ${t.phone || '-'}</div>
+            <div class="text-[11px] text-stone-500">🗓️ สัญญา: ${t.startDate || '-'} ถึง ${t.endDate || '-'}</div>
+            <div class="flex gap-2 pt-1">
+              <button onclick="window.editRegisteredTenant('${key}')" class="flex-1 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 text-[10px] font-bold rounded transition-colors">
+                ✏️ แก้ไข
+              </button>
+              <button onclick="window.deleteRegisteredTenant('${key}')" class="py-1 px-2.5 bg-rose-100 hover:bg-rose-200 text-rose-700 text-[10px] font-bold rounded transition-colors">
+                🗑️ ลบ
+              </button>
+            </div>
+          </div>
+        `;
+      });
+    };
+    window.deleteRegisteredTenant = window.deleteRegisteredTenant || function(tKey) {
+      const tenants = (window.state && window.state.tenantDatabase) ? window.state.tenantDatabase : JSON.parse(localStorage.getItem('property_os_tenants') || '{}');
+      const t = tenants[tKey];
+      if (!t) return;
+
+      if (!confirm(`คุณต้องการลบข้อมูลผู้เช่า "${t.fullName}" ออกจากระบบใช่หรือไม่?`)) return;
+
+      if (window.state && window.state.tenantDatabase) delete window.state.tenantDatabase[tKey];
+      let fromStorage = {};
+      try { fromStorage = JSON.parse(localStorage.getItem('property_os_tenants') || '{}'); } catch(e) {}
+      delete fromStorage[tKey];
+      localStorage.setItem('property_os_tenants', JSON.stringify(fromStorage));
+
+      if (window.renderRegisteredTenantsList) window.renderRegisteredTenantsList();
+      if (window.renderContractView) window.renderContractView();
+
+      alert(`ลบข้อมูลผู้เช่า "${t.fullName}" เรียบร้อยแล้ว!`);
     };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -1127,6 +1207,7 @@
           </div>
 
           <form onsubmit="event.preventDefault(); handleTenantSubmit(event); return false;" class="space-y-4 text-xs">
+            <input type="hidden" id="editing-tenant-key" value="">
             <div>
               <label class="block font-bold text-stone-700 mb-1">เลือกอสังหาริมทรัพย์ที่เช่า</label>
               <select id="t-property-bind" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-3 font-bold text-stone-800">
@@ -1195,10 +1276,15 @@
               </div>
             </div>
 
-            <button type="submit" class="w-full youestates-btn-coral font-bold py-3 rounded-lg text-white transition-all shadow-sm text-xs mt-2">
+            <button type="submit" id="btn-submit-tenant" class="w-full youestates-btn-coral font-bold py-3 rounded-lg text-white transition-all shadow-sm text-xs mt-2">
               💾 บันทึกผู้เช่าลงระบบ & ออกสัญญาเช่าทันที
             </button>
           </form>
+
+          <div class="pt-4 border-t border-stone-200 space-y-3">
+            <h3 class="font-black text-sm text-[#383838]">📋 รายชื่อผู้เช่าที่ลงทะเบียนไว้ในระบบ</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs" id="registered-tenants-container"></div>
+          </div>
         </div>
       </div>
 
@@ -1544,7 +1630,7 @@
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_14"></script>
+  <script type="module" src="js/app.js?v=20260814_15"></script>
 </body>
 </html>
 
