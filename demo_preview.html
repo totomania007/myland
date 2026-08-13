@@ -91,6 +91,7 @@
       }
     };
     window.handleLessorRegisterTabSubmit = function(e) {
+      if (e) e.preventDefault();
       const nameEl = document.getElementById('reg-lp-fullname');
       const idCardEl = document.getElementById('reg-lp-idcard');
       const ageEl = document.getElementById('reg-lp-age');
@@ -999,7 +1000,7 @@
             <span class="px-3 py-1 bg-[#383838] text-white font-bold text-xs rounded">LESSOR REGISTRATION</span>
           </div>
 
-          <form onsubmit="handleLessorRegisterTabSubmit(event)" class="space-y-4 text-xs">
+          <form onsubmit="event.preventDefault(); handleLessorRegisterTabSubmit(event); return false;" class="space-y-4 text-xs">
             <div class="grid grid-cols-3 gap-3">
               <div class="col-span-2">
                 <label class="block font-bold text-stone-700 mb-1">ชื่อ-นามสกุล ผู้ให้เช่าตามบัตรประชาชน</label>
@@ -1072,7 +1073,7 @@
             <span class="px-3 py-1 bg-[#383838] text-white font-bold text-xs rounded uppercase">LEASE DATES AUTO-CALCULATOR</span>
           </div>
 
-          <form onsubmit="handleTenantSubmit(event)" class="space-y-4 text-xs">
+          <form onsubmit="event.preventDefault(); handleTenantSubmit(event); return false;" class="space-y-4 text-xs">
             <div>
               <label class="block font-bold text-stone-700 mb-1">เลือกอสังหาริมทรัพย์ที่เช่า</label>
               <select id="t-property-bind" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-3 font-bold text-stone-800">
@@ -1490,7 +1491,7 @@
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_07"></script>
+  <script type="module" src="js/app.js?v=20260814_08"></script>
 </body>
 </html>
 
