@@ -47,16 +47,16 @@ export default function TenantOnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 font-sans flex flex-col justify-center items-center">
-      <div className="max-w-2xl w-full">
+    <div className="min-h-screen bg-[#090d16] text-slate-100 p-6 md:p-10 font-sans flex flex-col justify-center items-center">
+      <div className="max-w-2xl w-full space-y-4">
         {/* Back Link */}
-        <Link href="/" className="inline-flex items-center gap-2 text-slate-400 hover:text-white text-xs mb-6">
+        <Link href="/" className="inline-flex items-center gap-2 text-slate-400 hover:text-emerald-400 text-xs mb-2 transition-colors font-medium">
           <ArrowLeftIcon className="w-4 h-4" /> กลับสู่หน้าหลัก
         </Link>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
+        <div className="bento-card p-6 md:p-10 shadow-2xl relative overflow-hidden">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl">
+            <div className="p-2.5 bg-emerald-500/15 text-emerald-400 rounded-2xl border border-emerald-500/20">
               <ShieldCheckIcon className="w-6 h-6" />
             </div>
             <h1 className="text-2xl font-extrabold text-white">ลงทะเบียนข้อมูลผู้เช่า & อัปโหลดเอกสาร</h1>
