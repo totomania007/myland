@@ -4,6 +4,7 @@
  */
 
 import { CONFIG, state, saveStateToLocalStorage } from '../config.js';
+import { setCurrentRole } from './auth.js';
 
 export function calculateLeaseEndDate() {
   const startDateInput = document.getElementById('t-startdate');
@@ -102,7 +103,7 @@ export function handleTenantSubmit(e) {
 export function confirmTenantLoginDirect(tKey) {
   const tData = state.tenantDatabase[tKey];
   if (!tData) return;
-  state.currentRole = 'tenant';
+  setCurrentRole('tenant');
   state.currentTenantId = tKey;
 
   state.currentTenant = {

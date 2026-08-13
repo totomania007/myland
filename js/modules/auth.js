@@ -35,8 +35,18 @@ export const PERMISSION_REGISTRY = {
   ]
 };
 
+export function getCurrentRole() {
+  if (state && state.currentRole) return state.currentRole;
+  return window.currentRole || 'landlord';
+}
+
+export function setCurrentRole(role) {
+  state.currentRole = role;
+  window.currentRole = role;
+}
+
 export function applyRolePermissions() {
-  const isLandlord = state.currentRole === 'landlord';
+  const isLandlord = getCurrentRole() === 'landlord';
 
   // 1. Enforce Visibility on Landlord-Only Modules
   PERMISSION_REGISTRY.LANDLORD_ONLY.forEach(id => {
@@ -73,7 +83,7 @@ export function applyRolePermissions() {
 }
 
 export function checkTabAccess(tab) {
-  if (state.currentRole === 'tenant' && ['admin', 'register-lessor', 'contract'].includes(tab)) {
+  if (getCurrentRole() === 'tenant' && ['admin', 'register-lessor', 'contract'].includes(tab)) {
     if (window.switchTab) window.switchTab('property-detail');
     return false;
   }
@@ -81,7 +91,7 @@ export function checkTabAccess(tab) {
 }
 
 export function checkSubTabAccess(subtab) {
-  if (state.currentRole === 'tenant' && ['loan', 'lessor'].includes(subtab)) {
+  if (getCurrentRole() === 'tenant' && ['loan', 'lessor'].includes(subtab)) {
     if (window.switchSubTab) window.switchSubTab('specs');
     return false;
   }

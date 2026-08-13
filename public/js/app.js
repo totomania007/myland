@@ -4,7 +4,7 @@
  */
 
 import { CONFIG, state, saveStateToLocalStorage } from './config.js';
-import { applyRolePermissions, checkTabAccess, checkSubTabAccess, verifyAdminPinSubmit, renderAdminAccountsList, handleAddAdminSubmit, deleteAdminAccount } from './modules/auth.js';
+import { applyRolePermissions, checkTabAccess, checkSubTabAccess, verifyAdminPinSubmit, renderAdminAccountsList, handleAddAdminSubmit, deleteAdminAccount, getCurrentRole, setCurrentRole } from './modules/auth.js';
 import { renderAdminData, renderRegisteredLessorsList, getCurrentProperty, calculateMortgage } from './modules/landlord.js';
 import { calculateLeaseEndDate, initTenantFormDates, handleTenantSubmit, confirmTenantLoginDirect } from './modules/tenant.js';
 import { renderPropertyGallery, filterGalleryPhotos, copyPropertyPromoLink } from './modules/gallery.js';
@@ -14,6 +14,8 @@ import { renderContractView } from './modules/contract.js';
 window.state = state;
 window.CONFIG = CONFIG;
 window.saveStateToLocalStorage = saveStateToLocalStorage;
+window.getCurrentRole = getCurrentRole;
+window.setCurrentRole = setCurrentRole;
 
 window.applyRolePermissions = applyRolePermissions;
 window.verifyAdminPinSubmit = verifyAdminPinSubmit;
@@ -40,7 +42,7 @@ window.loginAsRole = function(role) {
   if (overlay) overlay.classList.add('hidden');
 
   if (role === 'landlord') {
-    if (state.currentRole === 'landlord') {
+    if (getCurrentRole() === 'landlord') {
       window.switchTab('admin');
       return;
     }
@@ -51,7 +53,7 @@ window.loginAsRole = function(role) {
   }
 
   if (role === 'tenant') {
-    state.currentRole = 'tenant';
+    setCurrentRole('tenant');
     applyRolePermissions();
     window.switchTab('tenant');
     return;
