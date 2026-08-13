@@ -128,21 +128,23 @@ export function renderRegisteredLessorsList() {
   const container = document.getElementById('registered-lessors-container');
   if (!container) return;
   container.innerHTML = '';
-  const keys = Object.keys(state.lessorProfiles);
+  const profiles = (state && state.lessorProfiles) ? state.lessorProfiles : JSON.parse(localStorage.getItem('property_os_lessors') || '{}');
+  const keys = Object.keys(profiles);
 
   if (keys.length === 0) {
-    container.innerHTML = `<div class="col-span-full text-stone-400 font-bold p-4 bg-stone-50 rounded-xl border border-stone-200">ยังไม่มีผู้ให้เช่าที่ลงทะเบียนในระบบ</div>`;
+    container.innerHTML = `<div class="col-span-full text-stone-400 font-bold p-4 bg-stone-50 rounded-xl border border-stone-200 text-center">ยังไม่มีผู้ให้เช่าที่ลงทะเบียนในระบบ</div>`;
     return;
   }
 
   keys.forEach(key => {
-    const prof = state.lessorProfiles[key];
+    const prof = profiles[key];
     container.innerHTML += `
-      <div class="p-3 bg-stone-100 border border-stone-300 rounded-xl space-y-1">
-        <div class="font-extrabold text-stone-800">${prof.name}</div>
-        <div class="text-[11px] text-stone-500">บัตรประชาชน: ${prof.idCard || '-'}</div>
-        <div class="text-[11px] text-stone-500">โทร: ${prof.phone || '-'}</div>
-        <button onclick="window.editRegisteredLessor('${key}')" class="w-full mt-1 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 text-[10px] font-bold rounded">
+      <div class="p-3 bg-stone-100 border border-stone-300 rounded-xl space-y-1 shadow-sm">
+        <div class="font-extrabold text-stone-800 text-xs">👤 ${prof.name} (${prof.age || '-'} ปี)</div>
+        <div class="text-[11px] text-stone-600">🆔 บัตรประชาชน: ${prof.idCard || '-'}</div>
+        <div class="text-[11px] text-stone-600">📞 โทร: ${prof.phone || '-'}</div>
+        <div class="text-[11px] text-stone-500 truncate">🏠 ที่อยู่: ${prof.address || '-'}</div>
+        <button onclick="window.editRegisteredLessor('${key}')" class="w-full mt-1.5 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 text-[10px] font-bold rounded transition-colors">
           ✏️ แก้ไขข้อมูลผู้ให้เช่านี้
         </button>
       </div>
