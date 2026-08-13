@@ -279,16 +279,27 @@ export async function handleEditPropertyDetailSubmit(e) {
 }
 
 export function handleLessorRegisterTabSubmit(e) {
-  e.preventDefault();
-  const fullName = document.getElementById('reg-lp-fullname').value;
+  if (e) e.preventDefault();
+  const nameEl = document.getElementById('reg-lp-fullname');
+  const idCardEl = document.getElementById('reg-lp-idcard');
+  const ageEl = document.getElementById('reg-lp-age');
+  const phoneEl = document.getElementById('reg-lp-phone');
+  const addressEl = document.getElementById('reg-lp-address');
+
+  const fullName = nameEl ? nameEl.value.trim() : '';
+  if (!fullName) {
+    alert('กรุณากรอกชื่อ-นามสกุล ผู้ให้เช่า');
+    return;
+  }
+
   const key = 'lessor-' + Date.now();
   
   state.lessorProfiles[key] = {
     name: fullName,
-    idCard: document.getElementById('reg-lp-idcard').value,
-    age: parseInt(document.getElementById('reg-lp-age').value) || 45,
-    phone: document.getElementById('reg-lp-phone').value || '',
-    address: document.getElementById('reg-lp-address').value,
+    idCard: idCardEl ? idCardEl.value.trim() : '',
+    age: ageEl ? (parseInt(ageEl.value) || 45) : 45,
+    phone: phoneEl ? phoneEl.value.trim() : '',
+    address: addressEl ? addressEl.value.trim() : '',
     imageUrl: state.lessorProfiles[key]?.imageUrl || CONFIG.PLACEHOLDER_SVG
   };
 
@@ -298,11 +309,13 @@ export function handleLessorRegisterTabSubmit(e) {
   if (window.renderPropertyDetailView) window.renderPropertyDetailView();
   if (window.renderContractView) window.renderContractView();
   renderAdminData();
+
   alert(`ลงทะเบียนผู้ให้เช่า "${fullName}" เรียบร้อยแล้ว!`);
-  document.getElementById('reg-lp-fullname').value = '';
-  document.getElementById('reg-lp-idcard').value = '';
-  document.getElementById('reg-lp-address').value = '';
-  document.getElementById('reg-lp-phone').value = '';
+
+  if (nameEl) nameEl.value = '';
+  if (idCardEl) idCardEl.value = '';
+  if (addressEl) addressEl.value = '';
+  if (phoneEl) phoneEl.value = '';
 }
 
 export function editRegisteredLessor(key) {
