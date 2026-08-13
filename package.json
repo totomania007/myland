@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "prebuild": "node -e \"const fs=require('fs'); fs.mkdirSync('public', {recursive:true}); fs.copyFileSync('index.html', 'public/index.html'); fs.copyFileSync('demo_preview.html', 'public/demo_preview.html');\"",
-    "build": "next build",
+    "build": "echo 'Static build ready'",
     "start": "next start",
     "lint": "next lint",
     "pages:build": "npx @cloudflare/next-on-pages",
