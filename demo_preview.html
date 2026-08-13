@@ -1800,7 +1800,8 @@
         } else {
           propertiesState.forEach(p => {
             const selected = p.id === (prop ? prop.id : '') ? 'selected' : '';
-            propSelector.innerHTML += `<option value="${p.id}" ${selected}>🏡 ${p.name} (${p.houseNo})</option>`;
+            const houseNoTxt = (p.houseNo && p.houseNo !== 'undefined') ? ` (${p.houseNo})` : '';
+            propSelector.innerHTML += `<option value="${p.id}" ${selected}>🏡 ${p.name}${houseNoTxt}</option>`;
           });
         }
       }
