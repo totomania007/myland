@@ -1,0 +1,16 @@
+name = "property-management-app"
+compatibility_date = "2026-08-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "./"
+
+# CLOUDFLARE D1 DATABASE BINDING
+[[d1_databases]]
+binding = "DB"
+database_name = "property_os_db"
+database_id = "02ac40f6-65f7-4d26-b4fd-1a4bb2accea4"
+
+# REAL USER CLOUDINARY CREDENTIALS
+[vars]
+CLOUDINARY_CLOUD_NAME = "ogdfbbpw"
+CLOUDINARY_UPLOAD_PRESET = "house_landlord"
+CLOUDINARY_API_KEY = "655295393941347"

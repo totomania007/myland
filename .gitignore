@@ -1,0 +1,19 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cloudflare Wrangler build output & local databases
+.wrangler/
+.dev.vars
+
+# Operating system files
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Environment variables
+.env
+.env.local
+.env.production
