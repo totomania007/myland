@@ -244,6 +244,7 @@ async function initApp() {
   }
 
   state.currentPropertyId = state.propertiesState.length > 0 ? state.propertiesState[0].id : '';
+  setCurrentRole('tenant');
   renderAdminData();
   renderPropertyDetailView();
   renderContractView();
@@ -252,6 +253,7 @@ async function initApp() {
   renderLessorSelectOptions();
   initTenantFormDates();
   applyRolePermissions();
+  if (window.switchTab) window.switchTab('landing');
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
