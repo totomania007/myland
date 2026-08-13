@@ -173,7 +173,8 @@
 
   <!-- ROLE SWITCHER LOGIN MODAL -->
   <div id="login-overlay" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="youestates-window rounded-2xl p-6 md:p-10 max-w-md w-full space-y-6 bg-white border border-stone-300 shadow-2xl">
+    <div class="youestates-window rounded-2xl p-6 md:p-10 max-w-md w-full space-y-6 bg-white border border-stone-300 shadow-2xl relative">
+      <button type="button" onclick="document.getElementById('login-overlay').classList.add('hidden')" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 font-extrabold text-sm p-2">✕</button>
       <div class="text-center space-y-2">
         <div class="flex items-center justify-center gap-2">
           <span class="text-3xl font-black text-[#e05646] tracking-tight">You</span>
@@ -1537,6 +1538,9 @@
     }
 
     function loginAsRole(role) {
+      const overlay = document.getElementById('login-overlay');
+      if (overlay) overlay.classList.add('hidden');
+
       if (role === 'landlord') {
         if (currentRole === 'landlord') {
           switchTab('admin');
@@ -1566,7 +1570,13 @@
         currentRole = 'landlord';
         const adminName = matchedAdmin ? matchedAdmin.name : 'ผู้ดูแลพอร์ต';
         document.getElementById('user-badge-name').innerText = adminName;
-        toggleModal('modal-admin-pin');
+        
+        const overlay = document.getElementById('login-overlay');
+        if (overlay) overlay.classList.add('hidden');
+
+        const pinModal = document.getElementById('modal-admin-pin');
+        if (pinModal) pinModal.classList.add('hidden');
+
         if (pinInput) pinInput.value = '';
         applyRolePermissions();
         switchTab('admin');
