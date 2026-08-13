@@ -43,6 +43,19 @@ window.filterGalleryPhotos = filterGalleryPhotos;
 window.copyPropertyPromoLink = copyPropertyPromoLink;
 window.renderContractView = renderContractView;
 
+window.openLoginOverlay = function() {
+  const overlay = document.getElementById('login-overlay');
+  if (overlay) overlay.classList.remove('hidden');
+};
+
+window.startTenantSelfRegistration = function() {
+  const overlay = document.getElementById('login-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  setCurrentRole('tenant');
+  applyRolePermissions();
+  window.switchTab('tenant');
+};
+
 window.loginAsRole = function(role) {
   const overlay = document.getElementById('login-overlay');
   if (overlay) overlay.classList.add('hidden');
