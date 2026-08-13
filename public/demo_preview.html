@@ -130,9 +130,8 @@
         return;
       }
       const key = 'lessor-' + Date.now();
-      if (!window.state) window.state = { lessorProfiles: {} };
-      if (!window.state.lessorProfiles) window.state.lessorProfiles = {};
-      window.state.lessorProfiles[key] = {
+      const lessorData = {
+        id: key,
         name: fullName,
         idCard: idCardEl ? idCardEl.value.trim() : '',
         age: ageEl ? (parseInt(ageEl.value) || 45) : 45,
@@ -140,8 +139,16 @@
         address: addressEl ? addressEl.value.trim() : '',
         imageUrl: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250' fill='none'><rect width='400' height='250' rx='12' fill='%23e2ded8'/></svg>"
       };
-      if (window.saveStateToLocalStorage) window.saveStateToLocalStorage();
-      else localStorage.setItem('property_os_lessors', JSON.stringify(window.state.lessorProfiles));
+
+      let existing = {};
+      try { existing = JSON.parse(localStorage.getItem('property_os_lessors') || '{}'); } catch(e) {}
+      existing[key] = lessorData;
+
+      if (!window.state) window.state = {};
+      window.state.lessorProfiles = { ...existing, ...(window.state.lessorProfiles || {}) };
+      window.state.lessorProfiles[key] = lessorData;
+
+      localStorage.setItem('property_os_lessors', JSON.stringify(window.state.lessorProfiles));
 
       if (window.renderRegisteredLessorsList) window.renderRegisteredLessorsList();
       if (window.renderLessorSelectOptions) window.renderLessorSelectOptions();
@@ -1517,7 +1524,7 @@
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_09"></script>
+  <script type="module" src="js/app.js?v=20260814_10"></script>
 </body>
 </html>
 

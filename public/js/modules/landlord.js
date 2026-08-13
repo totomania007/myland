@@ -302,21 +302,18 @@ export async function handleLessorRegisterTabSubmit(e) {
     age: ageEl ? (parseInt(ageEl.value) || 45) : 45,
     phone: phoneEl ? phoneEl.value.trim() : '',
     address: addressEl ? addressEl.value.trim() : '',
-    imageUrl: state.lessorProfiles[key]?.imageUrl || CONFIG.PLACEHOLDER_SVG
+    imageUrl: CONFIG.PLACEHOLDER_SVG
   };
   
+  if (!state.lessorProfiles) state.lessorProfiles = {};
   state.lessorProfiles[key] = lessorData;
-  saveStateToLocalStorage();
 
-  try {
-    await fetch('/api/lessors', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(lessorData)
-    });
-  } catch (err) {
-    console.warn('D1 Lessor Sync Warning:', err);
+  if (window.state) {
+    if (!window.state.lessorProfiles) window.state.lessorProfiles = {};
+    window.state.lessorProfiles[key] = lessorData;
   }
+
+  saveStateToLocalStorage();
 
   renderRegisteredLessorsList();
   if (window.renderLessorSelectOptions) window.renderLessorSelectOptions();
@@ -330,6 +327,16 @@ export async function handleLessorRegisterTabSubmit(e) {
   if (idCardEl) idCardEl.value = '';
   if (addressEl) addressEl.value = '';
   if (phoneEl) phoneEl.value = '';
+
+  try {
+    await fetch('/api/lessors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lessorData)
+    });
+  } catch (err) {
+    console.warn('D1 Lessor Sync Warning:', err);
+  }
 }
 
 export function editRegisteredLessor(key) {
