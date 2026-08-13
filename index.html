@@ -442,14 +442,17 @@
           </div>
         </div>
 
-        <div class="flex border-b-2 border-stone-300 gap-2 text-xs font-bold select-none">
-          <button onclick="switchSubTab('specs')" id="subtab-specs" class="px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold">
+        <div class="flex border-b-2 border-stone-300 gap-2 text-xs font-bold select-none overflow-x-auto">
+          <button onclick="switchSubTab('specs')" id="subtab-specs" class="px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap">
             🏡 ข้อมูลสเปก & เฟอร์นิเจอร์
           </button>
-          <button onclick="switchSubTab('loan')" id="subtab-loan" class="px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold">
+          <button onclick="switchSubTab('gallery')" id="subtab-gallery" class="px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap">
+            📸 คลังภาพ & การ์ดโปรโมท (Gallery & Promo)
+          </button>
+          <button onclick="switchSubTab('loan')" id="subtab-loan" class="px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap">
             🏦 สัญญาเงินกู้ & Retention
           </button>
-          <button onclick="switchSubTab('lessor')" id="subtab-lessor" class="px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold">
+          <button onclick="switchSubTab('lessor')" id="subtab-lessor" class="px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap">
             👤 ผู้ทำสัญญา & คลังเอกสาร
           </button>
         </div>
@@ -477,6 +480,84 @@
               </button>
             </div>
             <div class="space-y-3 text-xs" id="pd-inventory-container"></div>
+          </div>
+        </div>
+
+        <!-- SUBVIEW: PHOTO GALLERY & PROMOTION SHOWCASE CARD -->
+        <div id="subview-gallery" class="hidden space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- LEFT 2 COLUMNS: INTERACTIVE PHOTO GALLERY ALBUMS -->
+            <div class="lg:col-span-2 youestates-card p-6 space-y-5">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-200 pb-3">
+                <div>
+                  <h3 class="font-extrabold text-base text-[#383838]">📸 คลังรูปถ่ายอสังหาริมทรัพย์ (Property Photo Gallery)</h3>
+                  <p class="text-xs text-stone-500 font-medium">รูปถ่ายตัวบ้าน/อาคาร ภายในห้อง และจุดเด่นสำหรับส่งโปรโมทให้ลูกค้า</p>
+                </div>
+                <label class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5 w-fit">
+                  <span>☁️ อัปโหลดรูปภาพใหม่</span>
+                  <input type="file" id="galleryUploadInput" accept="image/*" class="hidden" onchange="uploadPropertyGalleryImage(event)">
+                </label>
+              </div>
+
+              <!-- GALLERY FILTER BUTTONS -->
+              <div class="flex items-center gap-2 text-xs font-bold overflow-x-auto pb-1">
+                <button type="button" onclick="filterGalleryPhotos('all')" id="gfilter-all" class="px-3.5 py-1.5 rounded-lg bg-[#383838] text-white">ทั้งหมด (All)</button>
+                <button type="button" onclick="filterGalleryPhotos('exterior')" id="gfilter-exterior" class="px-3.5 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300">🏠 ภายนอก/อาคาร</button>
+                <button type="button" onclick="filterGalleryPhotos('interior')" id="gfilter-interior" class="px-3.5 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300">🛋️ ภายใน/เฟอร์ฯ</button>
+                <button type="button" onclick="filterGalleryPhotos('highlight')" id="gfilter-highlight" class="px-3.5 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300">✨ จุดเด่น/วิว</button>
+              </div>
+
+              <!-- GALLERY GRID CONTAINER -->
+              <div id="property-gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+            </div>
+
+            <!-- RIGHT 1 COLUMN: SHAREABLE PROMOTIONAL SHOWCASE CARD FOR CLIENTS -->
+            <div class="youestates-card p-6 space-y-4 border-2 border-emerald-500/40 bg-stone-900 text-white relative overflow-hidden">
+              <div class="flex justify-between items-center border-b border-stone-800 pb-3">
+                <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">🌟 PROMO CARD FOR CLIENTS</span>
+                <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded">พร้อมส่งลูกค้า</span>
+              </div>
+
+              <!-- PROMO CARD PREVIEW CONTAINER -->
+              <div id="pd-promo-card-preview" class="space-y-3 bg-stone-950 p-4 rounded-2xl border border-stone-800 shadow-xl">
+                <div class="relative w-full h-44 rounded-xl overflow-hidden bg-stone-800 border border-slate-800">
+                  <img id="pd-promo-cover-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%231e293b'><rect width='400' height='250'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-size='16'>ภาพปกอสังหาฯ</text></svg>" class="w-full h-full object-cover" alt="Cover Image">
+                  <span class="absolute top-2 right-2 px-2.5 py-1 bg-emerald-600 text-white font-black text-xs rounded-lg shadow">
+                    ให้เช่า
+                  </span>
+                </div>
+                <div>
+                  <h4 id="pd-promo-title" class="font-extrabold text-base text-white">ชื่อทรัพย์สิน</h4>
+                  <p id="pd-promo-location" class="text-xs text-stone-400">ที่อยู่อสังหาฯ</p>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-stone-800">
+                  <div>
+                    <span class="text-[10px] text-stone-400 block font-medium">อัตราค่าเช่า</span>
+                    <strong id="pd-promo-price" class="text-lg font-black text-emerald-400">฿0 /เดือน</strong>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] text-stone-400 block font-medium">เงินประกัน</span>
+                    <span id="pd-promo-deposit" class="text-xs font-bold text-stone-300">฿0</span>
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap gap-1.5 pt-1" id="pd-promo-badges">
+                  <span class="px-2 py-0.5 bg-stone-800 text-stone-300 text-[10px] rounded-md font-semibold">✨ ตกแต่งครบพร้อมอยู่</span>
+                  <span class="px-2 py-0.5 bg-stone-800 text-stone-300 text-[10px] rounded-md font-semibold">📍 ทำเลดีเดินทางสะดวก</span>
+                </div>
+              </div>
+
+              <!-- PROMO ACTIONS -->
+              <div class="space-y-2 pt-2">
+                <button type="button" onclick="copyPropertyPromoLink()" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2">
+                  <span>📲 คัดลอกลิงก์การ์ดโปรโมทส่งลูกค้า</span>
+                </button>
+                <button type="button" onclick="window.print()" class="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-2">
+                  <span>🖨️ พิมพ์ / ดาวน์โหลดการ์ด PDF</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1282,24 +1363,179 @@
       toggleModal('modal-media-preview');
     }
 
+    let currentGalleryFilter = 'all';
+
+    function filterGalleryPhotos(cat) {
+      currentGalleryFilter = cat;
+      ['all', 'exterior', 'interior', 'highlight'].forEach(c => {
+        const btn = document.getElementById(`gfilter-${c}`);
+        if (btn) {
+          if (c === cat) btn.className = 'px-3.5 py-1.5 rounded-lg bg-[#383838] text-white';
+          else btn.className = 'px-3.5 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300';
+        }
+      });
+      renderPropertyGallery();
+    }
+
+    function renderPropertyGallery() {
+      const container = document.getElementById('property-gallery-grid');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const prop = getCurrentProperty();
+      if (!prop) {
+        container.innerHTML = `
+          <div class="col-span-full p-8 text-center text-stone-400 bg-stone-50 rounded-xl border border-stone-200">
+            ยังไม่ได้เลือกอสังหาริมทรัพย์ในระบบ
+          </div>
+        `;
+        return;
+      }
+
+      if (!prop.gallery) prop.gallery = [];
+
+      const allPhotos = [...prop.gallery];
+      if (prop.inventoryList) {
+        prop.inventoryList.forEach(inv => {
+          const img = typeof inv === 'object' ? inv.img : '';
+          const name = typeof inv === 'object' ? inv.name : inv;
+          if (img) {
+            allPhotos.push({
+              title: name || 'รูปภาพเฟอร์นิเจอร์',
+              url: img,
+              category: 'interior'
+            });
+          }
+        });
+      }
+
+      const filtered = currentGalleryFilter === 'all' 
+        ? allPhotos 
+        : allPhotos.filter(p => p.category === currentGalleryFilter);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-8 text-center text-stone-400 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
+            <p class="font-bold">ยังไม่มีรูปถ่ายในหมวดนี้</p>
+            <p class="text-xs">กดปุ่ม "☁️ อัปโหลดรูปภาพใหม่" ด้านบนเพื่อเพิ่มรูปบ้าน/อาคาร ภายใน และจุดเด่นส่งโปรโมทให้ลูกค้าได้ทันที</p>
+          </div>
+        `;
+      } else {
+        filtered.forEach((img) => {
+          const catBadge = img.category === 'exterior' ? '🏠 ภายนอก' : img.category === 'interior' ? '🛋️ ภายใน' : '✨ จุดเด่น';
+          container.innerHTML += `
+            <div class="group relative rounded-xl overflow-hidden border border-stone-200 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer" onclick="openMediaPreview('${img.title}', '${img.url}')">
+              <div class="w-full h-32 bg-stone-100 overflow-hidden">
+                <img src="${img.url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="${img.title}">
+              </div>
+              <div class="p-2 flex justify-between items-center">
+                <span class="text-xs font-bold text-stone-800 truncate">${img.title}</span>
+                <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-stone-100 text-stone-600">${catBadge}</span>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      // Update Promo Card Details
+      const promoTitle = document.getElementById('pd-promo-title');
+      if (promoTitle) promoTitle.innerText = prop.name || 'ชื่อทรัพย์สิน';
+      
+      const promoLoc = document.getElementById('pd-promo-location');
+      if (promoLoc) promoLoc.innerText = prop.address || 'ที่อยู่อสังหาฯ';
+      
+      const promoPrice = document.getElementById('pd-promo-price');
+      if (promoPrice) promoPrice.innerText = `฿${(prop.rent || 0).toLocaleString()} /เดือน`;
+      
+      const promoDep = document.getElementById('pd-promo-deposit');
+      if (promoDep) promoDep.innerText = `฿${(prop.deposit || 0).toLocaleString()}`;
+      
+      const promoImg = document.getElementById('pd-promo-cover-img');
+      if (promoImg && allPhotos.length > 0) {
+        promoImg.src = allPhotos[0].url;
+      }
+    }
+
+    async function uploadPropertyGalleryImage(e) {
+      const prop = getCurrentProperty();
+      if (!prop) {
+        alert('กรุณาเลือกอสังหาริมทรัพย์ก่อนครับ');
+        return;
+      }
+
+      if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+        const titlePrompt = prompt('กรุณาระบุชื่อเรียกรูปภาพนี้ (เช่น ภาพตัวบ้าน, ห้องนอนใหญ่, ห้องครัว):', 'รูปถ่ายทรัพย์สิน') || 'รูปถ่ายทรัพย์สิน';
+
+        try {
+          const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+          const cloudUrl = data.secure_url || data.url || URL.createObjectURL(file);
+
+          if (!prop.gallery) prop.gallery = [];
+          prop.gallery.push({
+            title: titlePrompt,
+            url: cloudUrl,
+            category: 'exterior'
+          });
+
+          saveToLocalStorage();
+          renderPropertyGallery();
+          alert('อัปโหลดรูปภาพเข้าคลังเรียบร้อยแล้ว!');
+        } catch(err) {
+          const url = URL.createObjectURL(file);
+          if (!prop.gallery) prop.gallery = [];
+          prop.gallery.push({
+            title: titlePrompt,
+            url: url,
+            category: 'exterior'
+          });
+          saveToLocalStorage();
+          renderPropertyGallery();
+        }
+      }
+    }
+
+    function copyPropertyPromoLink() {
+      const prop = getCurrentProperty();
+      const title = prop ? prop.name : 'อสังหาริมทรัพย์เพื่อการเช่า';
+      const price = prop ? prop.rent : 0;
+      const shareText = `🏡 ${title}\n📍 ${prop ? prop.address : ''}\n💰 อัตราค่าเช่าเพียง ฿${price.toLocaleString()} /เดือน\n✨ ดูรายละเอียดและรูปภาพเพิ่มเติม: ${window.location.origin}`;
+      navigator.clipboard.writeText(shareText);
+      alert('คัดลอกข้อความและลิงก์โปรโมทสำเร็จ! สามารถวางส่งทาง Line หรือ Messenger ให้ลูกค้าที่สนใจได้ทันทีครับ');
+    }
+
     function switchSubTab(sub) {
       document.getElementById('subview-specs').classList.add('hidden');
+      if (document.getElementById('subview-gallery')) document.getElementById('subview-gallery').classList.add('hidden');
       document.getElementById('subview-loan').classList.add('hidden');
       document.getElementById('subview-lessor').classList.add('hidden');
 
-      document.getElementById('subtab-specs').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold';
-      document.getElementById('subtab-loan').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold';
-      document.getElementById('subtab-lessor').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold';
+      document.getElementById('subtab-specs').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
+      if (document.getElementById('subtab-gallery')) document.getElementById('subtab-gallery').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
+      document.getElementById('subtab-loan').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
+      document.getElementById('subtab-lessor').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
 
       if (sub === 'specs') {
         document.getElementById('subview-specs').classList.remove('hidden');
-        document.getElementById('subtab-specs').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold';
+        document.getElementById('subtab-specs').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
+      } else if (sub === 'gallery') {
+        if (document.getElementById('subview-gallery')) document.getElementById('subview-gallery').classList.remove('hidden');
+        if (document.getElementById('subtab-gallery')) document.getElementById('subtab-gallery').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
+        renderPropertyGallery();
       } else if (sub === 'loan') {
         document.getElementById('subview-loan').classList.remove('hidden');
-        document.getElementById('subtab-loan').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold';
+        document.getElementById('subtab-loan').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
       } else if (sub === 'lessor') {
         document.getElementById('subview-lessor').classList.remove('hidden');
-        document.getElementById('subtab-lessor').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold';
+        document.getElementById('subtab-lessor').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
       }
     }
 
