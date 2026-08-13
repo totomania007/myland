@@ -68,7 +68,7 @@ export function applyRolePermissions() {
 
 export function checkTabAccess(tab) {
   if (state.currentRole === 'tenant' && ['admin', 'register-lessor', 'contract'].includes(tab)) {
-    alert('🔒 หน้านี้จำกัดสิทธิ์เฉพาะผู้ให้เช่า (Landlord Admin) เท่านั้นครับ (กรอก PIN: 1234 เพื่อสลับโหมด)');
+    if (window.switchTab) window.switchTab('property-detail');
     return false;
   }
   return true;
@@ -76,7 +76,7 @@ export function checkTabAccess(tab) {
 
 export function checkSubTabAccess(subtab) {
   if (state.currentRole === 'tenant' && ['loan', 'lessor'].includes(subtab)) {
-    alert('🔒 ตารางผ่อนชำระธนาคาร สัญญาเงินกู้ และข้อมูลผู้ให้เช่า ถูกจำกัดสิทธิ์เฉพาะผู้ให้เช่าเท่านั้นครับ (กรอก PIN: 1234 เพื่อสลับโหมด)');
+    if (window.switchSubTab) window.switchSubTab('specs');
     return false;
   }
   return true;

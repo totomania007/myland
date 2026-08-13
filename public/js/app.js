@@ -126,10 +126,7 @@ window.selectPropertyView = function(propId) {
 };
 
 window.openAmortizationModal = function() {
-  if (state.currentRole === 'tenant') {
-    alert('🔒 ตารางผ่อนชำระธนาคาร และตั้งค่า Retention ถูกจำกัดสิทธิ์เฉพาะผู้ให้เช่าเท่านั้นครับ (กรอก PIN: 1234 เพื่อสลับโหมด)');
-    return;
-  }
+  if (state.currentRole === 'tenant') return;
   const prop = getCurrentProperty();
   if (!prop) {
     alert('กรุณากด "+ เพิ่มทรัพย์สินใหม่" เพื่อสร้างอสังหาริมทรัพย์ยูนิตแรกในระบบก่อนครับ');
@@ -140,10 +137,7 @@ window.openAmortizationModal = function() {
 };
 
 window.openEditPropertyDetailModal = function() {
-  if (state.currentRole === 'tenant') {
-    alert('🔒 การแก้ไขสเปกและรายละเอียดทรัพย์สิน ถูกจำกัดสิทธิ์เฉพาะผู้ให้เช่าเท่านั้นครับ (กรอก PIN: 1234 เพื่อสลับโหมด)');
-    return;
-  }
+  if (state.currentRole === 'tenant') return;
   const prop = getCurrentProperty();
   if (!prop) {
     alert('กรุณากด "+ เพิ่มทรัพย์สินใหม่" เพื่อสร้างอสังหาริมทรัพย์ยูนิตแรกในระบบก่อนครับ');
