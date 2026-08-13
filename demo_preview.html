@@ -63,11 +63,12 @@
     window.openEditPropertyDetailModal = function() {
       window.toggleModal('modal-edit-property-detail');
     };
-    window.handleDetailPropertySwitch = function(propId) {
+    function handleDetailPropertySwitch(propId) {
       if (window.state) window.state.currentPropertyId = propId;
       if (window.renderPropertyDetailView) window.renderPropertyDetailView();
       if (window.renderContractView) window.renderContractView();
-    };
+    }
+    window.handleDetailPropertySwitch = handleDetailPropertySwitch;
     window.verifyAdminPinSubmit = function() {
       const pinInput = document.getElementById('admin-pin-input');
       const pinVal = pinInput ? pinInput.value.trim() : '';
@@ -813,7 +814,7 @@
           <div class="youestates-card-header flex justify-between items-center">
             <div class="flex items-center gap-2">
               <span>🏡 เลือกทรัพย์สิน:</span>
-              <select id="pd-property-selector" onchange="handleDetailPropertySwitch(this.value)" class="bg-[#e05646] text-white font-bold text-xs rounded px-3 py-1 outline-none cursor-pointer">
+              <select id="pd-property-selector" onchange="window.handleDetailPropertySwitch(this.value)" class="bg-[#e05646] text-white font-bold text-xs rounded px-3 py-1 outline-none cursor-pointer">
               </select>
             </div>
             <span class="text-xs text-stone-300 font-normal" id="pd-header-badge">สเปก & เงินกู้</span>
@@ -1529,7 +1530,7 @@
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_12"></script>
+  <script type="module" src="js/app.js?v=20260814_13"></script>
 </body>
 </html>
 
