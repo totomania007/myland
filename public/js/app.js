@@ -5,7 +5,7 @@
 
 import { CONFIG, state, saveStateToLocalStorage } from './config.js';
 import { applyRolePermissions, checkTabAccess, checkSubTabAccess, verifyAdminPinSubmit, renderAdminAccountsList, handleAddAdminSubmit, deleteAdminAccount, getCurrentRole, setCurrentRole } from './modules/auth.js';
-import { renderAdminData, renderRegisteredLessorsList, getCurrentProperty, calculateMortgage } from './modules/landlord.js';
+import { renderAdminData, renderRegisteredLessorsList, getCurrentProperty, calculateMortgage, handleAddPropertySubmit, handleLessorRegisterTabSubmit, editRegisteredLessor, uploadToCloudinaryAndPreview } from './modules/landlord.js';
 import { calculateLeaseEndDate, initTenantFormDates, handleTenantSubmit, confirmTenantLoginDirect } from './modules/tenant.js';
 import { renderPropertyGallery, filterGalleryPhotos, copyPropertyPromoLink } from './modules/gallery.js';
 import { renderContractView } from './modules/contract.js';
@@ -26,6 +26,12 @@ window.deleteAdminAccount = deleteAdminAccount;
 window.renderAdminData = renderAdminData;
 window.renderRegisteredLessorsList = renderRegisteredLessorsList;
 window.getCurrentProperty = getCurrentProperty;
+window.handleAddPropertySubmit = handleAddPropertySubmit;
+window.handleLessorRegisterTabSubmit = handleLessorRegisterTabSubmit;
+window.editRegisteredLessor = editRegisteredLessor;
+window.uploadToCloudinaryAndPreview = uploadToCloudinaryAndPreview;
+window.triggerLessorTabFileInput = function() { const el = document.getElementById('lessorTabFile'); if (el) el.click(); };
+window.triggerFileInput = function() { const el = document.getElementById('tenantFile'); if (el) el.click(); };
 
 window.calculateLeaseEndDate = calculateLeaseEndDate;
 window.initTenantFormDates = initTenantFormDates;

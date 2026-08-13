@@ -149,3 +149,136 @@ export function renderRegisteredLessorsList() {
     `;
   });
 }
+
+export function handleAddPropertySubmit(e) {
+  e.preventDefault();
+  const name = document.getElementById('p-name').value;
+  const houseNo = document.getElementById('p-houseno').value;
+  const address = document.getElementById('p-address').value;
+  const lessorKey = document.getElementById('p-lessor').value;
+  const principal = parseFloat(document.getElementById('p-principal').value) || 0;
+  const installment = parseFloat(document.getElementById('p-installment').value) || 0;
+  const startDate = document.getElementById('p-startdate').value;
+
+  const newId = 'prop-' + Date.now();
+  const newProp = {
+    id: newId,
+    name,
+    houseNo,
+    address,
+    lessorKey,
+    principal,
+    installment,
+    rent: Math.round(installment * 1.25),
+    deposit: Math.round(installment * 2),
+    startDate,
+    type: 'อสังหาฯ เช่า',
+    size: '40 ตร.ม.',
+    gallery: [],
+    inventoryList: [
+      { name: 'เครื่องปรับอากาศ (Air Conditioner)', img: CONFIG.PLACEHOLDER_SVG },
+      { name: 'เตียงนอน 6 ฟุต พร้อมฟูก (6ft Bed & Mattress)', img: CONFIG.PLACEHOLDER_SVG },
+      { name: 'ตู้เสื้อผ้า Built-in (Built-in Wardrobe)', img: CONFIG.PLACEHOLDER_SVG }
+    ]
+  };
+
+  state.propertiesState.push(newProp);
+  state.currentPropertyId = newId;
+  saveStateToLocalStorage();
+
+  renderAdminData();
+  if (window.renderPropertyDetailView) window.renderPropertyDetailView();
+  if (window.toggleModal) window.toggleModal('modal-add-property');
+  alert(`บันทึกเพิ่มทรัพย์สิน "${name}" สำเร็จแล้ว!`);
+}
+
+export function handleLessorRegisterTabSubmit(e) {
+  e.preventDefault();
+  const fullName = document.getElementById('reg-lp-fullname').value;
+  const key = 'lessor-' + Date.now();
+  
+  state.lessorProfiles[key] = {
+    name: fullName,
+    idCard: document.getElementById('reg-lp-idcard').value,
+    age: parseInt(document.getElementById('reg-lp-age').value) || 45,
+    phone: document.getElementById('reg-lp-phone').value || '',
+    address: document.getElementById('reg-lp-address').value,
+    imageUrl: state.lessorProfiles[key]?.imageUrl || CONFIG.PLACEHOLDER_SVG
+  };
+
+  saveStateToLocalStorage();
+  renderRegisteredLessorsList();
+  if (window.renderLessorSelectOptions) window.renderLessorSelectOptions();
+  if (window.renderPropertyDetailView) window.renderPropertyDetailView();
+  if (window.renderContractView) window.renderContractView();
+  renderAdminData();
+  alert(`ลงทะเบียนผู้ให้เช่า "${fullName}" เรียบร้อยแล้ว!`);
+  document.getElementById('reg-lp-fullname').value = '';
+  document.getElementById('reg-lp-idcard').value = '';
+  document.getElementById('reg-lp-address').value = '';
+  document.getElementById('reg-lp-phone').value = '';
+}
+
+export function editRegisteredLessor(key) {
+  const prof = state.lessorProfiles[key];
+  if (!prof) return;
+  if (document.getElementById('reg-lp-fullname')) document.getElementById('reg-lp-fullname').value = prof.name || '';
+  if (document.getElementById('reg-lp-idcard')) document.getElementById('reg-lp-idcard').value = prof.idCard || '';
+  if (document.getElementById('reg-lp-age')) document.getElementById('reg-lp-age').value = prof.age || 45;
+  if (document.getElementById('reg-lp-phone')) document.getElementById('reg-lp-phone').value = prof.phone || '';
+  if (document.getElementById('reg-lp-address')) document.getElementById('reg-lp-address').value = prof.address || '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+export async function uploadToCloudinaryAndPreview(e, targetType, targetIndex) {
+  if (e.target.files && e.target.files[0]) {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CONFIG.CLOUDINARY_CONFIG.UPLOAD_PRESET);
+
+    if (targetType === 'tenant' && document.getElementById('fileText')) {
+      document.getElementById('fileText').innerText = `⏳ กำลังอัปโหลดขึ้น Cloudinary (${CONFIG.CLOUDINARY_CONFIG.CLOUD_NAME})...`;
+    }
+    if (targetType === 'lessor-tab' && document.getElementById('lessorTabFileText')) {
+      document.getElementById('lessorTabFileText').innerText = `⏳ กำลังอัปโหลดรูปบัตรขึ้น Cloudinary...`;
+    }
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CONFIG.CLOUDINARY_CONFIG.CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      const cloudUrl = data.secure_url || data.url || URL.createObjectURL(file);
+
+      if (targetType === 'tenant') {
+        state.currentTenant.imageUrl = cloudUrl;
+        if (document.getElementById('imagePreview')) document.getElementById('imagePreview').src = cloudUrl;
+        if (document.getElementById('imagePreviewContainer')) document.getElementById('imagePreviewContainer').classList.remove('hidden');
+        if (document.getElementById('fileText')) document.getElementById('fileText').innerText = `✅ อัปโหลดขึ้น Cloudinary (${CONFIG.CLOUDINARY_CONFIG.CLOUD_NAME}) สำเร็จ!`;
+      } else if (targetType === 'lessor' || targetType === 'lessor-tab') {
+        const keys = Object.keys(state.lessorProfiles);
+        if (keys.length > 0) {
+          const activeKey = keys[0];
+          state.lessorProfiles[activeKey].imageUrl = cloudUrl;
+          if (document.getElementById('pd-lessor-card-img')) document.getElementById('pd-lessor-card-img').src = cloudUrl;
+        }
+        if (document.getElementById('lessorTabFileText')) {
+          document.getElementById('lessorTabFileText').innerText = `✅ อัปโหลดบัตรประชาชนผู้ให้เช่าขึ้น Cloudinary สำเร็จ!`;
+        }
+        saveStateToLocalStorage();
+      }
+      if (window.renderContractView) window.renderContractView();
+    } catch(err) {
+      const url = URL.createObjectURL(file);
+      if (targetType === 'tenant') {
+        state.currentTenant.imageUrl = url;
+        if (document.getElementById('imagePreview')) document.getElementById('imagePreview').src = url;
+        if (document.getElementById('imagePreviewContainer')) document.getElementById('imagePreviewContainer').classList.remove('hidden');
+      }
+    }
+  }
+}
+
