@@ -281,7 +281,10 @@ async function initApp() {
   }
 
   state.currentPropertyId = state.propertiesState.length > 0 ? state.propertiesState[0].id : '';
-  setCurrentRole('tenant');
+  
+  const savedRole = getCurrentRole();
+  setCurrentRole(savedRole);
+
   renderAdminData();
   renderPropertyDetailView();
   renderContractView();
@@ -290,7 +293,12 @@ async function initApp() {
   renderLessorSelectOptions();
   initTenantFormDates();
   applyRolePermissions();
-  if (window.switchTab) window.switchTab('landing');
+
+  if (savedRole === 'landlord') {
+    if (window.switchTab) window.switchTab('admin');
+  } else {
+    if (window.switchTab) window.switchTab('landing');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', initApp);

@@ -36,12 +36,22 @@ export const PERMISSION_REGISTRY = {
 };
 
 export function getCurrentRole() {
+  const stored = sessionStorage.getItem('property_os_role') || localStorage.getItem('property_os_role');
+  if (stored) {
+    if (state) state.currentRole = stored;
+    window.currentRole = stored;
+    return stored;
+  }
   return window.currentRole || (state && state.currentRole) || 'tenant';
 }
 
 export function setCurrentRole(role) {
   if (state) state.currentRole = role;
   window.currentRole = role;
+  try {
+    sessionStorage.setItem('property_os_role', role);
+    localStorage.setItem('property_os_role', role);
+  } catch (e) {}
 }
 
 export function applyRolePermissions() {
@@ -58,6 +68,7 @@ export function applyRolePermissions() {
 
   // 2. Update Header Badges & Tab Labels
   const badgeRole = document.getElementById('user-badge-role');
+  const badgeBtn = document.getElementById('user-badge-action-btn');
   const roleTitle = document.getElementById('header-role-title');
   const tabPropertyBtn = document.getElementById('tab-property-detail');
   const pdHeaderBadge = document.getElementById('pd-header-badge');
@@ -67,6 +78,14 @@ export function applyRolePermissions() {
       badgeRole.innerText = '🔑 ผู้ให้เช่า';
       badgeRole.className = 'px-2 py-0.5 rounded bg-[#e05646] text-white font-bold text-[10px]';
     }
+    if (badgeBtn) {
+      badgeBtn.innerText = '🔒 สลับเป็นผู้เช่า';
+      badgeBtn.onclick = function() {
+        setCurrentRole('tenant');
+        applyRolePermissions();
+        if (window.switchTab) window.switchTab('landing');
+      };
+    }
     if (roleTitle) roleTitle.innerText = 'ผู้ให้เช่า (Landlord Mode)';
     if (tabPropertyBtn) tabPropertyBtn.innerText = '🏡 รายละเอียดทรัพย์สิน & สินเชื่อ';
     if (pdHeaderBadge) pdHeaderBadge.innerText = 'สเปก & เงินกู้';
@@ -74,6 +93,14 @@ export function applyRolePermissions() {
     if (badgeRole) {
       badgeRole.innerText = '👤 ผู้เช่า';
       badgeRole.className = 'px-2 py-0.5 rounded bg-[#383838] text-white font-bold text-[10px]';
+    }
+    if (badgeBtn) {
+      badgeBtn.innerText = '🔑 เข้าสู่ระบบผู้ให้เช่า';
+      badgeBtn.onclick = function() {
+        const pinInput = document.getElementById('admin-pin-input');
+        if (pinInput) pinInput.value = '';
+        if (window.toggleModal) window.toggleModal('modal-admin-pin');
+      };
     }
     if (roleTitle) roleTitle.innerText = 'ผู้เช่า (Tenant Portal Mode)';
     if (tabPropertyBtn) tabPropertyBtn.innerText = '🏡 รายละเอียดทรัพย์สิน';
