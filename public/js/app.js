@@ -513,13 +513,25 @@ window.renderTenantPropertyDropdown = renderTenantPropertyDropdown;
 
 // INITIALIZATION PIPELINE
 async function initApp() {
+  state.propertiesState = JSON.parse(localStorage.getItem('property_os_properties') || '[]');
+
   try {
     const res = await fetch('/api/properties');
-    if (res.ok) state.propertiesState = await res.json();
-    else state.propertiesState = JSON.parse(localStorage.getItem('property_os_properties') || '[]');
-  } catch (e) {
-    state.propertiesState = JSON.parse(localStorage.getItem('property_os_properties') || '[]');
-  }
+    if (res.ok) {
+      const dbProps = await res.json();
+      if (Array.isArray(dbProps) && dbProps.length > 0) {
+        dbProps.forEach(dp => {
+          const idx = state.propertiesState.findIndex(p => p.id === dp.id);
+          if (idx !== -1) {
+            state.propertiesState[idx] = { ...state.propertiesState[idx], ...dp };
+          } else {
+            state.propertiesState.push(dp);
+          }
+        });
+        saveStateToLocalStorage();
+      }
+    }
+  } catch (e) {}
 
   try {
     const resL = await fetch('/api/lessors');
