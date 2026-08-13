@@ -14,8 +14,75 @@ const MIME_TYPES = {
   '.svg': 'image/svg+xml'
 };
 
+const DB_FILE = path.join(__dirname, 'db_properties.json');
+let localDbProperties = [];
+if (fs.existsSync(DB_FILE)) {
+  try { localDbProperties = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch (e) { localDbProperties = []; }
+}
+
+function saveLocalDb() {
+  fs.writeFileSync(DB_FILE, JSON.stringify(localDbProperties, null, 2));
+}
+
 const server = http.createServer((req, res) => {
   let reqUrl = req.url.split('?')[0];
+
+  if (reqUrl === '/api/properties') {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
+    if (req.method === 'GET') {
+      res.writeHead(200);
+      res.end(JSON.stringify(localDbProperties));
+      return;
+    }
+
+    let body = '';
+    req.on('data', chunk => { body += chunk.toString(); });
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body || '{}');
+        if (req.method === 'POST') {
+          const newProp = { ...data, id: data.id || `prop-${Date.now()}` };
+          localDbProperties.unshift(newProp);
+          saveLocalDb();
+          res.writeHead(200);
+          res.end(JSON.stringify({ success: true, id: newProp.id }));
+        } else if (req.method === 'PUT') {
+          const idx = localDbProperties.findIndex(p => p.id === data.id);
+          if (idx !== -1) {
+            localDbProperties[idx] = { ...localDbProperties[idx], ...data };
+          } else {
+            localDbProperties.unshift(data);
+          }
+          saveLocalDb();
+          res.writeHead(200);
+          res.end(JSON.stringify({ success: true, id: data.id }));
+        } else if (req.method === 'DELETE') {
+          localDbProperties = localDbProperties.filter(p => p.id !== data.id);
+          saveLocalDb();
+          res.writeHead(200);
+          res.end(JSON.stringify({ success: true, id: data.id }));
+        } else {
+          res.writeHead(405);
+          res.end(JSON.stringify({ error: 'Method Not Allowed' }));
+        }
+      } catch (err) {
+        res.writeHead(500);
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
   if (reqUrl === '/') reqUrl = '/demo_preview.html';
 
   const filePath = path.join(__dirname, reqUrl);

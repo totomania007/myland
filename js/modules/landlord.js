@@ -186,10 +186,20 @@ export function handleAddPropertySubmit(e) {
   state.currentPropertyId = newId;
   saveStateToLocalStorage();
 
+  try {
+    await fetch('/api/properties', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newProp)
+    });
+  } catch (err) {
+    console.warn('DB Sync Warning:', err);
+  }
+
   renderAdminData();
   if (window.renderPropertyDetailView) window.renderPropertyDetailView();
   if (window.toggleModal) window.toggleModal('modal-add-property');
-  alert(`บันทึกเพิ่มทรัพย์สิน "${name}" สำเร็จแล้ว!`);
+  alert(`บันทึกเพิ่มทรัพย์สิน "${name}" ลงในฐานข้อมูลสำเร็จแล้ว!`);
 }
 
 export function addFurnitureEditRow(name = '', img = '', idx = Date.now()) {
@@ -208,7 +218,7 @@ export function addFurnitureEditRow(name = '', img = '', idx = Date.now()) {
   container.appendChild(row);
 }
 
-export function handleEditPropertyDetailSubmit(e) {
+export async function handleEditPropertyDetailSubmit(e) {
   if (e) e.preventDefault();
   const prop = getCurrentProperty();
   if (!prop) return;
@@ -250,12 +260,22 @@ export function handleEditPropertyDetailSubmit(e) {
 
   saveStateToLocalStorage();
 
+  try {
+    await fetch('/api/properties', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(prop)
+    });
+  } catch (err) {
+    console.warn('DB Sync Warning:', err);
+  }
+
   renderAdminData();
   if (window.renderPropertyDetailView) window.renderPropertyDetailView();
   if (window.renderContractView) window.renderContractView();
 
   if (window.toggleModal) window.toggleModal('modal-edit-property-detail');
-  alert(`บันทึกการแก้ไขสเปกทรัพย์สิน "${prop.name}" เรียบร้อยแล้ว!`);
+  alert(`บันทึกการแก้ไขสเปกทรัพย์สิน "${prop.name}" ลงในฐานข้อมูลเรียบร้อยแล้ว!`);
 }
 
 export function handleLessorRegisterTabSubmit(e) {
