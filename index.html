@@ -1310,6 +1310,60 @@
     </button>
   </div>
 
+  <!-- IMMEDIATE GLOBAL FALLBACK HANDLERS (PREVENT REFERENCE ERROR ON FAST CLICK OR FILE PROTOCOL) -->
+  <script>
+    window.toggleModal = window.toggleModal || function(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('hidden');
+    };
+    window.openLoginOverlay = window.openLoginOverlay || function() {
+      const overlay = document.getElementById('login-overlay');
+      if (overlay) overlay.classList.remove('hidden');
+    };
+    window.loginAsRole = window.loginAsRole || function(role) {
+      const overlay = document.getElementById('login-overlay');
+      if (overlay) overlay.classList.add('hidden');
+      if (role === 'landlord') {
+        const pinInput = document.getElementById('admin-pin-input');
+        if (pinInput) pinInput.value = '';
+        window.toggleModal('modal-admin-pin');
+      } else {
+        if (window.setCurrentRole) window.setCurrentRole('tenant');
+        if (window.switchTab) window.switchTab('tenant');
+      }
+    };
+    window.switchTab = window.switchTab || function(tab) {
+      const views = ['landing', 'admin', 'property-detail', 'register-lessor', 'tenant', 'contract', 'tenant-dashboard'];
+      views.forEach(v => {
+        const viewEl = document.getElementById(`view-${v}`);
+        if (viewEl) viewEl.classList.add('hidden');
+      });
+      const targetView = document.getElementById(`view-${tab}`);
+      if (targetView) targetView.classList.remove('hidden');
+      const tabs = ['landing', 'admin', 'property-detail', 'register-lessor', 'tenant', 'contract'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-${t}`);
+        if (btn) {
+          btn.classList.remove('active');
+          btn.classList.add('inactive');
+        }
+      });
+      const activeBtn = document.getElementById(`tab-${tab}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('inactive');
+        activeBtn.classList.add('active');
+      }
+    };
+    window.switchSubTab = window.switchSubTab || function(sub) {
+      ['specs', 'gallery', 'loan', 'lessor'].forEach(s => {
+        const view = document.getElementById(`subview-${s}`);
+        if (view) view.classList.add('hidden');
+      });
+      const activeView = document.getElementById(`subview-${sub}`);
+      if (activeView) activeView.classList.remove('hidden');
+    };
+  </script>
+
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
   <script type="module" src="js/app.js"></script>
 </body>
