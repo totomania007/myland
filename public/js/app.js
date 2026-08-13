@@ -5,7 +5,7 @@
 
 import { CONFIG, state, saveStateToLocalStorage } from './config.js';
 import { applyRolePermissions, checkTabAccess, checkSubTabAccess, verifyAdminPinSubmit, renderAdminAccountsList, handleAddAdminSubmit, deleteAdminAccount, getCurrentRole, setCurrentRole } from './modules/auth.js';
-import { renderAdminData, renderRegisteredLessorsList, getCurrentProperty, calculateMortgage, handleAddPropertySubmit, handleLessorRegisterTabSubmit, editRegisteredLessor, uploadToCloudinaryAndPreview } from './modules/landlord.js';
+import { renderAdminData, renderRegisteredLessorsList, getCurrentProperty, calculateMortgage, handleAddPropertySubmit, handleLessorRegisterTabSubmit, editRegisteredLessor, uploadToCloudinaryAndPreview, addFurnitureEditRow, handleEditPropertyDetailSubmit } from './modules/landlord.js';
 import { calculateLeaseEndDate, initTenantFormDates, handleTenantSubmit, confirmTenantLoginDirect } from './modules/tenant.js';
 import { renderPropertyGallery, filterGalleryPhotos, copyPropertyPromoLink } from './modules/gallery.js';
 import { renderContractView } from './modules/contract.js';
@@ -30,6 +30,9 @@ window.handleAddPropertySubmit = handleAddPropertySubmit;
 window.handleLessorRegisterTabSubmit = handleLessorRegisterTabSubmit;
 window.editRegisteredLessor = editRegisteredLessor;
 window.uploadToCloudinaryAndPreview = uploadToCloudinaryAndPreview;
+window.addFurnitureEditRow = addFurnitureEditRow;
+window.handleEditPropertyDetailSubmit = handleEditPropertyDetailSubmit;
+window.handlePropertyDetailEditSubmit = handleEditPropertyDetailSubmit;
 window.triggerLessorTabFileInput = function() { const el = document.getElementById('lessorTabFile'); if (el) el.click(); };
 window.triggerFileInput = function() { const el = document.getElementById('tenantFile'); if (el) el.click(); };
 
@@ -166,13 +169,40 @@ window.openAmortizationModal = function() {
 };
 
 window.openEditPropertyDetailModal = function() {
-  if (state.currentRole === 'tenant') return;
+  if (getCurrentRole() === 'tenant') return;
   const prop = getCurrentProperty();
   if (!prop) {
     alert('กรุณากด "+ เพิ่มทรัพย์สินใหม่" เพื่อสร้างอสังหาริมทรัพย์ยูนิตแรกในระบบก่อนครับ');
     window.toggleModal('modal-add-property');
     return;
   }
+  
+  if (window.renderLessorSelectOptions) window.renderLessorSelectOptions();
+
+  if (document.getElementById('pde-name')) document.getElementById('pde-name').value = prop.name || '';
+  if (document.getElementById('pde-houseno')) document.getElementById('pde-houseno').value = prop.houseNo || '';
+  if (document.getElementById('pde-address')) document.getElementById('pde-address').value = prop.address || '';
+  if (document.getElementById('pde-rent')) document.getElementById('pde-rent').value = prop.rent || 0;
+  if (document.getElementById('pde-deposit')) document.getElementById('pde-deposit').value = prop.deposit || 0;
+  if (document.getElementById('pde-size')) document.getElementById('pde-size').value = prop.size || '40 ตร.ม.';
+  if (document.getElementById('pde-lessor-select')) document.getElementById('pde-lessor-select').value = prop.lessorKey || '';
+
+  const furnContainer = document.getElementById('pde-furniture-rows-container');
+  if (furnContainer) {
+    furnContainer.innerHTML = '';
+    const inventory = prop.inventoryList || [];
+    if (inventory.length === 0) {
+      addFurnitureEditRow('เครื่องปรับอากาศ (Air Conditioner)');
+      addFurnitureEditRow('เตียงนอน 6 ฟุต พร้อมฟูก (6ft Bed & Mattress)');
+      addFurnitureEditRow('ตู้เสื้อผ้า Built-in (Built-in Wardrobe)');
+    } else {
+      inventory.forEach((item, idx) => {
+        const itemObj = typeof item === 'object' ? item : { name: item, img: CONFIG.PLACEHOLDER_SVG };
+        addFurnitureEditRow(itemObj.name, itemObj.img, idx);
+      });
+    }
+  }
+
   window.toggleModal('modal-edit-property-detail');
 };
 

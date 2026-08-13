@@ -192,6 +192,72 @@ export function handleAddPropertySubmit(e) {
   alert(`บันทึกเพิ่มทรัพย์สิน "${name}" สำเร็จแล้ว!`);
 }
 
+export function addFurnitureEditRow(name = '', img = '', idx = Date.now()) {
+  const container = document.getElementById('pde-furniture-rows-container');
+  if (!container) return;
+  const rowId = `furn-row-${idx}`;
+  const row = document.createElement('div');
+  row.id = rowId;
+  row.className = 'p-2 bg-stone-50 border border-stone-200 rounded-lg flex items-center gap-2 text-xs';
+  row.innerHTML = `
+    <input type="text" class="furn-name-input flex-1 bg-white border border-stone-300 rounded p-1.5 font-bold" value="${name}" placeholder="ชื่อเฟอร์นิเจอร์ / อุปกรณ์...">
+    <input type="hidden" class="furn-img-input" value="${img || CONFIG.PLACEHOLDER_SVG}">
+    <img src="${img || CONFIG.PLACEHOLDER_SVG}" class="furn-img-preview w-8 h-6 object-cover rounded border border-stone-300">
+    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-rose-500 font-bold px-1.5 py-1">✕</button>
+  `;
+  container.appendChild(row);
+}
+
+export function handleEditPropertyDetailSubmit(e) {
+  if (e) e.preventDefault();
+  const prop = getCurrentProperty();
+  if (!prop) return;
+
+  const nameVal = document.getElementById('pde-name')?.value.trim();
+  const houseNoVal = document.getElementById('pde-houseno')?.value.trim();
+  const addressVal = document.getElementById('pde-address')?.value.trim();
+  const rentVal = parseFloat(document.getElementById('pde-rent')?.value) || 0;
+  const depositVal = parseFloat(document.getElementById('pde-deposit')?.value) || 0;
+  const sizeVal = document.getElementById('pde-size')?.value.trim() || prop.size || '40 ตร.ม.';
+  const lessorKeyVal = document.getElementById('pde-lessor-select')?.value;
+
+  const furnRows = document.querySelectorAll('#pde-furniture-rows-container > div');
+  const updatedInventory = [];
+  furnRows.forEach(row => {
+    const nameInput = row.querySelector('.furn-name-input');
+    const imgInput = row.querySelector('.furn-img-input');
+    if (nameInput && nameInput.value.trim()) {
+      updatedInventory.push({
+        name: nameInput.value.trim(),
+        img: imgInput ? (imgInput.value || CONFIG.PLACEHOLDER_SVG) : CONFIG.PLACEHOLDER_SVG
+      });
+    }
+  });
+
+  prop.name = nameVal || prop.name;
+  prop.houseNo = houseNoVal !== undefined ? houseNoVal : prop.houseNo;
+  prop.address = addressVal !== undefined ? addressVal : prop.address;
+  prop.rent = rentVal;
+  prop.deposit = depositVal;
+  prop.size = sizeVal;
+  if (lessorKeyVal) prop.lessorKey = lessorKeyVal;
+  if (updatedInventory.length > 0) prop.inventoryList = updatedInventory;
+
+  const idx = state.propertiesState.findIndex(p => p.id === prop.id);
+  if (idx !== -1) {
+    state.propertiesState[idx] = prop;
+  }
+
+  saveStateToLocalStorage();
+
+  renderAdminData();
+  if (window.renderPropertyDetailView) window.renderPropertyDetailView();
+  if (window.renderContractView) window.renderContractView();
+
+  if (window.toggleModal) window.toggleModal('modal-edit-property-detail');
+  alert(`บันทึกการแก้ไขสเปกทรัพย์สิน "${prop.name}" เรียบร้อยแล้ว!`);
+}
+
 export function handleLessorRegisterTabSubmit(e) {
   e.preventDefault();
   const fullName = document.getElementById('reg-lp-fullname').value;
