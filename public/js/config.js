@@ -45,3 +45,8 @@ export function saveStateToLocalStorage() {
   localStorage.setItem('property_os_admins', JSON.stringify(state.adminAccountsState));
   localStorage.setItem('property_os_tenants', JSON.stringify(state.tenantDatabase));
 }
+
+if (typeof window !== 'undefined') {
+  window.state = state;
+  window.CONFIG = CONFIG;
+}

@@ -68,18 +68,23 @@
       const pinVal = pinInput ? pinInput.value.trim() : '';
       const matchedAdmin = (window.state && window.state.adminAccountsState) ? window.state.adminAccountsState.find(a => a.pin === pinVal) : null;
       if (matchedAdmin || pinVal === '1234') {
+        window.currentRole = 'landlord';
+        if (window.state) window.state.currentRole = 'landlord';
         if (window.setCurrentRole) window.setCurrentRole('landlord');
-        else window.currentRole = 'landlord';
+
         const adminName = matchedAdmin ? matchedAdmin.name : 'ผู้ดูแลพอร์ต';
         const badgeName = document.getElementById('user-badge-name');
         if (badgeName) badgeName.innerText = adminName;
+        
         const pinModal = document.getElementById('modal-admin-pin');
         if (pinModal) pinModal.classList.add('hidden');
         const overlay = document.getElementById('login-overlay');
         if (overlay) overlay.classList.add('hidden');
         if (pinInput) pinInput.value = '';
+
         if (window.applyRolePermissions) window.applyRolePermissions();
         if (window.switchTab) window.switchTab('admin');
+
         alert(`🔓 เข้าสู่ระบบผู้ให้เช่า (${adminName}) สำเร็จแล้ว!`);
       } else {
         alert('❌ รหัส PIN ไม่ถูกต้อง (รหัสผ่านเริ่มต้นของระบบคือ 1234)');
@@ -1447,7 +1452,7 @@
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_02"></script>
+  <script type="module" src="js/app.js?v=20260814_03"></script>
 </body>
 </html>
 

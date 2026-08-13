@@ -36,12 +36,11 @@ export const PERMISSION_REGISTRY = {
 };
 
 export function getCurrentRole() {
-  if (state && state.currentRole) return state.currentRole;
-  return window.currentRole || 'landlord';
+  return window.currentRole || (state && state.currentRole) || 'tenant';
 }
 
 export function setCurrentRole(role) {
-  state.currentRole = role;
+  if (state) state.currentRole = role;
   window.currentRole = role;
 }
 
