@@ -18,43 +18,24 @@ import {
   PrinterIcon
 } from '@heroicons/react/24/outline';
 
-const mockProperties = [
-  {
-    id: 'prop-1',
-    name: 'แอสเพน คอนโด สุขุมวิท 101',
-    address: '101 ถนนสุขุมวิท พระโขนง กรุงเทพฯ',
-    totalPrincipal: 3500000,
-    monthlyInstallment: 17500,
-    interestRate: 4.25,
-    loanStartDate: '2022-03-15',
-    units: [
-      { id: 'u-101', unitNumber: '101/12', rentPrice: 12000, status: 'occupied' },
-      { id: 'u-102', unitNumber: '101/14', rentPrice: 11500, status: 'occupied' },
-      { id: 'u-103', unitNumber: '101/16', rentPrice: 11000, status: 'vacant' },
-    ]
-  },
-  {
-    id: 'prop-2',
-    name: 'ลุมพินี พาร์ค พระราม 9',
-    address: '88 ถนนพระราม 9 ห้วยขวาง กรุงเทพฯ',
-    totalPrincipal: 5200000,
-    monthlyInstallment: 26000,
-    interestRate: 4.75,
-    loanStartDate: '2021-08-01',
-    units: [
-      { id: 'u-201', unitNumber: 'B-501', rentPrice: 15000, status: 'occupied' },
-      { id: 'u-202', unitNumber: 'B-502', rentPrice: 15500, status: 'occupied' },
-      { id: 'u-203', unitNumber: 'B-503', rentPrice: 16000, status: 'occupied' },
-    ]
-  }
-];
+const mockProperties: Array<{
+  id: string;
+  name: string;
+  address: string;
+  totalPrincipal: number;
+  monthlyInstallment: number;
+  interestRate: number;
+  loanStartDate: string;
+  units: Array<{ id: string; unitNumber: string; rentPrice: number; status: 'occupied' | 'vacant' }>;
+}> = [];
 
-const mockContracts = [
-  { id: 'c-1', unitNumber: '101/12', tenantName: 'คุณสมชาย ใจดี', endDate: '2026-08-10', monthlyRent: 12000 },
-  { id: 'c-2', unitNumber: '101/14', tenantName: 'คุณวิภาวรรณ สุขเสริฐ', endDate: '2026-08-18', monthlyRent: 11500 },
-  { id: 'c-3', unitNumber: 'B-501', tenantName: 'Mr. John Doe', endDate: '2026-09-02', monthlyRent: 15000 },
-  { id: 'c-4', unitNumber: 'B-502', tenantName: 'คุณอนันต์ ตั้งใจ', endDate: '2026-11-30', monthlyRent: 15500 },
-];
+const mockContracts: Array<{
+  id: string;
+  unitNumber: string;
+  tenantName: string;
+  endDate: string;
+  monthlyRent: number;
+}> = [];
 
 export default function AdminFinancialDashboard() {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>('all');
@@ -430,9 +411,27 @@ export default function AdminFinancialDashboard() {
           </h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {propertyMetrics
-              .filter((p) => selectedPropertyId === 'all' || p.id === selectedPropertyId)
-              .map((p) => (
+            {propertyMetrics.length === 0 ? (
+              <div className="col-span-full bento-card p-12 text-center space-y-4">
+                <div className="p-4 bg-emerald-500/10 text-emerald-400 rounded-full w-fit mx-auto">
+                  <BuildingOffice2Icon className="w-10 h-10" />
+                </div>
+                <h3 className="text-xl font-bold text-white">ยังไม่มีข้อมูลอสังหาริมทรัพย์ในพอร์ต</h3>
+                <p className="text-xs text-slate-400 max-w-md mx-auto">
+                  สามารถเพิ่มทรัพย์สินใหม่ บันทึกสัญญา และผ่อนชำระธนาคาร เพื่อให้ระบบคำนวณ Cashflow สุทธิอัตโนมัติ
+                </p>
+                <Link
+                  href="/admin/contracts"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-slate-950 font-bold text-xs rounded-xl hover:bg-emerald-400 transition-colors shadow-lg"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                  <span>เพิ่มทรัพย์สิน / สัญญาแรก</span>
+                </Link>
+              </div>
+            ) : (
+              propertyMetrics
+                .filter((p) => selectedPropertyId === 'all' || p.id === selectedPropertyId)
+                .map((p) => (
                 <div
                   key={p.id}
                   className="bento-card p-6 relative overflow-hidden"
@@ -495,7 +494,8 @@ export default function AdminFinancialDashboard() {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+            )}
           </div>
         </div>
       </div>
