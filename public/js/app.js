@@ -164,6 +164,12 @@ window.selectPropertyView = function(propId) {
   window.switchTab('property-detail');
 };
 
+window.handleDetailPropertySwitch = function(propId) {
+  state.currentPropertyId = propId;
+  if (window.renderPropertyDetailView) window.renderPropertyDetailView();
+  if (window.renderContractView) window.renderContractView();
+};
+
 window.openAmortizationModal = function() {
   if (state.currentRole === 'tenant') return;
   const prop = getCurrentProperty();

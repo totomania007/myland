@@ -63,6 +63,11 @@
     window.openEditPropertyDetailModal = function() {
       window.toggleModal('modal-edit-property-detail');
     };
+    window.handleDetailPropertySwitch = function(propId) {
+      if (window.state) window.state.currentPropertyId = propId;
+      if (window.renderPropertyDetailView) window.renderPropertyDetailView();
+      if (window.renderContractView) window.renderContractView();
+    };
     window.verifyAdminPinSubmit = function() {
       const pinInput = document.getElementById('admin-pin-input');
       const pinVal = pinInput ? pinInput.value.trim() : '';
@@ -1524,7 +1529,7 @@
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_11"></script>
+  <script type="module" src="js/app.js?v=20260814_12"></script>
 </body>
 </html>
 
