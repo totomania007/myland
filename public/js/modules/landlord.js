@@ -287,6 +287,7 @@ export async function handleLessorRegisterTabSubmit(e) {
   const ageEl = document.getElementById('reg-lp-age');
   const phoneEl = document.getElementById('reg-lp-phone');
   const addressEl = document.getElementById('reg-lp-address');
+  const editingKeyEl = document.getElementById('editing-lessor-key');
 
   const fullName = nameEl ? nameEl.value.trim() : '';
   if (!fullName) {
@@ -294,7 +295,9 @@ export async function handleLessorRegisterTabSubmit(e) {
     return;
   }
 
-  const key = 'lessor-' + Date.now();
+  const isEditing = editingKeyEl && editingKeyEl.value.trim();
+  const key = isEditing ? editingKeyEl.value.trim() : ('lessor-' + Date.now());
+
   const lessorData = {
     id: key,
     name: fullName,
@@ -302,7 +305,7 @@ export async function handleLessorRegisterTabSubmit(e) {
     age: ageEl ? (parseInt(ageEl.value) || 45) : 45,
     phone: phoneEl ? phoneEl.value.trim() : '',
     address: addressEl ? addressEl.value.trim() : '',
-    imageUrl: CONFIG.PLACEHOLDER_SVG
+    imageUrl: state.lessorProfiles?.[key]?.imageUrl || CONFIG.PLACEHOLDER_SVG
   };
   
   if (!state.lessorProfiles) state.lessorProfiles = {};
@@ -315,13 +318,23 @@ export async function handleLessorRegisterTabSubmit(e) {
 
   saveStateToLocalStorage();
 
+  // Reset editing mode
+  if (editingKeyEl) editingKeyEl.value = '';
+  const btn = document.getElementById('btn-submit-lessor');
+  if (btn) {
+    btn.innerText = `💾 บันทึกลงทะเบียนข้อมูลผู้ให้เช่า & ซิงค์ลงสัญญา A4`;
+    btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+    btn.classList.add('youestates-btn-coral');
+  }
+
   renderRegisteredLessorsList();
   if (window.renderLessorSelectOptions) window.renderLessorSelectOptions();
   if (window.renderPropertyDetailView) window.renderPropertyDetailView();
   if (window.renderContractView) window.renderContractView();
   renderAdminData();
 
-  alert(`ลงทะเบียนผู้ให้เช่า "${fullName}" และบันทึกลงฐานข้อมูลเรียบร้อยแล้ว!`);
+  const msg = isEditing ? `อัปเดตข้อมูลผู้ให้เช่า "${fullName}" เรียบร้อยแล้ว!` : `ลงทะเบียนผู้ให้เช่า "${fullName}" และบันทึกลงฐานข้อมูลเรียบร้อยแล้ว!`;
+  alert(msg);
 
   if (nameEl) nameEl.value = '';
   if (idCardEl) idCardEl.value = '';
@@ -340,13 +353,26 @@ export async function handleLessorRegisterTabSubmit(e) {
 }
 
 export function editRegisteredLessor(key) {
-  const prof = state.lessorProfiles[key];
+  const profiles = (state && state.lessorProfiles) ? state.lessorProfiles : JSON.parse(localStorage.getItem('property_os_lessors') || '{}');
+  const prof = profiles[key];
   if (!prof) return;
+
+  const keyEl = document.getElementById('editing-lessor-key');
+  if (keyEl) keyEl.value = key;
+
   if (document.getElementById('reg-lp-fullname')) document.getElementById('reg-lp-fullname').value = prof.name || '';
   if (document.getElementById('reg-lp-idcard')) document.getElementById('reg-lp-idcard').value = prof.idCard || '';
   if (document.getElementById('reg-lp-age')) document.getElementById('reg-lp-age').value = prof.age || 45;
   if (document.getElementById('reg-lp-phone')) document.getElementById('reg-lp-phone').value = prof.phone || '';
   if (document.getElementById('reg-lp-address')) document.getElementById('reg-lp-address').value = prof.address || '';
+
+  const btn = document.getElementById('btn-submit-lessor');
+  if (btn) {
+    btn.innerText = `✏️ บันทึกอัปเดตการแก้ไขข้อมูลผู้ให้เช่า (${prof.name})`;
+    btn.classList.remove('youestates-btn-coral');
+    btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+  }
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
