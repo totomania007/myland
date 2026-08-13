@@ -152,7 +152,7 @@ export function renderRegisteredLessorsList() {
   });
 }
 
-export function handleAddPropertySubmit(e) {
+export async function handleAddPropertySubmit(e) {
   e.preventDefault();
   const name = document.getElementById('p-name').value;
   const houseNo = document.getElementById('p-houseno').value;
