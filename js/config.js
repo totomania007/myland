@@ -12,7 +12,7 @@ export const CONFIG = {
 
 // Global App State Scope
 export const state = {
-  currentRole: 'tenant', // Default to 'tenant' for security; Landlord requires PIN 1234
+  currentRole: 'landlord', // Default to 'landlord' for full feature accessibility
   currentTenantId: '',
   currentTenant: {
     fullName: 'ผู้เช่า',
