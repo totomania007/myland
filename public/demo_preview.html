@@ -63,6 +63,28 @@
     window.openEditPropertyDetailModal = function() {
       window.toggleModal('modal-edit-property-detail');
     };
+    window.verifyAdminPinSubmit = function() {
+      const pinInput = document.getElementById('admin-pin-input');
+      const pinVal = pinInput ? pinInput.value.trim() : '';
+      const matchedAdmin = (window.state && window.state.adminAccountsState) ? window.state.adminAccountsState.find(a => a.pin === pinVal) : null;
+      if (matchedAdmin || pinVal === '1234') {
+        if (window.setCurrentRole) window.setCurrentRole('landlord');
+        else window.currentRole = 'landlord';
+        const adminName = matchedAdmin ? matchedAdmin.name : 'ผู้ดูแลพอร์ต';
+        const badgeName = document.getElementById('user-badge-name');
+        if (badgeName) badgeName.innerText = adminName;
+        const pinModal = document.getElementById('modal-admin-pin');
+        if (pinModal) pinModal.classList.add('hidden');
+        const overlay = document.getElementById('login-overlay');
+        if (overlay) overlay.classList.add('hidden');
+        if (pinInput) pinInput.value = '';
+        if (window.applyRolePermissions) window.applyRolePermissions();
+        if (window.switchTab) window.switchTab('admin');
+        alert(`🔓 เข้าสู่ระบบผู้ให้เช่า (${adminName}) สำเร็จแล้ว!`);
+      } else {
+        alert('❌ รหัส PIN ไม่ถูกต้อง (รหัสผ่านเริ่มต้นของระบบคือ 1234)');
+      }
+    };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
@@ -1425,7 +1447,7 @@
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_01"></script>
+  <script type="module" src="js/app.js?v=20260814_02"></script>
 </body>
 </html>
 
