@@ -399,10 +399,10 @@
                 <button type="button" onclick="switchTab('property-detail'); switchSubTab('gallery');" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition-all flex items-center gap-1.5">
                   <span>📸 คลังภาพ & การ์ดโปรโมท</span>
                 </button>
-                <button type="button" onclick="switchTab('contract')" class="px-4 py-2.5 bg-stone-900 hover:bg-stone-800 text-rose-400 font-bold text-xs rounded-xl border border-stone-800 transition-all flex items-center gap-1.5">
+                <button type="button" id="landing-quick-contract" onclick="switchTab('contract')" class="px-4 py-2.5 bg-stone-900 hover:bg-stone-800 text-rose-400 font-bold text-xs rounded-xl border border-stone-800 transition-all flex items-center gap-1.5">
                   <span>📄 พิมพ์สัญญาเช่าบ้าน A4</span>
                 </button>
-                <button type="button" onclick="switchTab('register-lessor')" class="px-4 py-2.5 bg-stone-900 hover:bg-stone-800 text-amber-400 font-bold text-xs rounded-xl border border-stone-800 transition-all flex items-center gap-1.5">
+                <button type="button" id="landing-quick-lessor" onclick="switchTab('register-lessor')" class="px-4 py-2.5 bg-stone-900 hover:bg-stone-800 text-amber-400 font-bold text-xs rounded-xl border border-stone-800 transition-all flex items-center gap-1.5">
                   <span>🔑 ลงทะเบียนผู้ให้เช่า</span>
                 </button>
               </div>
@@ -422,7 +422,7 @@
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- BENTO CARD 1 -->
-            <div class="youestates-card p-6 space-y-4 hover:border-emerald-500/40 transition-all cursor-pointer" onclick="switchTab('admin')">
+            <div id="bento-card-1" class="youestates-card p-6 space-y-4 hover:border-emerald-500/40 transition-all cursor-pointer" onclick="switchTab('admin')">
               <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 font-black text-xl flex items-center justify-center">
                 📊
               </div>
@@ -436,7 +436,7 @@
             </div>
 
             <!-- BENTO CARD 2 -->
-            <div class="youestates-card p-6 space-y-4 hover:border-emerald-500/40 transition-all cursor-pointer" onclick="switchTab('property-detail'); switchSubTab('gallery');">
+            <div id="bento-card-2" class="youestates-card p-6 space-y-4 hover:border-emerald-500/40 transition-all cursor-pointer" onclick="switchTab('property-detail'); switchSubTab('gallery');">
               <div class="w-12 h-12 rounded-2xl bg-teal-100 text-teal-700 font-black text-xl flex items-center justify-center">
                 📸
               </div>
@@ -450,7 +450,7 @@
             </div>
 
             <!-- BENTO CARD 3 -->
-            <div class="youestates-card p-6 space-y-4 hover:border-rose-500/40 transition-all cursor-pointer" onclick="switchTab('contract')">
+            <div id="bento-card-3" class="youestates-card p-6 space-y-4 hover:border-rose-500/40 transition-all cursor-pointer" onclick="switchTab('contract')">
               <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-700 font-black text-xl flex items-center justify-center">
                 📄
               </div>
@@ -464,7 +464,7 @@
             </div>
 
             <!-- BENTO CARD 4 -->
-            <div class="youestates-card p-6 space-y-4 hover:border-emerald-500/40 transition-all cursor-pointer" onclick="switchTab('tenant')">
+            <div id="bento-card-4" class="youestates-card p-6 space-y-4 hover:border-emerald-500/40 transition-all cursor-pointer" onclick="switchTab('tenant')">
               <div class="w-12 h-12 rounded-2xl bg-blue-100 text-blue-700 font-black text-xl flex items-center justify-center">
                 👤
               </div>
@@ -478,7 +478,7 @@
             </div>
 
             <!-- BENTO CARD 5 -->
-            <div class="youestates-card p-6 space-y-4 hover:border-emerald-500/40 transition-all cursor-pointer" onclick="switchTab('register-lessor')">
+            <div id="bento-card-5" class="youestates-card p-6 space-y-4 hover:border-emerald-500/40 transition-all cursor-pointer" onclick="switchTab('register-lessor')">
               <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 font-black text-xl flex items-center justify-center">
                 ☁️
               </div>
@@ -2742,7 +2742,7 @@
       <span class="text-lg">🌐</span>
       <span>หน้าแรก</span>
     </button>
-    <button onclick="switchTab('admin')" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 transition-colors">
+    <button id="mobile-nav-admin" onclick="switchTab('admin')" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 transition-colors">
       <span class="text-lg">📊</span>
       <span>ภาพรวม</span>
     </button>
@@ -2754,7 +2754,7 @@
       <span class="text-lg">👤</span>
       <span>ผู้เช่า</span>
     </button>
-    <button onclick="switchTab('contract')" class="flex flex-col items-center gap-1 text-[11px] font-semibold hover:text-white transition-colors">
+    <button id="mobile-nav-contract" onclick="switchTab('contract')" class="flex flex-col items-center gap-1 text-[11px] font-semibold hover:text-white transition-colors">
       <span class="text-lg">📄</span>
       <span>สัญญา A4</span>
     </button>
@@ -2763,10 +2763,10 @@
   <!-- FLOATING ACTION BUTTON (FAB) FOR QUICK ACTIONS -->
   <div class="fixed bottom-20 right-5 md:bottom-8 md:right-8 z-40 no-print group">
     <div id="fab-menu" class="hidden mb-3 flex flex-col gap-2.5 items-end transition-all duration-300">
-      <button onclick="toggleModal('modal-add-property')" class="bg-slate-900 text-white border border-slate-700 px-4 py-2.5 rounded-full text-xs font-bold shadow-xl hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap">
+      <button id="fab-menu-add-prop" onclick="toggleModal('modal-add-property')" class="bg-slate-900 text-white border border-slate-700 px-4 py-2.5 rounded-full text-xs font-bold shadow-xl hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap">
         <span>🏡</span> <span>+ เพิ่มทรัพย์สินใหม่</span>
       </button>
-      <button onclick="switchTab('contract')" class="bg-slate-900 text-white border border-slate-700 px-4 py-2.5 rounded-full text-xs font-bold shadow-xl hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap">
+      <button id="fab-menu-contract" onclick="switchTab('contract')" class="bg-slate-900 text-white border border-slate-700 px-4 py-2.5 rounded-full text-xs font-bold shadow-xl hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap">
         <span>📄</span> <span>สร้างสัญญาเช่า A4</span>
       </button>
       <button onclick="window.print()" class="bg-slate-900 text-white border border-slate-700 px-4 py-2.5 rounded-full text-xs font-bold shadow-xl hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap">

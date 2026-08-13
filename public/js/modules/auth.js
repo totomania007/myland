@@ -15,7 +15,16 @@ export const PERMISSION_REGISTRY = {
     'subtab-lessor',
     'pd-admin-action-buttons',
     'btn-upload-furniture-img',
-    'gallery-upload-btn-label'
+    'gallery-upload-btn-label',
+    'bento-card-1',
+    'bento-card-3',
+    'bento-card-5',
+    'landing-quick-contract',
+    'landing-quick-lessor',
+    'mobile-nav-admin',
+    'mobile-nav-contract',
+    'fab-menu-add-prop',
+    'fab-menu-contract'
   ],
   TENANT_ACCESSIBLE: [
     'tab-landing',
