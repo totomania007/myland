@@ -14,6 +14,17 @@ export const CONFIG = {
 export const state = {
   currentRole: 'tenant', // Default to 'tenant' for security; Landlord requires PIN 1234
   currentTenantId: '',
+  currentTenant: {
+    fullName: 'ผู้เช่า',
+    age: '-',
+    idCard: '-',
+    phone: '-',
+    address: '-',
+    startDate: '',
+    duration: '1',
+    endDate: '',
+    imageUrl: CONFIG.PLACEHOLDER_SVG
+  },
   currentPropertyId: '',
   currentGalleryFilter: 'all',
   propertiesState: [],
