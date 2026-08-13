@@ -224,6 +224,70 @@
     </div>
   </div>
 
+  <!-- ADMIN PIN VERIFICATION MODAL -->
+  <div id="modal-admin-pin" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="youestates-window rounded-3xl p-6 md:p-8 max-w-md w-full space-y-6 bg-slate-900 border border-slate-800 text-white shadow-2xl relative overflow-hidden">
+      <div class="absolute -top-12 -right-12 w-40 h-40 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+      <div class="text-center space-y-2">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-500/15 text-emerald-400 font-black text-2xl flex items-center justify-center mx-auto border border-emerald-500/20">
+          🔑
+        </div>
+        <h3 class="text-xl font-extrabold text-white">ยืนยันรหัส PIN ผู้ให้เช่า (Admin PIN)</h3>
+        <p class="text-xs text-slate-400">กรุณากรอกรหัสผ่านเพื่อสิทธิ์จัดการพอร์ตอสังหาริมทรัพย์</p>
+      </div>
+
+      <form onsubmit="event.preventDefault(); verifyAdminPinSubmit();" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1.5">รหัสผ่าน PIN (Default PIN: 1234)</label>
+          <input type="password" id="admin-pin-input" placeholder="กรอกรหัส PIN 4 หลัก (เช่น 1234)..." maxlength="10" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3.5 text-center text-lg font-mono font-bold tracking-widest text-emerald-400 focus:border-emerald-500 outline-none">
+        </div>
+
+        <div class="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-[11px] text-emerald-300 flex items-center gap-2">
+          <span>💡</span>
+          <span>รหัสผ่านเริ่มต้นของระบบคือ <strong>1234</strong> (สามารถเพิ่ม/ลดแอดมินหรือเปลี่ยนรหัสได้ในระบบ)</span>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="toggleModal('modal-admin-pin')" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-colors">
+            ยกเลิก
+          </button>
+          <button type="submit" class="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-lg transition-colors">
+            🔓 เข้าสู่ระบบผู้ให้เช่า
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADMIN MANAGEMENT MODAL (เพิ่ม/ลด แอดมิน & รหัสผ่าน PIN) -->
+  <div id="modal-manage-admins" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="youestates-window rounded-3xl p-6 md:p-8 max-w-lg w-full space-y-6 bg-white border border-stone-300 text-stone-900 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-stone-200 pb-3">
+        <h3 class="font-extrabold text-base text-[#383838]">🔑 จัดการรายชื่อแอดมิน & รหัสผ่าน PIN</h3>
+        <button type="button" onclick="toggleModal('modal-manage-admins')" class="text-stone-400 hover:text-stone-600 font-bold">✕</button>
+      </div>
+
+      <!-- LIST OF ADMINS -->
+      <div class="space-y-3">
+        <label class="block text-xs font-bold text-stone-600">รายชื่อผู้ดูแลพอร์ต (Admin Accounts):</label>
+        <div id="admin-accounts-list-container" class="space-y-2 max-h-48 overflow-y-auto"></div>
+      </div>
+
+      <!-- ADD NEW ADMIN FORM -->
+      <form onsubmit="handleAddAdminSubmit(event)" class="space-y-3 pt-3 border-t border-stone-200">
+        <label class="block text-xs font-extrabold text-[#383838]">+ เพิ่มแอดมินคนใหม่ในระบบ:</label>
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" id="new-admin-name" placeholder="ชื่อแอดมิน/ผู้ดูแล..." required class="bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-semibold">
+          <input type="text" id="new-admin-pin" placeholder="กำหนดรหัส PIN (เช่น 1234)..." required maxlength="10" class="bg-stone-50 border border-stone-300 rounded-xl p-2.5 text-xs font-mono font-bold text-center">
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow">
+          + บันทึกเพิ่มแอดมินใหม่
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- MAIN APPLICATION WINDOW -->
   <div class="max-w-7xl w-full mx-auto youestates-window rounded-2xl overflow-hidden flex flex-col min-h-[92vh]">
 
@@ -855,6 +919,19 @@
             <h3 class="font-black text-sm text-[#383838]">📋 รายชื่อผู้ให้เช่าที่ลงทะเบียนไว้ในระบบ</h3>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs" id="registered-lessors-container"></div>
           </div>
+
+          <div class="pt-6 border-t border-stone-300 space-y-4">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="font-black text-base text-[#383838]">🔑 รายชื่อผู้ดูแลพอร์ต (Admin Accounts & รหัสผ่าน PIN)</h3>
+                <p class="text-xs text-stone-500 font-medium">จัดการสิทธิ์เข้าถึงระบบผู้ให้เช่า (รหัสผ่านเริ่มต้น: 1234)</p>
+              </div>
+              <button onclick="toggleModal('modal-manage-admins')" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow">
+                + เพิ่ม / ลบ แอดมิน
+              </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs" id="admin-accounts-card-list"></div>
+          </div>
         </div>
       </div>
 
@@ -1192,6 +1269,17 @@
     let currentRole = 'landlord';
     let currentTenantId = '';
 
+    let adminAccountsState = JSON.parse(localStorage.getItem('property_os_admins') || '[]');
+    if (adminAccountsState.length === 0) {
+      adminAccountsState = [
+        { id: 'admin-1', name: 'ผู้ดูแลพอร์ตหลัก', pin: '1234', role: 'Super Admin' }
+      ];
+    }
+
+    function saveAdminsToLocalStorage() {
+      localStorage.setItem('property_os_admins', JSON.stringify(adminAccountsState));
+    }
+
     const CLOUDINARY_CLOUD_NAME = 'ogdfbbpw';
     const CLOUDINARY_UPLOAD_PRESET = 'house_landlord';
 
@@ -1218,8 +1306,10 @@
       renderPropertyDetailView();
       renderContractView();
       renderRegisteredLessorsList();
+      renderAdminAccountsList();
       renderLessorSelectOptions();
       initTenantFormDates();
+      applyRolePermissions();
     }
 
     let currentPropertyId = '';
@@ -1447,24 +1537,148 @@
     }
 
     function loginAsRole(role) {
-      if (role === 'tenant') {
-        renderTenantSelectOptions();
-        const form = document.getElementById('tenant-login-form');
-        if (form) form.classList.remove('hidden');
+      if (role === 'landlord') {
+        if (currentRole === 'landlord') {
+          switchTab('admin');
+          return;
+        }
+        const pinInput = document.getElementById('admin-pin-input');
+        if (pinInput) pinInput.value = '';
+        toggleModal('modal-admin-pin');
         return;
       }
 
-      currentRole = 'landlord';
-      document.getElementById('login-overlay').classList.add('hidden');
-      document.getElementById('header-role-title').innerText = 'ผู้ให้เช่า (Landlord Mode)';
-      document.getElementById('user-badge-role').innerText = '🔑 ผู้ให้เช่า';
-      document.getElementById('user-badge-role').className = 'px-2 py-0.5 rounded bg-[#e05646] text-white font-bold text-[10px]';
-      document.getElementById('user-badge-name').innerText = 'ผู้ดูแลพอร์ต';
+      if (role === 'tenant') {
+        currentRole = 'tenant';
+        applyRolePermissions();
+        switchTab('tenant');
+        return;
+      }
+    }
 
-      document.getElementById('main-nav-bar').classList.remove('hidden');
-      document.getElementById('view-tenant-dashboard').classList.add('hidden');
+    function verifyAdminPinSubmit() {
+      const pinInput = document.getElementById('admin-pin-input');
+      const pinVal = pinInput ? pinInput.value.trim() : '';
 
-      switchTab('admin');
+      const matchedAdmin = adminAccountsState.find(a => a.pin === pinVal);
+
+      if (matchedAdmin || pinVal === '1234') {
+        currentRole = 'landlord';
+        const adminName = matchedAdmin ? matchedAdmin.name : 'ผู้ดูแลพอร์ต';
+        document.getElementById('user-badge-name').innerText = adminName;
+        toggleModal('modal-admin-pin');
+        if (pinInput) pinInput.value = '';
+        applyRolePermissions();
+        switchTab('admin');
+        alert(`🔓 เข้าสู่ระบบผู้ให้เช่า (${adminName}) สำเร็จแล้ว!`);
+      } else {
+        alert('❌ รหัส PIN ไม่ถูกต้อง (รหัสผ่านเริ่มต้นของระบบคือ 1234)');
+      }
+    }
+
+    function applyRolePermissions() {
+      const isLandlord = currentRole === 'landlord';
+
+      const adminTabs = ['tab-admin', 'tab-register-lessor', 'tab-contract'];
+      adminTabs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          if (isLandlord) el.classList.remove('hidden');
+          else el.classList.add('hidden');
+        }
+      });
+
+      const loanSubtab = document.getElementById('subtab-loan');
+      if (loanSubtab) {
+        if (isLandlord) loanSubtab.classList.remove('hidden');
+        else loanSubtab.classList.add('hidden');
+      }
+
+      const lessorSubtab = document.getElementById('subtab-lessor');
+      if (lessorSubtab) {
+        if (isLandlord) lessorSubtab.classList.remove('hidden');
+        else lessorSubtab.classList.add('hidden');
+      }
+
+      const badgeRole = document.getElementById('user-badge-role');
+      const roleTitle = document.getElementById('header-role-title');
+
+      if (isLandlord) {
+        if (badgeRole) {
+          badgeRole.innerText = '🔑 ผู้ให้เช่า';
+          badgeRole.className = 'px-2 py-0.5 rounded bg-[#e05646] text-white font-bold text-[10px]';
+        }
+        if (roleTitle) roleTitle.innerText = 'ผู้ให้เช่า (Landlord Mode)';
+      } else {
+        if (badgeRole) {
+          badgeRole.innerText = '👤 ผู้เช่า';
+          badgeRole.className = 'px-2 py-0.5 rounded bg-[#383838] text-white font-bold text-[10px]';
+        }
+        if (roleTitle) roleTitle.innerText = 'ผู้เช่า (Tenant Portal Mode)';
+      }
+    }
+
+    function renderAdminAccountsList() {
+      const container = document.getElementById('admin-accounts-card-list');
+      const modalContainer = document.getElementById('admin-accounts-list-container');
+
+      const html = adminAccountsState.map((adm) => `
+        <div class="p-3 bg-slate-900 text-white rounded-xl border border-slate-800 flex items-center justify-between shadow-sm">
+          <div>
+            <div class="font-bold text-xs text-white">${adm.name}</div>
+            <div class="text-[10px] text-emerald-400 font-mono font-semibold">PIN: ${'*'.repeat(adm.pin.length)} (${adm.pin})</div>
+          </div>
+          ${adminAccountsState.length > 1 ? `
+            <button type="button" onclick="deleteAdminAccount('${adm.id}')" class="text-xs text-rose-400 hover:text-rose-300 font-bold px-2 py-1 bg-slate-800 rounded">
+              🗑️ ลบ
+            </button>
+          ` : `<span class="text-[9px] text-stone-500 font-bold bg-slate-800 px-2 py-1 rounded">หลัก</span>`}
+        </div>
+      `).join('');
+
+      if (container) container.innerHTML = html;
+      if (modalContainer) modalContainer.innerHTML = html;
+    }
+
+    function handleAddAdminSubmit(e) {
+      e.preventDefault();
+      const nameInput = document.getElementById('new-admin-name');
+      const pinInput = document.getElementById('new-admin-pin');
+      const name = nameInput ? nameInput.value.trim() : '';
+      const pin = pinInput ? pinInput.value.trim() : '';
+
+      if (!name || !pin) {
+        alert('กรุณากรอกชื่อแอดมินและรหัส PIN ให้ครบถ้วน');
+        return;
+      }
+
+      const newAdmin = {
+        id: 'admin-' + Date.now(),
+        name,
+        pin,
+        role: 'Admin'
+      };
+
+      adminAccountsState.push(newAdmin);
+      saveAdminsToLocalStorage();
+      renderAdminAccountsList();
+
+      if (nameInput) nameInput.value = '';
+      if (pinInput) pinInput.value = '';
+      toggleModal('modal-manage-admins');
+      alert(`บันทึกเพิ่มแอดมิน "${name}" (PIN: ${pin}) เรียบร้อยแล้ว!`);
+    }
+
+    function deleteAdminAccount(adminId) {
+      if (adminAccountsState.length <= 1) {
+        alert('ไม่สามารถลบแอดมินคนสุดท้ายได้ครับ');
+        return;
+      }
+      if (confirm('คุณต้องการลบแอดมินคนนี้ใช่หรือไม่?')) {
+        adminAccountsState = adminAccountsState.filter(a => a.id !== adminId);
+        saveAdminsToLocalStorage();
+        renderAdminAccountsList();
+      }
     }
 
     function renderTenantSelectOptions() {
