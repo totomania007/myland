@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node -e \"const fs=require('fs'); fs.mkdirSync('public', {recursive:true}); fs.copyFileSync('index.html', 'public/index.html'); fs.copyFileSync('demo_preview.html', 'public/demo_preview.html');\"",
+    "prebuild": "node -e \"const fs=require('fs'); fs.mkdirSync('public/js/modules', {recursive:true}); fs.copyFileSync('index.html', 'public/index.html'); fs.copyFileSync('demo_preview.html', 'public/demo_preview.html'); fs.cpSync('js', 'public/js', {recursive: true});\"",
     "build": "echo 'Static build ready'",
     "start": "next start",
     "lint": "next lint",
