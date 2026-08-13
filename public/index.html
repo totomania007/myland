@@ -652,7 +652,7 @@
               <select id="pd-property-selector" onchange="handleDetailPropertySwitch(this.value)" class="bg-[#e05646] text-white font-bold text-xs rounded px-3 py-1 outline-none cursor-pointer">
               </select>
             </div>
-            <span class="text-xs text-stone-300 font-normal">สเปก & เงินกู้</span>
+            <span class="text-xs text-stone-300 font-normal" id="pd-header-badge">สเปก & เงินกู้</span>
           </div>
 
           <div class="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -1589,9 +1589,28 @@
     function applyRolePermissions() {
       const isLandlord = currentRole === 'landlord';
 
-      // 1. Navigation Bar Main Tabs
-      const adminTabs = ['tab-admin', 'tab-register-lessor', 'tab-contract'];
-      adminTabs.forEach(id => {
+      // 1. Navigation Bar Main Tabs & Landlord Elements
+      const landlordElements = [
+        'tab-admin',
+        'tab-register-lessor',
+        'tab-contract',
+        'subtab-loan',
+        'subtab-lessor',
+        'pd-admin-action-buttons',
+        'btn-upload-furniture-img',
+        'gallery-upload-btn-label',
+        'bento-card-1',
+        'bento-card-3',
+        'bento-card-5',
+        'landing-quick-contract',
+        'landing-quick-lessor',
+        'mobile-nav-admin',
+        'mobile-nav-contract',
+        'fab-menu-add-prop',
+        'fab-menu-contract'
+      ];
+
+      landlordElements.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
           if (isLandlord) el.classList.remove('hidden');
@@ -1599,41 +1618,11 @@
         }
       });
 
-      // 2. Subtabs in Property Details
-      const loanSubtab = document.getElementById('subtab-loan');
-      if (loanSubtab) {
-        if (isLandlord) loanSubtab.classList.remove('hidden');
-        else loanSubtab.classList.add('hidden');
-      }
-
-      const lessorSubtab = document.getElementById('subtab-lessor');
-      if (lessorSubtab) {
-        if (isLandlord) lessorSubtab.classList.remove('hidden');
-        else lessorSubtab.classList.add('hidden');
-      }
-
-      // 3. Admin-only Action Buttons in Property Details
-      const pdAdminBtns = document.getElementById('pd-admin-action-buttons');
-      if (pdAdminBtns) {
-        if (isLandlord) pdAdminBtns.classList.remove('hidden');
-        else pdAdminBtns.classList.add('hidden');
-      }
-
-      const btnFurniture = document.getElementById('btn-upload-furniture-img');
-      if (btnFurniture) {
-        if (isLandlord) btnFurniture.classList.remove('hidden');
-        else btnFurniture.classList.add('hidden');
-      }
-
-      const btnGalleryUpload = document.getElementById('gallery-upload-btn-label');
-      if (btnGalleryUpload) {
-        if (isLandlord) btnGalleryUpload.classList.remove('hidden');
-        else btnGalleryUpload.classList.add('hidden');
-      }
-
-      // 4. Header Badges & Titles
+      // 2. Header Badges & Titles
       const badgeRole = document.getElementById('user-badge-role');
       const roleTitle = document.getElementById('header-role-title');
+      const tabPropertyBtn = document.getElementById('tab-property-detail');
+      const pdHeaderBadge = document.getElementById('pd-header-badge');
 
       if (isLandlord) {
         if (badgeRole) {
@@ -1641,12 +1630,16 @@
           badgeRole.className = 'px-2 py-0.5 rounded bg-[#e05646] text-white font-bold text-[10px]';
         }
         if (roleTitle) roleTitle.innerText = 'ผู้ให้เช่า (Landlord Mode)';
+        if (tabPropertyBtn) tabPropertyBtn.innerText = '🏡 รายละเอียดทรัพย์สิน & สินเชื่อ';
+        if (pdHeaderBadge) pdHeaderBadge.innerText = 'สเปก & เงินกู้';
       } else {
         if (badgeRole) {
           badgeRole.innerText = '👤 ผู้เช่า';
           badgeRole.className = 'px-2 py-0.5 rounded bg-[#383838] text-white font-bold text-[10px]';
         }
         if (roleTitle) roleTitle.innerText = 'ผู้เช่า (Tenant Portal Mode)';
+        if (tabPropertyBtn) tabPropertyBtn.innerText = '🏡 รายละเอียดทรัพย์สิน';
+        if (pdHeaderBadge) pdHeaderBadge.innerText = 'สเปกอสังหาริมทรัพย์';
       }
     }
 
@@ -1928,34 +1921,31 @@
 
     function switchSubTab(sub) {
       if (currentRole === 'tenant' && (sub === 'loan' || sub === 'lessor')) {
-        alert('🔒 ตารางผ่อนชำระธนาคาร สัญญาเงินกู้ และข้อมูลผู้ให้เช่า ถูกจำกัดสิทธิ์เฉพาะผู้ให้เช่าเท่านั้นครับ (กรอก PIN: 1234 เพื่อสลับโหมด)');
+        switchSubTab('specs');
         return;
       }
 
-      document.getElementById('subview-specs').classList.add('hidden');
-      if (document.getElementById('subview-gallery')) document.getElementById('subview-gallery').classList.add('hidden');
-      document.getElementById('subview-loan').classList.add('hidden');
-      document.getElementById('subview-lessor').classList.add('hidden');
+      ['specs', 'gallery', 'loan', 'lessor'].forEach(s => {
+        const view = document.getElementById(`subview-${s}`);
+        const tab = document.getElementById(`subtab-${s}`);
+        if (view) view.classList.add('hidden');
+        if (tab) {
+          tab.classList.remove('bg-[#383838]', 'text-white');
+          tab.classList.add('bg-stone-200', 'text-stone-700');
+        }
+      });
 
-      document.getElementById('subtab-specs').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
-      if (document.getElementById('subtab-gallery')) document.getElementById('subtab-gallery').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
-      document.getElementById('subtab-loan').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
-      document.getElementById('subtab-lessor').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
-
-      if (sub === 'specs') {
-        document.getElementById('subview-specs').classList.remove('hidden');
-        document.getElementById('subtab-specs').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
-      } else if (sub === 'gallery') {
-        if (document.getElementById('subview-gallery')) document.getElementById('subview-gallery').classList.remove('hidden');
-        if (document.getElementById('subtab-gallery')) document.getElementById('subtab-gallery').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
-        renderPropertyGallery();
-      } else if (sub === 'loan') {
-        document.getElementById('subview-loan').classList.remove('hidden');
-        document.getElementById('subtab-loan').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
-      } else if (sub === 'lessor') {
-        document.getElementById('subview-lessor').classList.remove('hidden');
-        document.getElementById('subtab-lessor').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
+      const activeView = document.getElementById(`subview-${sub}`);
+      const activeTab = document.getElementById(`subtab-${sub}`);
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeTab) {
+        activeTab.classList.remove('bg-stone-200', 'text-stone-700');
+        activeTab.classList.add('bg-[#383838]', 'text-white');
       }
+
+      if (sub === 'gallery') renderPropertyGallery();
+
+      applyRolePermissions();
     }
 
     function getRateForMonth(monthNum, sched) {

@@ -47,9 +47,11 @@ export function applyRolePermissions() {
     }
   });
 
-  // 2. Update Header Badges
+  // 2. Update Header Badges & Tab Labels
   const badgeRole = document.getElementById('user-badge-role');
   const roleTitle = document.getElementById('header-role-title');
+  const tabPropertyBtn = document.getElementById('tab-property-detail');
+  const pdHeaderBadge = document.getElementById('pd-header-badge');
 
   if (isLandlord) {
     if (badgeRole) {
@@ -57,12 +59,16 @@ export function applyRolePermissions() {
       badgeRole.className = 'px-2 py-0.5 rounded bg-[#e05646] text-white font-bold text-[10px]';
     }
     if (roleTitle) roleTitle.innerText = 'ผู้ให้เช่า (Landlord Mode)';
+    if (tabPropertyBtn) tabPropertyBtn.innerText = '🏡 รายละเอียดทรัพย์สิน & สินเชื่อ';
+    if (pdHeaderBadge) pdHeaderBadge.innerText = 'สเปก & เงินกู้';
   } else {
     if (badgeRole) {
       badgeRole.innerText = '👤 ผู้เช่า';
       badgeRole.className = 'px-2 py-0.5 rounded bg-[#383838] text-white font-bold text-[10px]';
     }
     if (roleTitle) roleTitle.innerText = 'ผู้เช่า (Tenant Portal Mode)';
+    if (tabPropertyBtn) tabPropertyBtn.innerText = '🏡 รายละเอียดทรัพย์สิน';
+    if (pdHeaderBadge) pdHeaderBadge.innerText = 'สเปกอสังหาริมทรัพย์';
   }
 }
 
