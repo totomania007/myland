@@ -1,0 +1,2340 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rental Property OS — Auto Lease End Date Calculation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-emerald: #10b981;
+      --color-emerald-dark: #059669;
+      --color-emerald-forest: #064e3b;
+      --color-coral: #e05646;
+      --color-coral-hover: #c94738;
+      --color-obsidian: #090d16;
+      --color-slate-card: #0f172a;
+      --color-bg-linen: #f4f3f0;
+      --font-ui: 'IBM Plex Sans Thai', 'Prompt', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-ui);
+      background-color: var(--color-bg-linen);
+      color: #1e293b;
+      min-height: 100vh;
+    }
+
+    /* 2026 Bento Grid & Glassmorphism System */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+
+    .youestates-window {
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.08);
+      border-radius: 1.75rem;
+    }
+
+    .youestates-card {
+      background: #ffffff;
+      border-radius: 1.5rem;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .youestates-card:hover {
+      border-color: rgba(16, 185, 129, 0.35);
+      box-shadow: 0 12px 30px -5px rgba(16, 185, 129, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .youestates-card-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      padding: 14px 22px;
+      border-top-left-radius: 1.5rem;
+      border-top-right-radius: 1.5rem;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-family: 'Prompt', sans-serif;
+    }
+
+    .glass-header {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .youestates-btn-coral {
+      background: linear-gradient(135deg, #e05646 0%, #c94738 100%);
+      color: #ffffff;
+      font-weight: 700;
+      border-radius: 0.875rem;
+      transition: all 0.2s ease;
+    }
+
+    .youestates-btn-coral:hover {
+      box-shadow: 0 6px 20px rgba(224, 86, 70, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .youestates-btn-emerald {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      font-weight: 700;
+      border-radius: 0.875rem;
+      transition: all 0.2s ease;
+    }
+
+    .youestates-btn-emerald:hover {
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .youestates-btn-charcoal {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      font-weight: 700;
+      border-radius: 0.875rem;
+      transition: all 0.2s ease;
+    }
+
+    .youestates-btn-charcoal:hover {
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.25);
+    }
+
+    .youestates-tab {
+      padding: 10px 20px;
+      font-weight: 700;
+      font-size: 13px;
+      transition: all 0.2s ease;
+      letter-spacing: 0.25px;
+      border-radius: 0.875rem;
+      font-family: 'Prompt', sans-serif;
+    }
+
+    .youestates-tab.active {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+    }
+
+    .youestates-tab.inactive {
+      background: rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+    }
+
+    .youestates-tab.inactive:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    /* Floating Action Button (FAB) */
+    .fab-btn {
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .fab-btn:hover {
+      transform: scale(1.08) rotate(3deg);
+    }
+
+    .sarabun-contract {
+      font-family: 'Sarabun', 'TH Sarabun PSK', sans-serif !important;
+      font-size: 16pt !important;
+      line-height: 1.6 !important;
+      color: #000000 !important;
+      padding: 1in !important;
+    }
+
+    @page {
+      size: A4;
+      margin: 1in;
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      .page-break { break-after: page; page-break-after: always; }
+      body { background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; }
+      .a4-container { box-shadow: none !important; border: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen p-2 md:p-6 flex flex-col justify-between">
+
+  <!-- ROLE SWITCHER LOGIN MODAL -->
+  <div id="login-overlay" class="fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="youestates-window rounded-2xl p-6 md:p-10 max-w-md w-full space-y-6 bg-white border border-stone-300 shadow-2xl">
+      <div class="text-center space-y-2">
+        <div class="flex items-center justify-center gap-2">
+          <span class="text-3xl font-black text-[#e05646] tracking-tight">You</span>
+          <span class="text-3xl font-black text-[#383838] tracking-tight">Estates</span>
+        </div>
+        <p class="text-xs text-stone-500 font-bold uppercase tracking-wider">Live Production Version — Clean State</p>
+      </div>
+
+      <div class="space-y-3 pt-2">
+        <button onclick="loginAsRole('landlord')" class="w-full p-4 rounded-xl youestates-btn-coral text-left flex items-center justify-between group shadow-sm">
+          <div>
+            <div class="font-bold text-sm">🔑 เข้าสู่ระบบผู้ให้เช่า (Landlord Mode)</div>
+            <div class="text-[11px] text-stone-100 font-normal mt-0.5">จัดการพอร์ต, ลงทะเบียนผู้ให้เช่า, Retention & สัญญา A4</div>
+          </div>
+          <span class="text-white group-hover:translate-x-1 transition-transform">➔</span>
+        </button>
+
+        <button onclick="loginAsRole('tenant')" class="w-full p-4 rounded-xl border-2 border-[#383838] bg-white text-[#383838] hover:bg-stone-50 transition-all text-left flex items-center justify-between group shadow-sm">
+          <div>
+            <div class="font-bold text-sm text-[#383838]">👤 เข้าสู่ระบบผู้เช่า (Tenant Portal)</div>
+            <div class="text-[11px] text-stone-500 font-normal mt-0.5">ดูระยะเวลาเช่า, ประวัติการจ่ายเงิน & กำหนดชำระ</div>
+          </div>
+          <span class="text-[#383838] group-hover:translate-x-1 transition-transform">➔</span>
+        </button>
+      </div>
+
+      <!-- TENANT LOGIN & SELF-REGISTRATION OPTIONS -->
+      <div id="tenant-login-form" class="hidden pt-3 border-t border-stone-200 space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">เลือกผู้เช่าที่มีในระบบ:</label>
+          <select id="tenantSelect" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-3 font-bold outline-none text-stone-800">
+          </select>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="confirmTenantLogin()" class="w-full youestates-btn-charcoal font-bold py-3 rounded-lg text-white">
+            เข้าสู่ระบบผู้เช่า
+          </button>
+          <button onclick="startTenantSelfRegistration()" class="w-full youestates-btn-coral font-bold py-3 rounded-lg text-white">
+            📝 ลงทะเบียนผู้เช่าใหม่
+          </button>
+        </div>
+      </div>
+
+      <div class="text-center text-[10px] text-stone-400 border-t border-stone-100 pt-3 font-medium">
+        ☁️ Cloudflare D1 + Cloudinary Storage (ogdfbbpw)
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION WINDOW -->
+  <div class="max-w-7xl w-full mx-auto youestates-window rounded-2xl overflow-hidden flex flex-col min-h-[92vh]">
+
+    <header class="no-print border-b border-stone-300 px-6 py-4 bg-white flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
+      <div class="flex items-center gap-3">
+        <div class="flex items-baseline">
+          <span class="text-2xl font-black text-[#e05646] tracking-tight">You</span>
+          <span class="text-2xl font-black text-[#383838] tracking-tight">Estates</span>
+        </div>
+        <span class="text-xs text-stone-400 font-bold border-l border-stone-300 pl-3 py-0.5" id="header-role-title">ผู้ให้เช่า (Landlord Mode)</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="text-xs text-right hidden md:block">
+          <span class="text-stone-400 font-bold uppercase tracking-wider text-[10px] block">CLOUDINARY STORAGE</span>
+          <strong class="text-emerald-600 font-black text-sm">● ogdfbbpw (Active)</strong>
+        </div>
+        <div class="flex items-center gap-2 bg-[#eae8e3] px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-800">
+          <span id="user-badge-role" class="px-2 py-0.5 rounded bg-[#e05646] text-white font-bold text-[10px]">🔑 ผู้ให้เช่า</span>
+          <span id="user-badge-name" class="font-bold text-[#383838]">ผู้ดูแลพอร์ต</span>
+          <button onclick="openLoginOverlay()" class="ml-2 text-stone-500 hover:text-[#e05646] text-[11px] font-bold underline">
+            สลับผู้ใช้
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- NAVIGATION BAR -->
+    <nav class="no-print bg-[#383838] px-4 py-2.5 shadow-inner" id="main-nav-bar">
+      <div class="flex items-center justify-center sm:justify-start gap-2 overflow-x-auto">
+        <button onclick="switchTab('admin')" id="tab-admin" class="youestates-tab active whitespace-nowrap">
+          📊 สรุปภาพรวมพอร์ต
+        </button>
+        <button onclick="switchTab('property-detail')" id="tab-property-detail" class="youestates-tab inactive whitespace-nowrap">
+          🏡 รายละเอียดทรัพย์สิน & สินเชื่อ
+        </button>
+        <button onclick="switchTab('register-lessor')" id="tab-register-lessor" class="youestates-tab inactive whitespace-nowrap">
+          🔑 ลงทะเบียนผู้ให้เช่า
+        </button>
+        <button onclick="switchTab('tenant')" id="tab-tenant" class="youestates-tab inactive whitespace-nowrap">
+          👤 ลงทะเบียนผู้เช่า
+        </button>
+        <button onclick="switchTab('contract')" id="tab-contract" class="youestates-tab inactive whitespace-nowrap">
+          📄 หนังสือสัญญาเช่า A4
+        </button>
+      </div>
+    </nav>
+
+    <!-- MAIN VIEWPORT CONTENT -->
+    <main class="flex-1 p-4 md:p-8 bg-[#f4f3f0] overflow-y-auto">
+
+      <!-- TENANT PORTAL -->
+      <div id="view-tenant-dashboard" class="hidden space-y-6 max-w-4xl mx-auto">
+        <div class="youestates-card overflow-hidden">
+          <div class="youestates-card-header flex justify-between items-center">
+            <span>👤 TENANT PORTAL — ข้อมูลสิทธิ์ผู้เช่า</span>
+            <span class="text-xs text-stone-300 font-normal">Live System</span>
+          </div>
+          <div class="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 class="text-2xl font-black text-[#383838]" id="tenant-dash-welcome">ยินดีต้อนรับผู้เช่า</h1>
+              <p class="text-xs text-stone-500 font-medium mt-1">รายละเอียดสเปกห้องพัก ระยะเวลาเช่าสะสม และตารางกำหนดชำระเงิน</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="switchTab('tenant')" class="px-4 py-2.5 bg-stone-200 hover:bg-stone-300 text-stone-800 rounded-lg text-xs font-bold shadow-sm">
+                ✏️ แก้ไขข้อมูลผู้เช่า
+              </button>
+              <button onclick="switchTab('contract')" class="youestates-btn-coral px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm">
+                📄 ดูสัญญาเช่าบ้าน A4
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="youestates-card p-5 space-y-1">
+            <span class="text-xs font-bold text-stone-400 uppercase tracking-wider block">🗓️ ระยะเวลาเช่าสะสม</span>
+            <div class="text-2xl font-black text-[#383838]" id="tenant-dash-months-elapsed">0 เดือน</div>
+            <div class="text-[11px] text-stone-500 font-medium" id="tenant-dash-start-date">ระบุในสัญญาเช่า</div>
+          </div>
+
+          <div class="youestates-card p-5 border-l-4 border-l-emerald-600 space-y-1">
+            <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider block">✅ จ่ายค่าเช่าแล้ว</span>
+            <div class="text-2xl font-black text-emerald-700" id="tenant-dash-months-paid">0 งวด</div>
+            <div class="text-[11px] text-emerald-700 font-bold" id="tenant-dash-sum-paid">ชำระสะสมรวม: ฿0</div>
+          </div>
+
+          <div class="youestates-card p-5 border-l-4 border-l-[#e05646] space-y-1 bg-stone-50">
+            <span class="text-xs font-bold text-[#e05646] uppercase tracking-wider block">⏳ กำหนดชำระงวดถัดไป</span>
+            <div class="text-2xl font-black text-[#e05646]" id="tenant-dash-days-due">-</div>
+            <div class="text-[11px] text-stone-600 font-bold" id="tenant-dash-next-due-date">ไม่มีค้างชำระ</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="youestates-card p-4">
+            <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">ทรัพย์สินที่เช่า</span>
+            <strong class="text-sm text-[#383838] font-extrabold" id="tenant-dash-unit">ระบุทรัพย์สิน</strong>
+          </div>
+          <div class="youestates-card p-4">
+            <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">ค่าเช่ารายเดือน</span>
+            <strong class="text-sm text-[#e05646] font-black" id="tenant-dash-rent">฿0 บาท/เดือน</strong>
+          </div>
+          <div class="youestates-card p-4">
+            <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">เงินประกันสัญญา</span>
+            <strong class="text-sm text-[#383838] font-bold" id="tenant-dash-deposit">฿0 บาท</strong>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="youestates-card overflow-hidden">
+            <div class="youestates-card-header flex justify-between items-center">
+              <span>🧾 ประวัติการชำระค่าเช่ารายเดือน</span>
+              <span class="text-xs text-stone-300 font-normal">ประวัติชำระเงิน</span>
+            </div>
+            <div class="p-5 space-y-2 text-xs max-h-[380px] overflow-y-auto pr-1" id="tenant-dash-payment-history"></div>
+          </div>
+
+          <div class="youestates-card overflow-hidden">
+            <div class="youestates-card-header flex justify-between items-center">
+              <span>📦 รายการเฟอร์นิเจอร์ส่งมอบ</span>
+              <span class="text-xs text-stone-300 font-normal">คลิกรูปเพื่อขยาย</span>
+            </div>
+            <div class="p-5 space-y-2 text-xs" id="tenant-dash-inventory"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 1: ADMIN DASHBOARD -->
+      <div id="view-admin" class="space-y-6 max-w-6xl mx-auto">
+        <div class="youestates-card bg-[#383838] text-white p-6 md:p-8 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-md">
+          <div>
+            <span class="px-3 py-1 bg-[#e05646] text-white font-bold text-xs rounded-sm uppercase tracking-wider">
+              PORTFOLIO MANAGEMENT
+            </span>
+            <h1 class="text-2xl font-black mt-2">สรุปภาพรวมพอร์ตอสังหาริมทรัพย์</h1>
+            <p class="text-xs text-stone-300 font-normal mt-1">จัดการอสังหาริมทรัพย์ ข้อมูลผู้ให้เช่า และสัญญาเช่ามาตรฐาน</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="switchTab('register-lessor')" class="bg-stone-700 hover:bg-stone-600 text-white px-4 py-3 rounded-lg text-xs font-bold shadow-md">
+              🔑 ลงทะเบียนผู้ให้เช่า
+            </button>
+            <button onclick="toggleModal('modal-add-property')" class="youestates-btn-coral px-5 py-3 rounded-lg text-xs font-bold shadow-md">
+              + เพิ่มทรัพย์สินใหม่
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="youestates-card p-5">
+            <div class="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">ยอดหนี้คงเหลือรวม</div>
+            <div class="text-2xl font-black text-[#383838]" id="m-principal">฿0</div>
+            <div class="w-full bg-stone-200 h-2 rounded-full overflow-hidden mt-3">
+              <div class="bg-[#e05646] h-full transition-all duration-500" id="m-progress-bar" style="width: 0%"></div>
+            </div>
+            <div class="text-[11px] text-stone-500 font-medium mt-2">ชำระเงินต้นแล้ว <strong class="text-[#e05646] font-bold" id="m-progress-txt">0%</strong></div>
+          </div>
+
+          <div class="youestates-card p-5">
+            <div class="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">ค่าเช่ารับรวม / เดือน</div>
+            <div class="text-2xl font-black text-[#383838]" id="m-income">฿0</div>
+            <div class="text-[11px] text-stone-500 font-medium mt-3">จากยูนิตที่มีผู้เช่า</div>
+          </div>
+
+          <div class="youestates-card p-5">
+            <div class="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">ค่างวดผ่อนรวม / เดือน</div>
+            <div class="text-2xl font-black text-[#383838]" id="m-installment">฿0</div>
+            <div class="text-[11px] text-stone-500 font-medium mt-3">ภาระค่างวดธนาคาร</div>
+          </div>
+
+          <div class="youestates-card p-5 border-2 border-[#e05646] bg-stone-50">
+            <div class="text-xs font-bold text-[#e05646] uppercase tracking-wider mb-1">Net Cashflow / เดือน</div>
+            <div class="text-2xl font-black text-[#e05646]" id="m-cashflow">฿0</div>
+            <div class="text-[11px] font-bold text-[#e05646] mt-3">กระแสเงินสดสุทธิ</div>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="flex justify-between items-center border-b border-stone-300 pb-2">
+            <h2 class="text-xs font-bold text-stone-500 tracking-wider uppercase">รายชื่ออสังหาริมทรัพย์ในพอร์ต</h2>
+            <button onclick="toggleModal('modal-add-property')" class="text-xs text-[#e05646] font-bold hover:underline">+ เพิ่มทรัพย์สิน</button>
+          </div>
+          <div id="propertyContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: PROPERTY DETAILS & RETENTION -->
+      <div id="view-property-detail" class="hidden space-y-6 max-w-6xl mx-auto">
+        <div class="youestates-card overflow-hidden">
+          <div class="youestates-card-header flex justify-between items-center">
+            <div class="flex items-center gap-2">
+              <span>🏡 เลือกทรัพย์สิน:</span>
+              <select id="pd-property-selector" onchange="handleDetailPropertySwitch(this.value)" class="bg-[#e05646] text-white font-bold text-xs rounded px-3 py-1 outline-none cursor-pointer">
+              </select>
+            </div>
+            <span class="text-xs text-stone-300 font-normal">สเปก & เงินกู้</span>
+          </div>
+
+          <div class="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 class="text-2xl font-black text-[#383838]" id="pd-name">ยังไม่มีอสังหาริมทรัพย์ที่เลือก</h1>
+              <p class="text-xs text-stone-500 font-normal mt-1" id="pd-address">กรุณากดเพิ่มทรัพย์สินใหม่ในระบบ</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+              <button onclick="toggleModal('modal-add-property')" class="flex-1 md:flex-none px-4 py-2.5 youestates-btn-coral text-white font-bold text-xs rounded-lg shadow-sm">
+                + เพิ่มทรัพย์สินใหม่
+              </button>
+              <button onclick="openEditPropertyDetailModal()" class="flex-1 md:flex-none px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs rounded-lg border border-stone-300">
+                ✏️ แก้ไขสเปก
+              </button>
+              <button onclick="openAmortizationModal()" class="flex-1 md:flex-none px-4 py-2.5 youestates-btn-charcoal text-white font-bold text-xs rounded-lg shadow-sm">
+                📊 ตารางผ่อน & Retention
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex border-b-2 border-stone-300 gap-2 text-xs font-bold select-none overflow-x-auto">
+          <button onclick="switchSubTab('specs')" id="subtab-specs" class="px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap">
+            🏡 ข้อมูลสเปก & เฟอร์นิเจอร์
+          </button>
+          <button onclick="switchSubTab('gallery')" id="subtab-gallery" class="px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap">
+            📸 คลังภาพ & การ์ดโปรโมท (Gallery & Promo)
+          </button>
+          <button onclick="switchSubTab('loan')" id="subtab-loan" class="px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap">
+            🏦 สัญญาเงินกู้ & Retention
+          </button>
+          <button onclick="switchSubTab('lessor')" id="subtab-lessor" class="px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap">
+            👤 ผู้ทำสัญญา & คลังเอกสาร
+          </button>
+        </div>
+
+        <div id="subview-specs" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="youestates-card p-6 space-y-4">
+            <h3 class="font-extrabold text-sm text-[#383838] border-b border-stone-200 pb-3">รายละเอียดทรัพย์สิน & ที่อยู่</h3>
+            <div class="space-y-3 text-xs">
+              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">ประเภททรัพย์สิน:</span> <strong class="text-stone-800 font-bold" id="pd-type">-</strong></div>
+              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">บ้านเลขที่:</span> <strong class="text-[#e05646] font-black" id="pd-houseno">-</strong></div>
+              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">รายละเอียดที่อยู่อสังหาฯ:</span> <strong class="text-stone-800 font-bold text-right" id="pd-full-address">-</strong></div>
+              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">ขนาดพื้นที่:</span> <strong class="text-stone-800 font-bold" id="pd-size">-</strong></div>
+              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">อัตราค่าเช่า/เดือน:</span> <strong class="text-stone-900 font-black" id="pd-rent">฿0 บาท</strong></div>
+              <div class="flex justify-between py-2 border-b border-stone-100"><span class="text-stone-400 font-medium">เงินประกันสัญญา:</span> <strong class="text-stone-800 font-bold" id="pd-deposit">฿0 บาท</strong></div>
+              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">มิเตอร์ไฟฟ้าเริ่มต้น:</span> <strong class="text-stone-800 font-semibold" id="pd-meter-elec">-</strong></div>
+              <div class="flex justify-between py-1.5"><span class="text-stone-400 font-medium">มิเตอร์น้ำเริ่มต้น:</span> <strong class="text-stone-800 font-semibold" id="pd-meter-water">-</strong></div>
+            </div>
+          </div>
+
+          <div class="youestates-card p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-stone-200 pb-3">
+              <h3 class="font-extrabold text-sm text-[#383838]">รายการเฟอร์นิเจอร์แนบท้ายสัญญา & รูปถ่าย</h3>
+              <button onclick="openEditPropertyDetailModal()" class="text-xs text-[#e05646] font-bold hover:underline">
+                📷 อัปโหลดรูปเฟอร์นิเจอร์
+              </button>
+            </div>
+            <div class="space-y-3 text-xs" id="pd-inventory-container"></div>
+          </div>
+        </div>
+
+        <!-- SUBVIEW: PHOTO GALLERY & PROMOTION SHOWCASE CARD -->
+        <div id="subview-gallery" class="hidden space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- LEFT 2 COLUMNS: INTERACTIVE PHOTO GALLERY ALBUMS -->
+            <div class="lg:col-span-2 youestates-card p-6 space-y-5">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-200 pb-3">
+                <div>
+                  <h3 class="font-extrabold text-base text-[#383838]">📸 คลังรูปถ่ายอสังหาริมทรัพย์ (Property Photo Gallery)</h3>
+                  <p class="text-xs text-stone-500 font-medium">รูปถ่ายตัวบ้าน/อาคาร ภายในห้อง และจุดเด่นสำหรับส่งโปรโมทให้ลูกค้า</p>
+                </div>
+                <label class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5 w-fit">
+                  <span>☁️ อัปโหลดรูปภาพใหม่</span>
+                  <input type="file" id="galleryUploadInput" accept="image/*" class="hidden" onchange="uploadPropertyGalleryImage(event)">
+                </label>
+              </div>
+
+              <!-- GALLERY FILTER BUTTONS -->
+              <div class="flex items-center gap-2 text-xs font-bold overflow-x-auto pb-1">
+                <button type="button" onclick="filterGalleryPhotos('all')" id="gfilter-all" class="px-3.5 py-1.5 rounded-lg bg-[#383838] text-white">ทั้งหมด (All)</button>
+                <button type="button" onclick="filterGalleryPhotos('exterior')" id="gfilter-exterior" class="px-3.5 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300">🏠 ภายนอก/อาคาร</button>
+                <button type="button" onclick="filterGalleryPhotos('interior')" id="gfilter-interior" class="px-3.5 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300">🛋️ ภายใน/เฟอร์ฯ</button>
+                <button type="button" onclick="filterGalleryPhotos('highlight')" id="gfilter-highlight" class="px-3.5 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300">✨ จุดเด่น/วิว</button>
+              </div>
+
+              <!-- GALLERY GRID CONTAINER -->
+              <div id="property-gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+            </div>
+
+            <!-- RIGHT 1 COLUMN: SHAREABLE PROMOTIONAL SHOWCASE CARD FOR CLIENTS -->
+            <div class="youestates-card p-6 space-y-4 border-2 border-emerald-500/40 bg-stone-900 text-white relative overflow-hidden">
+              <div class="flex justify-between items-center border-b border-stone-800 pb-3">
+                <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">🌟 PROMO CARD FOR CLIENTS</span>
+                <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded">พร้อมส่งลูกค้า</span>
+              </div>
+
+              <!-- PROMO CARD PREVIEW CONTAINER -->
+              <div id="pd-promo-card-preview" class="space-y-3 bg-stone-950 p-4 rounded-2xl border border-stone-800 shadow-xl">
+                <div class="relative w-full h-44 rounded-xl overflow-hidden bg-stone-800 border border-slate-800">
+                  <img id="pd-promo-cover-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%231e293b'><rect width='400' height='250'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-size='16'>ภาพปกอสังหาฯ</text></svg>" class="w-full h-full object-cover" alt="Cover Image">
+                  <span class="absolute top-2 right-2 px-2.5 py-1 bg-emerald-600 text-white font-black text-xs rounded-lg shadow">
+                    ให้เช่า
+                  </span>
+                </div>
+                <div>
+                  <h4 id="pd-promo-title" class="font-extrabold text-base text-white">ชื่อทรัพย์สิน</h4>
+                  <p id="pd-promo-location" class="text-xs text-stone-400">ที่อยู่อสังหาฯ</p>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-stone-800">
+                  <div>
+                    <span class="text-[10px] text-stone-400 block font-medium">อัตราค่าเช่า</span>
+                    <strong id="pd-promo-price" class="text-lg font-black text-emerald-400">฿0 /เดือน</strong>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[10px] text-stone-400 block font-medium">เงินประกัน</span>
+                    <span id="pd-promo-deposit" class="text-xs font-bold text-stone-300">฿0</span>
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap gap-1.5 pt-1" id="pd-promo-badges">
+                  <span class="px-2 py-0.5 bg-stone-800 text-stone-300 text-[10px] rounded-md font-semibold">✨ ตกแต่งครบพร้อมอยู่</span>
+                  <span class="px-2 py-0.5 bg-stone-800 text-stone-300 text-[10px] rounded-md font-semibold">📍 ทำเลดีเดินทางสะดวก</span>
+                </div>
+              </div>
+
+              <!-- PROMO ACTIONS -->
+              <div class="space-y-2 pt-2">
+                <button type="button" onclick="copyPropertyPromoLink()" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2">
+                  <span>📲 คัดลอกลิงก์การ์ดโปรโมทส่งลูกค้า</span>
+                </button>
+                <button type="button" onclick="window.print()" class="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-2">
+                  <span>🖨️ พิมพ์ / ดาวน์โหลดการ์ด PDF</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="subview-loan" class="hidden space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="youestates-card p-5 bg-stone-900 text-white">
+              <span class="text-xs text-stone-300 font-bold uppercase tracking-wider block">ยอดหนี้คงเหลือปัจจุบัน</span>
+              <div class="text-2xl font-black text-white mt-1" id="pd-balance-display">฿0</div>
+              <div class="text-[11px] text-stone-300 mt-2 font-medium" id="pd-balance-progress">-</div>
+            </div>
+
+            <div class="youestates-card p-5">
+              <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">ยอดเงินกู้เริ่มต้น</span>
+              <div class="text-xl font-bold text-[#383838] mt-1" id="pd-principal-display">฿0</div>
+              <div class="text-[11px] text-stone-500 mt-2">วงเงินกู้ตั้งต้น</div>
+            </div>
+
+            <div class="youestates-card p-5">
+              <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">ค่างวดผ่อนชำระ/เดือน</span>
+              <div class="text-xl font-bold text-[#e05646] mt-1" id="pd-installment-display">฿0</div>
+              <div class="text-[11px] text-stone-500 mt-2">กำหนดชำระรายเดือน</div>
+            </div>
+          </div>
+
+          <div class="youestates-card p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-stone-200 pb-3">
+              <h3 class="font-extrabold text-sm text-[#383838]">ประวัติอัตราดอกเบี้ย & กำหนดการ Retention ตามช่วงปี</h3>
+              <button onclick="openAmortizationModal()" class="text-xs text-[#e05646] font-bold hover:underline">
+                ⚙️ ปรับแต่งช่วงปี / เพิ่ม Retention
+              </button>
+            </div>
+            <div class="space-y-2" id="pd-rate-schedule-summary"></div>
+          </div>
+        </div>
+
+        <div id="subview-lessor" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="youestates-card p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-stone-200 pb-3">
+              <h3 class="font-extrabold text-sm text-[#383838]">ข้อมูลผู้ทำสัญญา (Designated Lessor)</h3>
+              <button onclick="switchTab('register-lessor')" class="text-xs text-[#e05646] font-bold hover:underline">🔑 ลงทะเบียนแก้ไขผู้ให้เช่า</button>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 rounded-xl bg-[#383838] text-white flex items-center justify-center text-xl font-black">L</div>
+              <div>
+                <h4 class="font-extrabold text-base text-[#383838]" id="pd-lessor-display">ผู้ให้เช่า</h4>
+                <p class="text-xs text-stone-500 mt-0.5" id="pd-lessor-detail">บัตรประชาชน: -</p>
+                <p class="text-xs text-stone-500 font-medium" id="pd-lessor-address-detail">ที่อยู่: -</p>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-stone-100 flex items-center justify-between">
+              <span class="text-xs text-stone-500 font-medium">สำเนาบัตรประชาชนผู้ให้เช่า (Cloudinary ogdfbbpw):</span>
+              <button onclick="triggerLessorFileInput()" class="text-xs text-[#e05646] font-bold hover:underline">☁️ อัปโหลดขึ้น Cloudinary</button>
+              <input type="file" id="lessorFile" accept="image/*" class="hidden" onchange="uploadToCloudinaryAndPreview(event, 'lessor')">
+            </div>
+            <div class="w-full h-36 border border-stone-300 rounded-xl overflow-hidden bg-stone-100 flex items-center justify-center cursor-pointer" onclick="openMediaPreview('สำเนาบัตรประชาชนผู้ให้เช่า', document.getElementById('pd-lessor-card-img').src)">
+              <img id="pd-lessor-card-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250' fill='none'><rect width='400' height='250' rx='12' fill='%23e2ded8'/><path d='M160 90C160 112.091 142.091 130 120 130C97.9086 130 80 112.091 80 90C80 67.9086 97.9086 50 120 50C142.091 50 160 67.9086 160 90Z' fill='%23a8a29e'/><path d='M50 200C50 161.34 81.3401 130 120 130C158.66 130 190 161.34 190 200H50Z' fill='%23a8a29e'/><rect x='220' y='65' width='130' height='14' rx='4' fill='%23a8a29e'/><rect x='220' y='95' width='110' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='115' width='90' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='145' width='120' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='165' width='80' height='10' rx='4' fill='%23a8a29e'/></svg>" alt="Lessor ID Card" class="w-full h-full object-cover">
+            </div>
+          </div>
+
+          <div class="youestates-card p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-stone-200 pb-3">
+              <h3 class="font-extrabold text-sm text-[#383838]">คลังไฟล์สแกนเอกสารการกู้ธนาคาร</h3>
+              <button onclick="toggleModal('modal-upload-bank-doc')" class="text-xs text-[#e05646] font-bold hover:underline">
+                📁 แนบเอกสารใหม่
+              </button>
+            </div>
+            <div class="space-y-3 text-xs" id="pd-bank-docs-container"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- VIEW NEW: REGISTER LANDLORD / LESSOR FORM -->
+      <div id="view-register-lessor" class="hidden space-y-6 max-w-3xl mx-auto">
+        <div class="youestates-card p-6 md:p-8 space-y-6">
+          <div class="border-b border-stone-200 pb-4 flex justify-between items-center">
+            <div>
+              <h2 class="text-xl font-black text-[#383838]">🔑 แบบฟอร์มลงทะเบียนผู้ให้เช่า (Landlord Onboarding)</h2>
+              <p class="text-xs text-stone-500 font-medium mt-1">กรอกชื่อผู้ให้เช่าโดยตรง และอัปโหลดสำเนาบัตรประชาชนขึ้น Cloudinary Storage (ogdfbbpw)</p>
+            </div>
+            <span class="px-3 py-1 bg-[#383838] text-white font-bold text-xs rounded">LESSOR REGISTRATION</span>
+          </div>
+
+          <form onsubmit="handleLessorRegisterTabSubmit(event)" class="space-y-4 text-xs">
+            <div class="grid grid-cols-3 gap-3">
+              <div class="col-span-2">
+                <label class="block font-bold text-stone-700 mb-1">ชื่อ-นามสกุล ผู้ให้เช่าตามบัตรประชาชน</label>
+                <input type="text" id="reg-lp-fullname" required placeholder="เช่น นายสมชาย ใจดี" class="w-full bg-stone-100 border border-stone-300 rounded-lg px-3.5 py-2.5 text-stone-800 outline-none focus:bg-white focus:border-[#e05646] font-medium">
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">อายุ (ปี)</label>
+                <input type="number" id="reg-lp-age" required placeholder="45" class="w-full bg-stone-100 border border-stone-300 rounded-lg px-3.5 py-2.5 text-stone-800 outline-none focus:bg-white focus:border-[#e05646] font-medium">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">เลขบัตรประชาชน 13 หลัก</label>
+                <input type="text" id="reg-lp-idcard" required placeholder="1-1004-99999-99-9" class="w-full bg-stone-100 border border-stone-300 rounded-lg px-3.5 py-2.5 text-stone-800 outline-none focus:bg-white focus:border-[#e05646] font-medium">
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">เบอร์โทรศัพท์ติดต่อ</label>
+                <input type="tel" id="reg-lp-phone" placeholder="089-999-8888" class="w-full bg-stone-100 border border-stone-300 rounded-lg px-3.5 py-2.5 text-stone-800 outline-none focus:bg-white focus:border-[#e05646] font-medium">
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-bold text-stone-700 mb-1">ที่อยู่ผู้ให้เช่าตามบัตรประชาชน</label>
+              <input type="text" id="reg-lp-address" required placeholder="บ้านเลขที่..." class="w-full bg-stone-100 border border-stone-300 rounded-lg px-3.5 py-2.5 text-stone-800 outline-none focus:bg-white focus:border-[#e05646] font-medium">
+            </div>
+
+            <div>
+              <label class="block font-bold text-stone-700 mb-1">สำเนาบัตรประชาชนผู้ให้เช่า (Cloudinary Cloud Storage: ogdfbbpw)</label>
+              <div class="border-2 border-dashed border-stone-300 hover:border-[#e05646] rounded-xl p-6 text-center bg-stone-50 cursor-pointer transition-colors" onclick="triggerLessorTabFileInput()">
+                <input type="file" id="lessorTabFile" accept="image/*" class="hidden" onchange="uploadToCloudinaryAndPreview(event, 'lessor-tab')">
+                <div class="text-xs font-bold text-stone-700" id="lessorTabFileText">☁️ คลิกเพื่อเลือกไฟล์รูปภาพบัตรประชาชนผู้ให้เช่า (Cloudinary house_landlord)</div>
+                <div class="text-[10px] text-stone-400 mt-1">ไฟล์จะแนบเป็น เอกสารแนบท้าย ๓ ในหนังสือสัญญาเช่าบ้าน A4</div>
+              </div>
+            </div>
+
+            <button type="submit" class="w-full youestates-btn-coral font-bold py-3 rounded-lg text-white transition-all shadow-sm text-xs mt-2">
+              💾 บันทึกลงทะเบียนข้อมูลผู้ให้เช่า & ซิงค์ลงสัญญา A4
+            </button>
+          </form>
+
+          <div class="pt-4 border-t border-stone-200 space-y-3">
+            <h3 class="font-black text-sm text-[#383838]">📋 รายชื่อผู้ให้เช่าที่ลงทะเบียนไว้ในระบบ</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs" id="registered-lessors-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 3: TENANT ONBOARDING FORM WITH AUTO LEASE DATES CALCULATION -->
+      <div id="view-tenant" class="hidden space-y-6 max-w-2xl mx-auto">
+        <div class="youestates-card p-6 md:p-8 space-y-6">
+          <div class="border-b border-stone-200 pb-4 flex justify-between items-center">
+            <div>
+              <h2 class="text-xl font-black text-[#383838]">👤 แบบฟอร์มลงทะเบียนผู้เช่า (Tenant Onboarding)</h2>
+              <p class="text-xs text-stone-500 font-medium mt-1">ระบุวันที่เริ่มเช่า ระบบคำนวณวันสิ้นสุดสัญญา 1 ปีให้อัตโนมัติ</p>
+            </div>
+            <span class="px-3 py-1 bg-[#383838] text-white font-bold text-xs rounded uppercase">LEASE DATES AUTO-CALCULATOR</span>
+          </div>
+
+          <form onsubmit="handleTenantSubmit(event)" class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-stone-700 mb-1">เลือกอสังหาริมทรัพย์ที่เช่า</label>
+              <select id="t-property-bind" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-3 font-bold text-stone-800">
+              </select>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div class="col-span-2">
+                <label class="block font-bold text-stone-700 mb-1">ชื่อ-นามสกุล ผู้เช่าจริง</label>
+                <input type="text" id="t-fullname" required placeholder="นายสมชาย ใจดี" class="w-full bg-stone-100 border border-stone-300 rounded-lg px-3.5 py-2.5 text-stone-800 outline-none focus:bg-white focus:border-[#e05646] font-medium">
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">อายุ (ปี)</label>
+                <input type="number" id="t-age" required placeholder="35" class="w-full bg-stone-100 border border-stone-300 rounded-lg px-3.5 py-2.5 text-stone-800 outline-none focus:bg-white focus:border-[#e05646] font-medium">
+              </div>
+            </div>
+
+            <!-- NEW FIELD: START DATE & DURATION & AUTO END DATE CALCULATION -->
+            <div class="p-4 bg-stone-100 rounded-xl border border-stone-300 space-y-3">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-bold text-stone-700 mb-1">🗓️ วันที่เริ่มสัญญาเช่า</label>
+                  <input type="date" id="t-startdate" required onchange="calculateLeaseEndDate()" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-bold text-[#383838]">
+                </div>
+                <div>
+                  <label class="block font-bold text-stone-700 mb-1">⏳ ระยะเวลาสัญญาเช่า</label>
+                  <select id="t-duration" onchange="calculateLeaseEndDate()" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-bold text-[#383838]">
+                    <option value="1" selected>1 ปี (12 เดือน)</option>
+                    <option value="2">2 ปี (24 เดือน)</option>
+                    <option value="3">3 ปี (36 เดือน)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="pt-2 border-t border-stone-300 flex justify-between items-center">
+                <span class="text-stone-600 font-bold">🏁 วันที่สิ้นสุดสัญญาเช่า (ระบบคำนวณให้อัตโนมัติ):</span>
+                <strong class="text-sm font-black text-[#e05646] bg-white px-3 py-1 rounded border border border-[#e05646]" id="t-enddate-display">-</strong>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">เลขบัตรประชาชน 13 หลัก</label>
+                <input type="text" id="t-idcard" required placeholder="1-1004-99999-99-9" class="w-full bg-stone-100 border border-stone-300 rounded-lg px-3.5 py-2.5 text-stone-800 outline-none focus:bg-white focus:border-[#e05646] font-medium">
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">เบอร์โทรศัพท์</label>
+                <input type="tel" id="t-phone" required placeholder="081-234-5678" class="w-full bg-stone-100 border border-stone-300 rounded-lg px-3.5 py-2.5 text-stone-800 outline-none focus:bg-white focus:border-[#e05646] font-medium">
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-bold text-stone-700 mb-1">ที่อยู่ตามบัตรประชาชนผู้เช่า</label>
+              <input type="text" id="t-address" required placeholder="บ้านเลขที่ 123/45..." class="w-full bg-stone-100 border border-stone-300 rounded-lg px-3.5 py-2.5 text-stone-800 outline-none focus:bg-white focus:border-[#e05646] font-medium">
+            </div>
+
+            <div>
+              <label class="block font-bold text-stone-700 mb-1">สำเนาบัตรประชาชนผู้เช่า (Cloudinary Cloud Storage: ogdfbbpw)</label>
+              <div class="border-2 border-dashed border-stone-300 hover:border-[#e05646] rounded-xl p-6 text-center bg-stone-50 cursor-pointer transition-colors" onclick="triggerFileInput()">
+                <input type="file" id="tenantFile" accept="image/*" class="hidden" onchange="uploadToCloudinaryAndPreview(event, 'tenant')">
+                <div class="text-xs font-bold text-stone-700" id="fileText">☁️ คลิกอัปโหลดรูปภาพบัตรประชาชนขึ้น Cloudinary (house_landlord)</div>
+                <div class="text-[10px] text-stone-400 mt-1">ไฟล์สแกนจริงสำหรับจัดเก็บและแนบท้ายสัญญาเช่า A4</div>
+              </div>
+              <div id="imagePreviewContainer" class="hidden mt-3 text-center">
+                <img id="imagePreview" src="" alt="Card Preview" class="max-h-32 mx-auto rounded-lg border border-stone-300 cursor-pointer" onclick="openMediaPreview('สำเนาบัตรประชาชนผู้เช่า', this.src)">
+              </div>
+            </div>
+
+            <button type="submit" class="w-full youestates-btn-coral font-bold py-3 rounded-lg text-white transition-all shadow-sm text-xs mt-2">
+              💾 บันทึกผู้เช่าลงระบบ & ออกสัญญาเช่าทันที
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- VIEW 4: CONTRACT GENERATOR (A4 16PT TH SARABUN) -->
+      <div id="view-contract" class="hidden space-y-6 max-w-5xl mx-auto">
+        <div class="flex justify-between items-center no-print youestates-card p-4">
+          <div>
+            <h3 class="font-extrabold text-[#383838] text-sm">สัญญาเช่าบ้าน (TH Sarabun 16pt — ขอบ 1 นิ้ว)</h3>
+            <p class="text-xs text-stone-400 font-medium">สัญญามาตรฐาน 7 ข้อ พร้อมรูปเฟอร์นิเจอร์และบัตรประชาชนแนบท้ายครบชุด</p>
+          </div>
+          <button onclick="window.print()" class="youestates-btn-coral text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-sm flex items-center gap-2">
+            🖨️ พิมพ์สัญญา A4 (Print)
+          </button>
+        </div>
+
+        <div class="a4-container sarabun-contract bg-white text-black shadow-xl relative space-y-8 border border-stone-300 rounded-sm">
+          <div class="relative border-b-2 border-dashed border-stone-400 pb-12">
+            <div class="absolute top-0 right-0 border border-black px-3 py-0.5 text-xs font-bold">ต้นฉบับ (Original)</div>
+            
+            <div class="text-center font-bold text-2xl mb-6 tracking-wide">หนังสือสัญญาเช่าบ้าน</div>
+            
+            <div class="text-right mb-4">
+              สัญญานี้ทำที่: <span id="c-place-1" class="font-bold">-</span><br>
+              วันที่: <span id="c-date-1" class="font-bold">-</span>
+            </div>
+
+            <div class="space-y-3 text-justify">
+              <p>ระหว่าง <strong><span id="c-lessor-name-1">ผู้ให้เช่า</span></strong> อายุ <span id="c-lessor-age-1">-</span> ปี อยู่ที่ <span id="c-lessor-address-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ผู้ให้เช่า”</strong> ฝ่ายหนึ่ง</p>
+              <p>กับ <strong><span id="c-lessee-name-1">ผู้เช่า</span></strong> อายุ <span id="c-lessee-age-1">-</span> ปี อยู่ที่ <span id="c-lessee-address-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ผู้เช่า”</strong> อีกฝ่ายหนึ่ง</p>
+
+              <p class="indent-8 font-semibold">ทั้งสองฝ่ายตกลงทำสัญญากันไว้มีข้อความดังต่อไปนี้</p>
+
+              <p><strong>ข้อ ๑</strong> ผู้ให้เช่าตกลงให้เช่าและผู้เช่าตกลงรับเช่าบ้านเลขที่ <strong><span id="c-house-no-1">-</span></strong> ซึ่งอยู่ที่ <span id="c-full-address-1">ถนน/แขวง/เขต...</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ทรัพย์สิน”</strong> มีกำหนดเวลา <strong><span id="c-duration-1">1</span> ปี</strong> เพื่อใช้เป็นที่อยู่อาศัย นับตั้งแต่วันที่ <strong><span id="c-start-date-1">-</span></strong> ถึงวันที่ <strong><span id="c-end-date-1">-</span></strong> และผู้เช่ายอมเสียค่าเช่าให้เดือนละ <strong><span id="c-rent-1">0</span> บาท (<span id="c-rent-text-1">ศูนย์บาทถ้วน</span>)</strong> มีกำหนดชำระเงินค่าเช่าทุกวันที่ <strong><span id="c-pay-day-1">5</span></strong> ของทุกๆ เดือน</p>
+              <p><strong>ข้อ ๒</strong> เพื่อเป็นการประกันในการปฏิบัติตามสัญญาเช่า ผู้เช่าตกลงมอบเงินประกันการเช่าจำนวน <strong><span id="c-deposit-1">0</span> บาท (<span id="c-deposit-text-1">ศูนย์บาทถ้วน</span>)</strong> ให้แก่ผู้ให้เช่าเรียบร้อยแล้วในวันทำสัญญาฉบับนี้</p>
+
+              <p><strong>ข้อ ๓</strong> ผู้เช่าสัญญาว่าจะชำระค่าน้ำ ค่าไฟฟ้า ค่าภาษี และบำรุงรักษาอาคารให้อยู่ในสภาพดี ไม่ให้เช่าช่วง และไม่กระทำสิ่งผิดกฎหมายในสถานที่เช่า</p>
+              <p><strong>ข้อ ๔</strong> ผู้ให้เช่าสัญญาว่าจะออกใบรับเงินค่าเช่าทุกคราว และซ่อมแซมทรัพย์สินตามหน้าที่ผู้ให้เช่า</p>
+              <p><strong>ข้อ ๕</strong> ถ้าผู้เช่าไม่ปฏิบัติตามสัญญา ผู้ให้เช่ามีสิทธิบอกเลิกสัญญาเช่าได้ทันที</p>
+              <p><strong>ข้อ ๖</strong> เมื่อสัญญาเช่าระงับสิ้นไป ผู้ให้เช่ามีสิทธิเข้าครอบครองทรัพย์สินและขนย้ายทรัพย์สินของผู้เช่าออกได้</p>
+              <p><strong>ข้อ ๗</strong> ในวันทำสัญญานี้ผู้เช่าได้ตรวจตราทรัพย์สินที่เช่าแล้ว เห็นว่ามีสภาพดีและเป็นปกติดีทุกประการ</p>
+            </div>
+
+            <div class="mt-8 pt-4 border-t border-slate-400">
+              <div class="font-bold text-sm mb-3 text-slate-800 flex justify-between items-center">
+                <span>เอกสารแนบท้าย ๑: รายการและรูปถ่ายเฟอร์นิเจอร์/เครื่องใช้ไฟฟ้า ภายในทรัพย์สินที่เช่า</span>
+              </div>
+              <table class="w-full text-xs border-collapse border border-slate-400">
+                <thead>
+                  <tr class="bg-slate-100 border-b border-slate-400">
+                    <th class="border border-slate-400 p-2 text-center w-12">ลำดับ</th>
+                    <th class="border border-slate-400 p-2 text-left">รายการเฟอร์นิเจอร์</th>
+                    <th class="border border-slate-400 p-2 text-center w-24">จำนวน</th>
+                    <th class="border border-slate-400 p-2 text-center w-24">สภาพ</th>
+                    <th class="border border-slate-400 p-2 text-center w-36">ภาพถ่ายส่งมอบ</th>
+                  </tr>
+                </thead>
+                <tbody id="c-inventory-table-body"></tbody>
+              </table>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-300 grid grid-cols-2 gap-6">
+              <div>
+                <div class="text-xs font-bold text-slate-800 mb-1">เอกสารแนบท้าย ๒: สำเนาบัตรประชาชนผู้เช่า</div>
+                <div class="w-full h-32 border border-slate-400 rounded overflow-hidden bg-slate-100 flex items-center justify-center cursor-pointer" onclick="openMediaPreview('สำเนาบัตรประชาชนผู้เช่า', document.getElementById('c-card-img-1').src)">
+                  <img id="c-card-img-1" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250' fill='none'><rect width='400' height='250' rx='12' fill='%23e2ded8'/><path d='M160 90C160 112.091 142.091 130 120 130C97.9086 130 80 112.091 80 90C80 67.9086 97.9086 50 120 50C142.091 50 160 67.9086 160 90Z' fill='%23a8a29e'/><path d='M50 200C50 161.34 81.3401 130 120 130C158.66 130 190 161.34 190 200H50Z' fill='%23a8a29e'/><rect x='220' y='65' width='130' height='14' rx='4' fill='%23a8a29e'/><rect x='220' y='95' width='110' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='115' width='90' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='145' width='120' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='165' width='80' height='10' rx='4' fill='%23a8a29e'/></svg>" alt="Lessee ID Card Attachment" class="w-full h-full object-cover grayscale">
+                </div>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-800 mb-1">เอกสารแนบท้าย ๓: สำเนาบัตรประชาชนผู้ให้เช่า</div>
+                <div class="w-full h-32 border border-slate-400 rounded overflow-hidden bg-slate-100 flex items-center justify-center cursor-pointer" onclick="openMediaPreview('สำเนาบัตรประชาชนผู้ให้เช่า', document.getElementById('c-lessor-card-img-1').src)">
+                  <img id="c-lessor-card-img-1" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250' fill='none'><rect width='400' height='250' rx='12' fill='%23e2ded8'/><path d='M160 90C160 112.091 142.091 130 120 130C97.9086 130 80 112.091 80 90C80 67.9086 97.9086 50 120 50C142.091 50 160 67.9086 160 90Z' fill='%23a8a29e'/><path d='M50 200C50 161.34 81.3401 130 120 130C158.66 130 190 161.34 190 200H50Z' fill='%23a8a29e'/><rect x='220' y='65' width='130' height='14' rx='4' fill='%23a8a29e'/><rect x='220' y='95' width='110' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='115' width='90' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='145' width='120' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='165' width='80' height='10' rx='4' fill='%23a8a29e'/></svg>" alt="Lessor ID Card Attachment" class="w-full h-full object-cover grayscale">
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-12 pt-6 border-t border-slate-400 grid grid-cols-2 gap-8 text-center text-xs">
+              <div>
+                <div class="mb-12 font-bold">ลงชื่อ..........................................................ผู้ให้เช่า</div>
+                <div>(<span id="sig-lessor-1">ผู้ให้เช่า</span>)</div>
+              </div>
+              <div>
+                <div class="mb-12 font-bold">ลงชื่อ..........................................................ผู้เช่า</div>
+                <div>(<span id="sig-lessee-1">ผู้เช่า</span>)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- MODALS -->
+  <div id="modal-amortization-table" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="youestates-card p-6 md:p-8 max-w-4xl w-full space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-stone-200 pb-3">
+        <h3 class="font-black text-base text-[#383838]">📊 ตารางผ่อนชำระ & ตั้งค่า Retention ตามช่วงปี</h3>
+        <button onclick="toggleModal('modal-amortization-table')" class="text-stone-400 hover:text-stone-700 font-bold">✕</button>
+      </div>
+
+      <div class="bg-stone-100 p-4 rounded-xl space-y-3 text-xs">
+        <div class="grid grid-cols-3 gap-3">
+          <div><label class="block text-stone-600 font-bold mb-1">ยอดกู้เริ่มต้น (บาท)</label><input type="number" id="amo-principal" value="0" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-bold text-[#383838]"></div>
+          <div><label class="block text-stone-600 font-bold mb-1">ค่างวด/เดือน (บาท)</label><input type="number" id="amo-installment" value="0" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-bold text-[#e05646]"></div>
+          <div><label class="block text-stone-600 font-bold mb-1">เริ่มผ่อนสัญญา</label><input type="date" id="amo-startdate" value="" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-bold text-[#383838]"></div>
+        </div>
+
+        <div class="pt-2 border-t border-stone-300">
+          <div class="flex justify-between items-center mb-2">
+            <label class="font-bold text-[#383838]">รายการดอกเบี้ยตามช่วงปี (Retention Schedule):</label>
+            <button type="button" onclick="addRatePeriodRow()" class="px-3 py-1.5 youestates-btn-coral text-white rounded-lg font-bold text-[11px] shadow-sm">+ เพิ่มช่วงปี Retention</button>
+          </div>
+          <div class="space-y-2" id="rate-periods-editor-container"></div>
+        </div>
+
+        <div class="flex justify-end pt-1">
+          <button type="button" onclick="applyAmortizationEdit()" class="px-6 py-2.5 youestates-btn-charcoal text-white font-bold rounded-lg text-xs shadow-sm">💾 คำนวณใหม่ & บันทึกตารางผ่อน</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 text-xs">
+        <div class="youestates-card p-3"><span class="text-stone-400 font-bold uppercase tracking-wider block text-[10px]">ยอดหนี้คงเหลือปัจจุบัน:</span><strong class="text-lg font-black text-[#383838]" id="amo-sum-balance">฿0</strong></div>
+        <div class="youestates-card p-3"><span class="text-stone-400 font-bold uppercase tracking-wider block text-[10px]">ชำระเงินต้นแล้ว:</span><strong class="text-lg font-black text-emerald-700" id="amo-sum-paid-princ">฿0</strong></div>
+        <div class="youestates-card p-3"><span class="text-stone-400 font-bold uppercase tracking-wider block text-[10px]">ดอกเบี้ยจ่ายรวม:</span><strong class="text-lg font-black text-stone-800" id="amo-sum-paid-int">฿0</strong></div>
+      </div>
+
+      <div class="overflow-x-auto border border-stone-300 rounded-lg max-h-72 overflow-y-auto">
+        <table class="w-full text-xs text-left border-collapse">
+          <thead>
+            <tr class="bg-[#383838] text-white font-bold border-b border-stone-300 sticky top-0">
+              <th class="p-2.5 text-center">งวด</th>
+              <th class="p-2.5 text-center">เดือน/ปี</th>
+              <th class="p-2.5 text-right">ค่างวด</th>
+              <th class="p-2.5 text-right">ดอกเบี้ย (%)</th>
+              <th class="p-2.5 text-right">เงินต้น</th>
+              <th class="p-2.5 text-right">คงเหลือ</th>
+              <th class="p-2.5 text-center">สถานะ</th>
+            </tr>
+          </thead>
+          <tbody id="amortization-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-edit-property-detail" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="youestates-card p-6 max-w-lg w-full space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-stone-200 pb-3">
+        <h3 class="font-black text-base text-[#383838]">แก้ไขสเปกทรัพย์สิน & ที่อยู่อสังหาฯ</h3>
+        <button onclick="toggleModal('modal-edit-property-detail')" class="text-stone-400 hover:text-stone-700 font-bold">✕</button>
+      </div>
+
+      <form onsubmit="handlePropertyDetailEditSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">เลือกผู้ให้เช่าที่เป็นผู้ทำสัญญา</label>
+          <select id="pde-lessor-select" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2.5 font-bold text-stone-800">
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div><label class="block text-stone-500 font-medium mb-1">ชื่อโครงการ</label><input type="text" id="pde-name" required value="" placeholder="ชื่อโครงการ..." class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2 font-bold"></div>
+          <div><label class="block text-stone-500 font-medium mb-1">บ้านเลขที่</label><input type="text" id="pde-houseno" required value="" placeholder="101/12" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2 font-bold"></div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">รายละเอียดที่อยู่อสังหาริมทรัพย์ (ถนน, แขวง/ตำบล, เขต/อำเภอ, จังหวัด)</label>
+          <input type="text" id="pde-address" required value="" placeholder="เช่น ถนนสุขุมวิท 101 แขวงบางนา เขตบางนา กรุงเทพมหานคร" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2.5 font-medium text-stone-800">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div><label class="block text-stone-500 font-medium mb-1">ค่าเช่า/เดือน (บาท)</label><input type="number" id="pde-rent" required value="" placeholder="12000" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2 font-black text-[#e05646]"></div>
+          <div><label class="block text-stone-500 font-medium mb-1">เงินประกัน (บาท)</label><input type="number" id="pde-deposit" required value="" placeholder="24000" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2 font-bold"></div>
+        </div>
+
+        <div class="pt-2 border-t border-stone-200 space-y-2">
+          <div class="flex justify-between items-center">
+            <label class="block font-bold text-stone-700">รายการเฟอร์นิเจอร์ & รูปถ่ายแนบท้ายสัญญา</label>
+            <button type="button" onclick="addFurnitureEditRow()" class="youestates-btn-coral px-2.5 py-1 rounded text-[11px] font-bold">+ เพิ่มเฟอร์นิเจอร์</button>
+          </div>
+          <div id="pde-furniture-rows-container" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+        </div>
+
+        <button type="submit" class="w-full youestates-btn-coral font-bold py-2.5 rounded-lg text-white text-xs mt-2 shadow-sm">💾 บันทึกสเปก & ที่อยู่ทรัพย์สิน</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-upload-bank-doc" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="youestates-card p-6 max-w-sm w-full space-y-4">
+      <div class="flex justify-between items-center border-b border-stone-200 pb-2">
+        <h3 class="font-bold text-sm text-[#383838]">แนบเอกสารการกู้</h3>
+        <button onclick="toggleModal('modal-upload-bank-doc')" class="text-stone-400 font-bold">✕</button>
+      </div>
+      <form onsubmit="handleBankDocUploadSubmit(event)" class="space-y-3 text-xs">
+        <div><label class="block text-stone-500 font-medium mb-1">ชื่อเอกสาร</label><input type="text" id="bd-title" required placeholder="สัญญาเงินกู้ ธนาคาร..." class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2 font-medium"></div>
+        <div class="border-2 border-dashed border-stone-300 rounded-lg p-4 text-center cursor-pointer" onclick="triggerBankFileInput()">
+          <input type="file" id="bankDocFile" accept="image/*,application/pdf" class="hidden" onchange="uploadToCloudinaryAndPreview(event, 'bank')">
+          <div class="text-xs font-bold text-stone-700" id="bankFileText">☁️ คลิกอัปโหลดไฟล์ขึ้น Cloudinary (ogdfbbpw)</div>
+        </div>
+        <button type="submit" class="w-full youestates-btn-coral text-white font-bold py-2.5 rounded-lg text-xs shadow-sm">บันทึกไฟล์</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-add-property" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="youestates-card p-6 max-w-md w-full space-y-4">
+      <div class="flex justify-between items-center border-b border-stone-200 pb-2">
+        <h3 class="font-bold text-sm text-[#383838]">+ เพิ่มทรัพย์สินใหม่</h3>
+        <button onclick="toggleModal('modal-add-property')" class="text-stone-400 font-bold">✕</button>
+      </div>
+      <form onsubmit="handleAddPropertySubmit(event)" class="space-y-3 text-xs">
+        <div><label class="block text-stone-500 font-medium mb-1">ชื่อโครงการ</label><input type="text" id="p-name" required placeholder="เช่น แอสเพน คอนโด สุขุมวิท 101" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2 font-medium"></div>
+        
+        <div><label class="block text-stone-500 font-medium mb-1">บ้านเลขที่</label><input type="text" id="p-houseno" required placeholder="101/12" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2 font-medium"></div>
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">รายละเอียดที่อยู่อสังหาริมทรัพย์ (ถนน, แขวง/ตำบล, เขต/อำเภอ, จังหวัด)</label>
+          <input type="text" id="p-address" required placeholder="เช่น ถนนสุขุมวิท 101 แขวงบางนา เขตบางนา กรุงเทพมหานคร" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2.5 font-medium text-stone-800">
+        </div>
+
+        <div>
+          <label class="block text-stone-500 font-medium mb-1">เลือกผู้ให้เช่าในระบบ</label>
+          <select id="p-lessor" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2 font-bold text-stone-800">
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div><label class="block text-stone-500 font-medium mb-1">ยอดกู้ (บาท)</label><input type="number" id="p-principal" required placeholder="3500000" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2 font-bold"></div>
+          <div><label class="block text-stone-500 font-medium mb-1">ค่างวด (บาท)</label><input type="number" id="p-installment" required placeholder="17500" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2 font-bold"></div>
+        </div>
+        <div><label class="block text-stone-500 font-medium mb-1">วันที่เริ่มผ่อน</label><input type="date" id="p-startdate" required class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2 font-bold"></div>
+        <button type="submit" class="w-full youestates-btn-coral text-white font-bold py-2.5 rounded-lg text-xs shadow-sm">บันทึกเพิ่มทรัพย์สิน</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-media-preview" class="fixed inset-0 bg-stone-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="youestates-card p-5 max-w-xl w-full space-y-3">
+      <div class="flex justify-between items-center border-b border-stone-200 pb-2">
+        <h3 class="font-bold text-sm text-[#383838]" id="media-preview-title">พรีวิวรูปภาพ</h3>
+        <button onclick="toggleModal('modal-media-preview')" class="text-stone-400 font-bold">✕</button>
+      </div>
+      <img id="media-preview-img" src="" alt="Preview" class="max-h-[60vh] mx-auto rounded-lg object-contain">
+    </div>
+  </div>
+
+  <script>
+    let currentRole = 'landlord';
+    let currentTenantId = '';
+
+    const CLOUDINARY_CLOUD_NAME = 'ogdfbbpw';
+    const CLOUDINARY_UPLOAD_PRESET = 'house_landlord';
+
+    const PLACEHOLDER_SVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250' fill='none'><rect width='400' height='250' rx='12' fill='%23e2ded8'/><path d='M160 90C160 112.091 142.091 130 120 130C97.9086 130 80 112.091 80 90C80 67.9086 97.9086 50 120 50C142.091 50 160 67.9086 160 90Z' fill='%23a8a29e'/><path d='M50 200C50 161.34 81.3401 130 120 130C158.66 130 190 161.34 190 200H50Z' fill='%23a8a29e'/><rect x='220' y='65' width='130' height='14' rx='4' fill='%23a8a29e'/><rect x='220' y='95' width='110' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='115' width='90' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='145' width='120' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='165' width='80' height='10' rx='4' fill='%23a8a29e'/></svg>";
+
+    let propertiesState = [];
+    let tenantDatabase = {};
+    let lessorProfiles = JSON.parse(localStorage.getItem('property_os_lessors') || '{}');
+
+    async function loadPropertiesFromD1() {
+      try {
+        const res = await fetch('/api/properties');
+        if (res.ok) {
+          propertiesState = await res.json();
+        } else {
+          propertiesState = JSON.parse(localStorage.getItem('property_os_properties') || '[]');
+        }
+      } catch(e) {
+        propertiesState = JSON.parse(localStorage.getItem('property_os_properties') || '[]');
+      }
+
+      currentPropertyId = propertiesState.length > 0 ? propertiesState[0].id : '';
+      renderAdminData();
+      renderPropertyDetailView();
+      renderContractView();
+      renderRegisteredLessorsList();
+      renderLessorSelectOptions();
+      initTenantFormDates();
+    }
+
+    let currentPropertyId = '';
+
+    let currentTenant = {
+      fullName: '',
+      age: '',
+      idCard: '',
+      phone: '',
+      address: '',
+      startDate: new Date().toISOString().split('T')[0],
+      duration: '1',
+      endDate: '',
+      imageUrl: PLACEHOLDER_SVG
+    };
+
+    let contractState = {
+      place: '',
+      date: new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' }),
+      houseNo: '',
+      street: '',
+      subdistrict: '',
+      district: '',
+      province: '',
+      duration: '1',
+      startDate: '',
+      endDate: '',
+      rent: 0,
+      rentText: 'ศูนย์บาทถ้วน',
+      payDay: '5',
+      deposit: 0,
+      depositText: 'ศูนย์บาทถ้วน'
+    };
+
+    function initTenantFormDates() {
+      const today = new Date().toISOString().split('T')[0];
+      const startInput = document.getElementById('t-startdate');
+      if (startInput && !startInput.value) {
+        startInput.value = today;
+      }
+      calculateLeaseEndDate();
+    }
+
+    function calculateLeaseEndDate() {
+      const startVal = document.getElementById('t-startdate')?.value;
+      const durationYears = parseInt(document.getElementById('t-duration')?.value || '1');
+      const display = document.getElementById('t-enddate-display');
+      if (!startVal) {
+        if (display) display.innerText = '-';
+        return '';
+      }
+
+      const startDate = new Date(startVal);
+      const endDate = new Date(startDate);
+      endDate.setFullYear(endDate.getFullYear() + durationYears);
+      endDate.setDate(endDate.getDate() - 1);
+
+      const formattedEnd = endDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+      if (display) display.innerText = formattedEnd;
+
+      return endDate.toISOString().split('T')[0];
+    }
+
+    function saveToLocalStorage() {
+      localStorage.setItem('property_os_tenants', JSON.stringify(tenantDatabase));
+      localStorage.setItem('property_os_properties', JSON.stringify(propertiesState));
+      localStorage.setItem('property_os_lessors', JSON.stringify(lessorProfiles));
+    }
+
+    function renderLessorSelectOptions() {
+      const selects = [document.getElementById('p-lessor'), document.getElementById('pde-lessor-select')];
+      selects.forEach(sel => {
+        if (!sel) return;
+        sel.innerHTML = '';
+        const keys = Object.keys(lessorProfiles);
+        if (keys.length === 0) {
+          sel.innerHTML = '<option value="">ยังไม่ได้ลงทะเบียนผู้ให้เช่า (กรุณาลงทะเบียนก่อน)</option>';
+        } else {
+          keys.forEach(k => {
+            const l = lessorProfiles[k];
+            sel.innerHTML += `<option value="${k}">${l.name}</option>`;
+          });
+        }
+      });
+    }
+
+    function handleLessorRegisterTabSubmit(e) {
+      e.preventDefault();
+      const fullName = document.getElementById('reg-lp-fullname').value;
+      const key = 'lessor-' + Date.now();
+      
+      lessorProfiles[key] = {
+        name: fullName,
+        idCard: document.getElementById('reg-lp-idcard').value,
+        age: parseInt(document.getElementById('reg-lp-age').value) || 45,
+        phone: document.getElementById('reg-lp-phone').value || '',
+        address: document.getElementById('reg-lp-address').value,
+        imageUrl: lessorProfiles[key]?.imageUrl || PLACEHOLDER_SVG
+      };
+
+      saveToLocalStorage();
+      renderRegisteredLessorsList();
+      renderLessorSelectOptions();
+      renderPropertyDetailView();
+      renderContractView();
+      renderAdminData();
+      alert(`ลงทะเบียนผู้ให้เช่า "${fullName}" เรียบร้อยแล้ว!`);
+      document.getElementById('reg-lp-fullname').value = '';
+      document.getElementById('reg-lp-idcard').value = '';
+      document.getElementById('reg-lp-address').value = '';
+      document.getElementById('reg-lp-phone').value = '';
+    }
+
+    function renderRegisteredLessorsList() {
+      const container = document.getElementById('registered-lessors-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const keys = Object.keys(lessorProfiles);
+      if (keys.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-3 p-6 text-center text-stone-400 bg-white rounded-lg border border-stone-200">
+            ยังไม่มีผู้ให้เช่าในระบบ (กรุณาลงทะเบียนผู้ให้เช่าจากแบบฟอร์มด้านบน)
+          </div>
+        `;
+        return;
+      }
+
+      keys.forEach(key => {
+        const prof = lessorProfiles[key];
+        container.innerHTML += `
+          <div class="p-3.5 rounded-lg bg-stone-50 border border-stone-200 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-[#383838] text-sm">${prof.name}</span>
+              <span class="px-2 py-0.5 bg-[#e05646] text-white text-[10px] font-bold rounded">ผู้ให้เช่า</span>
+            </div>
+            <div class="text-[11px] text-stone-500">เลขบัตร: ${prof.idCard || '-'}</div>
+            <div class="text-[11px] text-stone-500">โทร: ${prof.phone || '-'}</div>
+            <button onclick="editRegisteredLessor('${key}')" class="w-full mt-1 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 text-[10px] font-bold rounded">
+              ✏️ แก้ไขข้อมูลผู้ให้เช่านี้
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    function editRegisteredLessor(key) {
+      const prof = lessorProfiles[key];
+      if (!prof) return;
+      document.getElementById('reg-lp-fullname').value = prof.name || '';
+      document.getElementById('reg-lp-idcard').value = prof.idCard || '';
+      document.getElementById('reg-lp-age').value = prof.age || 45;
+      document.getElementById('reg-lp-phone').value = prof.phone || '';
+      document.getElementById('reg-lp-address').value = prof.address || '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function triggerLessorTabFileInput() { document.getElementById('lessorTabFile').click(); }
+
+    async function uploadToCloudinaryAndPreview(e, targetType, targetIndex) {
+      if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+        if (targetType === 'tenant') document.getElementById('fileText').innerText = `⏳ กำลังอัปโหลดขึ้น Cloudinary (${CLOUDINARY_CLOUD_NAME})...`;
+        if (targetType === 'lessor-tab') document.getElementById('lessorTabFileText').innerText = `⏳ กำลังอัปโหลดรูปบัตรขึ้น Cloudinary...`;
+
+        try {
+          const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await res.json();
+          const cloudUrl = data.secure_url || data.url || URL.createObjectURL(file);
+
+          if (targetType === 'tenant') {
+            currentTenant.imageUrl = cloudUrl;
+            document.getElementById('imagePreview').src = cloudUrl;
+            document.getElementById('imagePreviewContainer').classList.remove('hidden');
+            document.getElementById('fileText').innerText = `✅ อัปโหลดขึ้น Cloudinary (ogdfbbpw) สำเร็จ!`;
+          } else if (targetType === 'lessor' || targetType === 'lessor-tab') {
+            const keys = Object.keys(lessorProfiles);
+            if (keys.length > 0) {
+              const activeKey = keys[0];
+              lessorProfiles[activeKey].imageUrl = cloudUrl;
+              document.getElementById('pd-lessor-card-img').src = cloudUrl;
+            }
+            if (document.getElementById('lessorTabFileText')) {
+              document.getElementById('lessorTabFileText').innerText = `✅ อัปโหลดบัตรประชาชนผู้ให้เช่าขึ้น Cloudinary สำเร็จ!`;
+            }
+            saveToLocalStorage();
+          } else if (targetType === 'furniture') {
+            const urlInput = document.getElementById(`furniture-url-${targetIndex}`);
+            if (urlInput) urlInput.value = cloudUrl;
+          }
+          renderContractView();
+        } catch(err) {
+          const url = URL.createObjectURL(file);
+          if (targetType === 'tenant') {
+            currentTenant.imageUrl = url;
+            document.getElementById('imagePreview').src = url;
+            document.getElementById('imagePreviewContainer').classList.remove('hidden');
+          } else if (targetType === 'furniture') {
+            const urlInput = document.getElementById(`furniture-url-${targetIndex}`);
+            if (urlInput) urlInput.value = url;
+          }
+        }
+      }
+    }
+
+    function openLoginOverlay() { document.getElementById('login-overlay').classList.remove('hidden'); }
+
+    function startTenantSelfRegistration() {
+      document.getElementById('login-overlay').classList.add('hidden');
+      currentRole = 'tenant';
+      document.getElementById('header-role-title').innerText = 'ผู้เช่า (Tenant Onboarding)';
+      document.getElementById('user-badge-role').innerText = '👤 ผู้เช่า';
+      document.getElementById('user-badge-role').className = 'px-2 py-0.5 rounded bg-[#383838] text-white font-bold text-[10px]';
+      document.getElementById('user-badge-name').innerText = 'ผู้เช่าใหม่';
+
+      switchTab('tenant');
+    }
+
+    function loginAsRole(role) {
+      if (role === 'tenant') {
+        renderTenantSelectOptions();
+        const form = document.getElementById('tenant-login-form');
+        if (form) form.classList.remove('hidden');
+        return;
+      }
+
+      currentRole = 'landlord';
+      document.getElementById('login-overlay').classList.add('hidden');
+      document.getElementById('header-role-title').innerText = 'ผู้ให้เช่า (Landlord Mode)';
+      document.getElementById('user-badge-role').innerText = '🔑 ผู้ให้เช่า';
+      document.getElementById('user-badge-role').className = 'px-2 py-0.5 rounded bg-[#e05646] text-white font-bold text-[10px]';
+      document.getElementById('user-badge-name').innerText = 'ผู้ดูแลพอร์ต';
+
+      document.getElementById('main-nav-bar').classList.remove('hidden');
+      document.getElementById('view-tenant-dashboard').classList.add('hidden');
+
+      switchTab('admin');
+    }
+
+    function renderTenantSelectOptions() {
+      const select = document.getElementById('tenantSelect');
+      if (!select) return;
+      select.innerHTML = '';
+      const keys = Object.keys(tenantDatabase);
+      if (keys.length === 0) {
+        select.innerHTML = '<option value="">ยังไม่มีข้อมูลผู้เช่าในระบบ (กดปุ่มลงทะเบียนผู้เช่าใหม่ด้านข้าง)</option>';
+      } else {
+        keys.forEach(k => {
+          const t = tenantDatabase[k];
+          select.innerHTML += `<option value="${k}">${t.fullName} — เช่า: ${t.unitName}</option>`;
+        });
+      }
+    }
+
+    function confirmTenantLogin() {
+      const select = document.getElementById('tenantSelect');
+      const tKey = select ? select.value : '';
+      if (!tKey || !tenantDatabase[tKey]) {
+        alert('ยังไม่มีข้อมูลผู้เช่าในระบบ กรุณากดปุ่ม "📝 ลงทะเบียนผู้เช่าใหม่" เพื่อกรอกข้อมูลได้ด้วยตนเองครับ');
+        startTenantSelfRegistration();
+        return;
+      }
+
+      const tData = tenantDatabase[tKey];
+      currentRole = 'tenant';
+      currentTenantId = tKey;
+
+      document.getElementById('login-overlay').classList.add('hidden');
+      document.getElementById('header-role-title').innerText = 'ผู้เช่า (Tenant Mode)';
+      document.getElementById('user-badge-role').innerText = '👤 ผู้เช่า';
+      document.getElementById('user-badge-role').className = 'px-2 py-0.5 rounded bg-[#383838] text-white font-bold text-[10px]';
+      document.getElementById('user-badge-name').innerText = tData.fullName;
+
+      currentPropertyId = tData.propId;
+      confirmTenantLoginDirect(tKey);
+    }
+
+    function getCurrentProperty() {
+      return propertiesState.find(p => p.id === currentPropertyId) || null;
+    }
+
+    function handleDetailPropertySwitch(newPropId) {
+      selectPropertyForDetail(newPropId);
+    }
+
+    function selectPropertyForDetail(propId) {
+      currentPropertyId = propId;
+      const prop = getCurrentProperty();
+      if (prop) {
+        contractState.houseNo = prop.houseNo;
+        contractState.rent = prop.rent;
+        contractState.deposit = prop.deposit;
+      }
+      renderPropertyDetailView();
+      renderContractView();
+    }
+
+    function openMediaPreview(title, url) {
+      document.getElementById('media-preview-title').innerText = title;
+      document.getElementById('media-preview-img').src = url || PLACEHOLDER_SVG;
+      toggleModal('modal-media-preview');
+    }
+
+    let currentGalleryFilter = 'all';
+
+    function filterGalleryPhotos(cat) {
+      currentGalleryFilter = cat;
+      ['all', 'exterior', 'interior', 'highlight'].forEach(c => {
+        const btn = document.getElementById(`gfilter-${c}`);
+        if (btn) {
+          if (c === cat) btn.className = 'px-3.5 py-1.5 rounded-lg bg-[#383838] text-white';
+          else btn.className = 'px-3.5 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300';
+        }
+      });
+      renderPropertyGallery();
+    }
+
+    function renderPropertyGallery() {
+      const container = document.getElementById('property-gallery-grid');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const prop = getCurrentProperty();
+      if (!prop) {
+        container.innerHTML = `
+          <div class="col-span-full p-8 text-center text-stone-400 bg-stone-50 rounded-xl border border-stone-200">
+            ยังไม่ได้เลือกอสังหาริมทรัพย์ในระบบ
+          </div>
+        `;
+        return;
+      }
+
+      if (!prop.gallery) prop.gallery = [];
+
+      const allPhotos = [...prop.gallery];
+      if (prop.inventoryList) {
+        prop.inventoryList.forEach(inv => {
+          const img = typeof inv === 'object' ? inv.img : '';
+          const name = typeof inv === 'object' ? inv.name : inv;
+          if (img) {
+            allPhotos.push({
+              title: name || 'รูปภาพเฟอร์นิเจอร์',
+              url: img,
+              category: 'interior'
+            });
+          }
+        });
+      }
+
+      const filtered = currentGalleryFilter === 'all' 
+        ? allPhotos 
+        : allPhotos.filter(p => p.category === currentGalleryFilter);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-8 text-center text-stone-400 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
+            <p class="font-bold">ยังไม่มีรูปถ่ายในหมวดนี้</p>
+            <p class="text-xs">กดปุ่ม "☁️ อัปโหลดรูปภาพใหม่" ด้านบนเพื่อเพิ่มรูปบ้าน/อาคาร ภายใน และจุดเด่นส่งโปรโมทให้ลูกค้าได้ทันที</p>
+          </div>
+        `;
+      } else {
+        filtered.forEach((img) => {
+          const catBadge = img.category === 'exterior' ? '🏠 ภายนอก' : img.category === 'interior' ? '🛋️ ภายใน' : '✨ จุดเด่น';
+          container.innerHTML += `
+            <div class="group relative rounded-xl overflow-hidden border border-stone-200 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer" onclick="openMediaPreview('${img.title}', '${img.url}')">
+              <div class="w-full h-32 bg-stone-100 overflow-hidden">
+                <img src="${img.url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="${img.title}">
+              </div>
+              <div class="p-2 flex justify-between items-center">
+                <span class="text-xs font-bold text-stone-800 truncate">${img.title}</span>
+                <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-stone-100 text-stone-600">${catBadge}</span>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      // Update Promo Card Details
+      const promoTitle = document.getElementById('pd-promo-title');
+      if (promoTitle) promoTitle.innerText = prop.name || 'ชื่อทรัพย์สิน';
+      
+      const promoLoc = document.getElementById('pd-promo-location');
+      if (promoLoc) promoLoc.innerText = prop.address || 'ที่อยู่อสังหาฯ';
+      
+      const promoPrice = document.getElementById('pd-promo-price');
+      if (promoPrice) promoPrice.innerText = `฿${(prop.rent || 0).toLocaleString()} /เดือน`;
+      
+      const promoDep = document.getElementById('pd-promo-deposit');
+      if (promoDep) promoDep.innerText = `฿${(prop.deposit || 0).toLocaleString()}`;
+      
+      const promoImg = document.getElementById('pd-promo-cover-img');
+      if (promoImg && allPhotos.length > 0) {
+        promoImg.src = allPhotos[0].url;
+      }
+    }
+
+    async function uploadPropertyGalleryImage(e) {
+      const prop = getCurrentProperty();
+      if (!prop) {
+        alert('กรุณาเลือกอสังหาริมทรัพย์ก่อนครับ');
+        return;
+      }
+
+      if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+        const titlePrompt = prompt('กรุณาระบุชื่อเรียกรูปภาพนี้ (เช่น ภาพตัวบ้าน, ห้องนอนใหญ่, ห้องครัว):', 'รูปถ่ายทรัพย์สิน') || 'รูปถ่ายทรัพย์สิน';
+
+        try {
+          const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+          const cloudUrl = data.secure_url || data.url || URL.createObjectURL(file);
+
+          if (!prop.gallery) prop.gallery = [];
+          prop.gallery.push({
+            title: titlePrompt,
+            url: cloudUrl,
+            category: 'exterior'
+          });
+
+          saveToLocalStorage();
+          renderPropertyGallery();
+          alert('อัปโหลดรูปภาพเข้าคลังเรียบร้อยแล้ว!');
+        } catch(err) {
+          const url = URL.createObjectURL(file);
+          if (!prop.gallery) prop.gallery = [];
+          prop.gallery.push({
+            title: titlePrompt,
+            url: url,
+            category: 'exterior'
+          });
+          saveToLocalStorage();
+          renderPropertyGallery();
+        }
+      }
+    }
+
+    function copyPropertyPromoLink() {
+      const prop = getCurrentProperty();
+      const title = prop ? prop.name : 'อสังหาริมทรัพย์เพื่อการเช่า';
+      const price = prop ? prop.rent : 0;
+      const shareText = `🏡 ${title}\n📍 ${prop ? prop.address : ''}\n💰 อัตราค่าเช่าเพียง ฿${price.toLocaleString()} /เดือน\n✨ ดูรายละเอียดและรูปภาพเพิ่มเติม: ${window.location.origin}`;
+      navigator.clipboard.writeText(shareText);
+      alert('คัดลอกข้อความและลิงก์โปรโมทสำเร็จ! สามารถวางส่งทาง Line หรือ Messenger ให้ลูกค้าที่สนใจได้ทันทีครับ');
+    }
+
+    function switchSubTab(sub) {
+      document.getElementById('subview-specs').classList.add('hidden');
+      if (document.getElementById('subview-gallery')) document.getElementById('subview-gallery').classList.add('hidden');
+      document.getElementById('subview-loan').classList.add('hidden');
+      document.getElementById('subview-lessor').classList.add('hidden');
+
+      document.getElementById('subtab-specs').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
+      if (document.getElementById('subtab-gallery')) document.getElementById('subtab-gallery').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
+      document.getElementById('subtab-loan').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
+      document.getElementById('subtab-lessor').className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
+
+      if (sub === 'specs') {
+        document.getElementById('subview-specs').classList.remove('hidden');
+        document.getElementById('subtab-specs').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
+      } else if (sub === 'gallery') {
+        if (document.getElementById('subview-gallery')) document.getElementById('subview-gallery').classList.remove('hidden');
+        if (document.getElementById('subtab-gallery')) document.getElementById('subtab-gallery').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
+        renderPropertyGallery();
+      } else if (sub === 'loan') {
+        document.getElementById('subview-loan').classList.remove('hidden');
+        document.getElementById('subtab-loan').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
+      } else if (sub === 'lessor') {
+        document.getElementById('subview-lessor').classList.remove('hidden');
+        document.getElementById('subtab-lessor').className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
+      }
+    }
+
+    function getRateForMonth(monthNum, sched) {
+      const scheduleList = (sched && sched.length > 0) ? sched : [{ startMonth: 1, endMonth: 360, rate: 4.5, label: 'ปีที่ 1-30' }];
+      for (let period of scheduleList) {
+        if (monthNum >= period.startMonth && monthNum <= period.endMonth) return period;
+      }
+      return { rate: 5.50, label: 'ปีถัดไป' };
+    }
+
+    function calculateMortgage(p, m, r, startDateStr, sched) {
+      if (!p || !m) return { months: 0, yearsTxt: '0 ปี', balance: 0, paidPrincipal: 0, paidInterest: 0, paidPct: 0 };
+      const start = startDateStr ? new Date(startDateStr) : new Date();
+      const now = new Date();
+      let months = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+      if (isNaN(months) || months < 0) months = 0;
+      if (now.getDate() < start.getDate()) months = Math.max(0, months - 1);
+
+      const years = Math.floor(months / 12);
+      const remMonths = months % 12;
+      const yearsTxt = `${years} ปี ${remMonths} เดือน`;
+
+      let balance = p;
+      let paidPrincipal = 0;
+      let paidInterest = 0;
+
+      for (let i = 1; i <= months; i++) {
+        if (balance <= 0) break;
+        const pObj = getRateForMonth(i, sched);
+        const monthlyRate = pObj.rate / 100 / 12;
+        const interest = balance * monthlyRate;
+        const princ = Math.min(balance, m - interest);
+        if (princ > 0) {
+          paidPrincipal += princ;
+          paidInterest += interest;
+          balance -= princ;
+        }
+      }
+
+      balance = Math.max(0, Math.round(balance));
+      const paidPct = Math.min(100, Math.round(((p - balance) / p) * 100));
+
+      return { months, yearsTxt, balance, paidPrincipal: Math.round(paidPrincipal), paidInterest: Math.round(paidInterest), paidPct };
+    }
+
+    function openAmortizationModal() {
+      const prop = getCurrentProperty();
+      if (!prop) {
+        alert('กรุณากด "+ เพิ่มทรัพย์สินใหม่" เพื่อสร้างอสังหาริมทรัพย์ยูนิตแรกในระบบก่อนครับ');
+        toggleModal('modal-add-property');
+        return;
+      }
+
+      if (!prop.rateSchedule || prop.rateSchedule.length === 0) {
+        prop.rateSchedule = [{ startMonth: 1, endMonth: 360, rate: 4.5, label: 'ปีที่ 1-30' }];
+      }
+
+      document.getElementById('amo-principal').value = prop.principal || 0;
+      document.getElementById('amo-installment').value = prop.installment || 0;
+      document.getElementById('amo-startdate').value = prop.startDate || new Date().toISOString().split('T')[0];
+
+      renderRatePeriodsEditor();
+      renderAmortizationTable();
+      toggleModal('modal-amortization-table');
+    }
+
+    function renderRatePeriodsEditor() {
+      const container = document.getElementById('rate-periods-editor-container');
+      if (!container) return;
+      container.innerHTML = '';
+      const prop = getCurrentProperty();
+      if (!prop || !prop.rateSchedule) return;
+
+      prop.rateSchedule.forEach((period, idx) => {
+        container.innerHTML += `
+          <div class="flex items-center gap-2 p-2.5 rounded-lg bg-white border border-stone-300">
+            <span class="w-6 h-6 rounded bg-[#383838] text-white font-bold flex items-center justify-center text-[10px]">${idx + 1}</span>
+            <input type="text" value="${period.label}" onchange="updatePeriodField(${idx}, 'label', this.value)" class="flex-1 bg-stone-50 border border-stone-300 rounded p-1.5 text-xs font-semibold text-[#383838]">
+            <input type="number" value="${period.startMonth}" onchange="updatePeriodField(${idx}, 'startMonth', this.value)" class="w-14 bg-stone-50 border border-stone-300 rounded p-1.5 text-center text-xs font-bold text-[#383838]">
+            <span class="text-stone-400">-</span>
+            <input type="number" value="${period.endMonth}" onchange="updatePeriodField(${idx}, 'endMonth', this.value)" class="w-14 bg-stone-50 border border-stone-300 rounded p-1.5 text-center text-xs font-bold text-[#383838]">
+            <input type="number" step="0.01" value="${period.rate}" onchange="updatePeriodField(${idx}, 'rate', this.value)" class="w-16 bg-stone-100 border border-stone-300 font-black text-[#e05646] rounded p-1.5 text-center text-xs">%
+            <button type="button" onclick="deleteRatePeriodRow(${idx})" class="text-stone-400 hover:text-[#e05646] font-bold text-xs p-1">✕</button>
+          </div>
+        `;
+      });
+    }
+
+    function addRatePeriodRow() {
+      const prop = getCurrentProperty();
+      if (!prop) return;
+      if (!prop.rateSchedule) prop.rateSchedule = [];
+      const last = prop.rateSchedule[prop.rateSchedule.length - 1];
+      const startM = last ? (parseInt(last.endMonth) + 1) : 1;
+      const endM = startM + 35;
+      prop.rateSchedule.push({ startMonth: startM, endMonth: endM, rate: 3.25, label: `Retention รอบใหม่` });
+
+      saveToLocalStorage();
+      renderRatePeriodsEditor();
+      renderAmortizationTable();
+      renderPropertyDetailView();
+    }
+
+    function deleteRatePeriodRow(idx) {
+      const prop = getCurrentProperty();
+      if (!prop || !prop.rateSchedule || prop.rateSchedule.length <= 1) return;
+      prop.rateSchedule.splice(idx, 1);
+
+      saveToLocalStorage();
+      renderRatePeriodsEditor();
+      renderAmortizationTable();
+      renderPropertyDetailView();
+    }
+
+    function updatePeriodField(idx, field, val) {
+      const prop = getCurrentProperty();
+      if (!prop || !prop.rateSchedule || !prop.rateSchedule[idx]) return;
+      if (field === 'startMonth' || field === 'endMonth') prop.rateSchedule[idx][field] = parseInt(val) || 1;
+      else if (field === 'rate') prop.rateSchedule[idx][field] = parseFloat(val) || 0;
+      else prop.rateSchedule[idx][field] = val;
+
+      saveToLocalStorage();
+      renderAmortizationTable();
+      renderPropertyDetailView();
+    }
+
+    function renderAmortizationTable() {
+      const tBody = document.getElementById('amortization-table-body');
+      if (!tBody) return;
+      tBody.innerHTML = '';
+      const prop = getCurrentProperty();
+      if (!prop) return;
+
+      let balance = prop.principal || 0;
+      const m = prop.installment || 0;
+      const startDate = prop.startDate ? new Date(prop.startDate) : new Date();
+
+      const mortgage = calculateMortgage(balance, m, prop.rate, prop.startDate, prop.rateSchedule);
+
+      if (document.getElementById('amo-sum-balance')) document.getElementById('amo-sum-balance').innerText = '฿' + mortgage.balance.toLocaleString();
+      if (document.getElementById('amo-sum-paid-princ')) document.getElementById('amo-sum-paid-princ').innerText = `฿${mortgage.paidPrincipal.toLocaleString()} (${mortgage.paidPct}%)`;
+      if (document.getElementById('amo-sum-paid-int')) document.getElementById('amo-sum-paid-int').innerText = `฿${mortgage.paidInterest.toLocaleString()}`;
+
+      for (let i = 1; i <= 144; i++) {
+        if (balance <= 0) break;
+        const periodObj = getRateForMonth(i, prop.rateSchedule);
+        const currentAnnualRate = periodObj.rate;
+        const monthlyRate = currentAnnualRate / 100 / 12;
+        const interest = Math.round(balance * monthlyRate);
+        const princ = Math.min(balance, Math.max(0, m - interest));
+        balance = Math.max(0, balance - princ);
+
+        const rowDate = new Date(startDate.getFullYear(), startDate.getMonth() + i - 1, startDate.getDate());
+        const dateStr = isNaN(rowDate.getTime()) ? '-' : rowDate.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' });
+        const isPaid = i <= mortgage.months;
+
+        tBody.innerHTML += `
+          <tr class="${isPaid ? 'bg-stone-100' : ''} border-b border-stone-200 text-xs">
+            <td class="p-2.5 text-center font-bold">${i}</td>
+            <td class="p-2.5 text-center font-medium">${dateStr}</td>
+            <td class="p-2.5 text-right font-bold">฿${m.toLocaleString()}</td>
+            <td class="p-2.5 text-right font-bold text-[#e05646]">฿${interest.toLocaleString()} (${currentAnnualRate}%)</td>
+            <td class="p-2.5 text-right font-black text-[#383838]">฿${princ.toLocaleString()}</td>
+            <td class="p-2.5 text-right font-bold">฿${balance.toLocaleString()}</td>
+            <td class="p-2.5 text-center text-[10px]">${isPaid ? '<span class="font-extrabold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded">ผ่อนแล้ว</span>' : '<span class="text-stone-400">อนาคต</span>'}</td>
+          </tr>
+        `;
+      }
+    }
+
+    function applyAmortizationEdit() {
+      const prop = getCurrentProperty();
+      if (!prop) return;
+      prop.principal = parseFloat(document.getElementById('amo-principal').value) || 0;
+      prop.installment = parseFloat(document.getElementById('amo-installment').value) || 0;
+      prop.startDate = document.getElementById('amo-startdate').value;
+
+      saveToLocalStorage();
+      renderAmortizationTable();
+      renderPropertyDetailView();
+      renderAdminData();
+      alert('คำนวณเงินกู้และบันทึกตารางผ่อนเรียบร้อยแล้ว!');
+    }
+
+    function triggerLessorFileInput() { document.getElementById('lessorFile').click(); }
+
+    function openEditPropertyDetailModal() {
+      const prop = getCurrentProperty();
+      if (!prop) {
+        alert('กรุณากด "+ เพิ่มทรัพย์สินใหม่" เพื่อสร้างอสังหาริมทรัพย์ยูนิตแรกในระบบก่อนครับ');
+        toggleModal('modal-add-property');
+        return;
+      }
+
+      renderLessorSelectOptions();
+      document.getElementById('pde-lessor-select').value = prop.lessorKey || '';
+      document.getElementById('pde-name').value = prop.name || '';
+      document.getElementById('pde-houseno').value = prop.houseNo || '';
+      document.getElementById('pde-address').value = prop.address || '';
+      document.getElementById('pde-rent').value = prop.rent || 0;
+      document.getElementById('pde-deposit').value = prop.deposit || 0;
+
+      renderFurnitureEditRows(prop.inventoryList || []);
+      toggleModal('modal-edit-property-detail');
+    }
+
+    function renderFurnitureEditRows(inventoryList) {
+      const container = document.getElementById('pde-furniture-rows-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      inventoryList.forEach((item, idx) => {
+        const name = typeof item === 'object' ? item.name : item;
+        const img = typeof item === 'object' && item.img ? item.img : '';
+
+        container.innerHTML += `
+          <div class="flex items-center gap-2 p-2 bg-stone-50 border border-stone-300 rounded-lg">
+            <input type="text" id="furniture-name-${idx}" value="${name}" placeholder="ชื่อเฟอร์นิเจอร์..." class="flex-1 bg-white border border-stone-300 rounded p-1.5 text-xs font-medium">
+            <input type="text" id="furniture-url-${idx}" value="${img}" placeholder="URL รูปถ่าย..." class="flex-1 bg-white border border-stone-300 rounded p-1.5 text-xs font-mono text-[10px]">
+            <label class="px-2 py-1 bg-stone-200 hover:bg-stone-300 rounded text-[10px] font-bold cursor-pointer">
+              ☁️ อัปรูป
+              <input type="file" accept="image/*" class="hidden" onchange="uploadToCloudinaryAndPreview(event, 'furniture', ${idx})">
+            </label>
+            <button type="button" onclick="deleteFurnitureEditRow(${idx})" class="text-stone-400 hover:text-[#e05646] font-bold text-xs p-1">✕</button>
+          </div>
+        `;
+      });
+    }
+
+    function addFurnitureEditRow() {
+      const container = document.getElementById('pde-furniture-rows-container');
+      if (!container) return;
+      const idx = container.children.length;
+      const div = document.createElement('div');
+      div.className = "flex items-center gap-2 p-2 bg-stone-50 border border-stone-300 rounded-lg";
+      div.innerHTML = `
+        <input type="text" id="furniture-name-${idx}" value="" placeholder="ชื่อเฟอร์นิเจอร์..." class="flex-1 bg-white border border-stone-300 rounded p-1.5 text-xs font-medium">
+        <input type="text" id="furniture-url-${idx}" value="" placeholder="URL รูปถ่าย..." class="flex-1 bg-white border border-stone-300 rounded p-1.5 text-xs font-mono text-[10px]">
+        <label class="px-2 py-1 bg-stone-200 hover:bg-stone-300 rounded text-[10px] font-bold cursor-pointer">
+          ☁️ อัปรูป
+          <input type="file" accept="image/*" class="hidden" onchange="uploadToCloudinaryAndPreview(event, 'furniture', ${idx})">
+        </label>
+        <button type="button" onclick="this.parentElement.remove()" class="text-stone-400 hover:text-[#e05646] font-bold text-xs p-1">✕</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function deleteFurnitureEditRow(idx) {
+      const container = document.getElementById('pde-furniture-rows-container');
+      if (container && container.children[idx]) container.children[idx].remove();
+    }
+
+    function renderPropertyDetailView() {
+      const prop = getCurrentProperty();
+
+      const propSelector = document.getElementById('pd-property-selector');
+      if (propSelector) {
+        propSelector.innerHTML = '';
+        if (propertiesState.length === 0) {
+          propSelector.innerHTML = '<option value="">ไม่มีอสังหาริมทรัพย์ในระบบ</option>';
+        } else {
+          propertiesState.forEach(p => {
+            const selected = p.id === (prop ? prop.id : '') ? 'selected' : '';
+            const houseNoTxt = (p.houseNo && p.houseNo !== 'undefined') ? ` (${p.houseNo})` : '';
+            propSelector.innerHTML += `<option value="${p.id}" ${selected}>🏡 ${p.name}${houseNoTxt}</option>`;
+          });
+        }
+      }
+
+      if (!prop) {
+        document.getElementById('pd-name').innerText = 'ยังไม่มีอสังหาริมทรัพย์';
+        document.getElementById('pd-address').innerText = 'กรุณากดเพิ่มทรัพย์สินใหม่เพื่อเริ่มใช้งาน';
+        document.getElementById('pd-type').innerText = '-';
+        document.getElementById('pd-houseno').innerText = '-';
+        if (document.getElementById('pd-full-address')) document.getElementById('pd-full-address').innerText = '-';
+        document.getElementById('pd-size').innerText = '-';
+        document.getElementById('pd-rent').innerText = '฿0 บาท';
+        document.getElementById('pd-deposit').innerText = '฿0 บาท';
+        document.getElementById('pd-meter-elec').innerText = '-';
+        document.getElementById('pd-meter-water').innerText = '-';
+        document.getElementById('pd-balance-display').innerText = '฿0 บาท';
+        document.getElementById('pd-balance-progress').innerText = '-';
+        document.getElementById('pd-principal-display').innerText = '฿0';
+        document.getElementById('pd-installment-display').innerText = '฿0';
+        return;
+      }
+
+      const currentLessor = lessorProfiles[prop.lessorKey] || { name: 'ยังไม่ได้ระบุผู้ให้เช่า', idCard: '-', address: '-', imageUrl: PLACEHOLDER_SVG };
+
+      document.getElementById('pd-lessor-display').innerText = currentLessor.name || 'ผู้ให้เช่า';
+      document.getElementById('pd-lessor-detail').innerText = `บัตรประชาชน: ${currentLessor.idCard || '-'}`;
+      if (document.getElementById('pd-lessor-address-detail')) {
+        document.getElementById('pd-lessor-address-detail').innerText = `ที่อยู่: ${currentLessor.address || '-'}`;
+      }
+      document.getElementById('pd-lessor-card-img').src = currentLessor.imageUrl || PLACEHOLDER_SVG;
+
+      document.getElementById('pd-name').innerText = prop.name;
+      document.getElementById('pd-address').innerText = prop.address || 'ระบุที่อยู่ในระบบ';
+      document.getElementById('pd-type').innerText = prop.type || 'อสังหาริมทรัพย์';
+      document.getElementById('pd-houseno').innerText = prop.houseNo || '-';
+      if (document.getElementById('pd-full-address')) document.getElementById('pd-full-address').innerText = prop.address || '-';
+      document.getElementById('pd-size').innerText = prop.size || '-';
+      document.getElementById('pd-rent').innerText = '฿' + (prop.rent || 0).toLocaleString() + ' บาท';
+      document.getElementById('pd-deposit').innerText = '฿' + (prop.deposit || 0).toLocaleString() + ' บาท';
+      document.getElementById('pd-meter-elec').innerText = (prop.meterElec || '-') + ' kWh';
+      document.getElementById('pd-meter-water').innerText = (prop.meterWater || '-') + ' ลบ.ม.';
+
+      const mortgage = calculateMortgage(prop.principal, prop.installment, prop.rate, prop.startDate, prop.rateSchedule);
+      document.getElementById('pd-balance-display').innerText = '฿' + mortgage.balance.toLocaleString() + ' บาท';
+      document.getElementById('pd-balance-progress').innerText = `ชำระเงินต้นแล้ว ${mortgage.paidPct}% (ผ่อนไปแล้ว ${mortgage.yearsTxt})`;
+      document.getElementById('pd-principal-display').innerText = '฿' + (prop.principal || 0).toLocaleString();
+      document.getElementById('pd-installment-display').innerText = '฿' + (prop.installment || 0).toLocaleString();
+
+      const schedSummary = document.getElementById('pd-rate-schedule-summary');
+      if (schedSummary) {
+        schedSummary.innerHTML = '';
+        (prop.rateSchedule || []).forEach(p => {
+          schedSummary.innerHTML += `
+            <div class="flex justify-between items-center p-2.5 rounded-lg bg-stone-50 border border-stone-200 text-xs">
+              <span class="font-bold text-[#383838]">${p.label} (งวด ${p.startMonth}-${p.endMonth})</span>
+              <span class="px-2.5 py-0.5 rounded font-black text-xs bg-[#e05646] text-white">${p.rate}%</span>
+            </div>
+          `;
+        });
+      }
+
+      const container = document.getElementById('pd-inventory-container');
+      if (container) {
+        container.innerHTML = '';
+        (prop.inventoryList || []).forEach((item, idx) => {
+          const name = typeof item === 'object' ? item.name : item;
+          const img = typeof item === 'object' && item.img ? item.img : PLACEHOLDER_SVG;
+          container.innerHTML += `
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-stone-50 border border-stone-200 text-xs">
+              <div class="flex items-center gap-3">
+                <img src="${img}" class="w-12 h-12 object-cover rounded border border-stone-300 cursor-pointer" onclick="openMediaPreview('${name}', '${img}')">
+                <div>
+                  <span class="font-bold text-[#383838] block">${name}</span>
+                  <span class="text-stone-400 font-semibold text-[10px]">สภาพสมบูรณ์ดี</span>
+                </div>
+              </div>
+              <button onclick="openEditPropertyDetailModal()" class="text-stone-500 hover:text-[#e05646] text-[11px] font-bold">📷 เปลี่ยนรูป</button>
+            </div>
+          `;
+        });
+      }
+
+      renderAmortizationTable();
+    }
+
+    function renderAdminData() {
+      const container = document.getElementById('propertyContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      let totP = 0, totBal = 0, totInst = 0, totInc = 0;
+
+      if (propertiesState.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-2 youestates-card p-10 text-center space-y-3 bg-white">
+            <div class="text-4xl">🏡</div>
+            <h3 class="font-black text-lg text-[#383838]">ยังไม่มีข้อมูลอสังหาริมทรัพย์ในพอร์ต</h3>
+            <p class="text-xs text-stone-500 max-w-md mx-auto">ระบบถูกล้างข้อมูล Mockup เรียบร้อยแล้ว กดปุ่มด้านล่างเพื่อเริ่มเพิ่มอสังหาริมทรัพย์จริงในพอร์ตของคุณ</p>
+            <button onclick="toggleModal('modal-add-property')" class="youestates-btn-coral px-6 py-2.5 rounded-lg text-xs font-bold shadow-sm inline-block">
+              + เพิ่มอสังหาริมทรัพย์ยูนิตแรก
+            </button>
+          </div>
+        `;
+      } else {
+        propertiesState.forEach(p => {
+          const calc = calculateMortgage(p.principal, p.installment, p.rate, p.startDate, p.rateSchedule);
+          const cashflow = (p.income || 0) - (p.installment || 0);
+          const lProf = lessorProfiles[p.lessorKey] || { name: 'ผู้ให้เช่า' };
+
+          totP += (p.principal || 0);
+          totBal += calc.balance;
+          totInst += (p.installment || 0);
+          totInc += (p.income || 0);
+
+          container.innerHTML += `
+            <div class="youestates-card overflow-hidden space-y-3">
+              <div class="youestates-card-header flex justify-between items-center">
+                <span>${p.name}</span>
+                <span class="text-xs text-stone-300 font-normal">${lProf.name}</span>
+              </div>
+
+              <div class="p-5 space-y-3">
+                <div class="text-xs text-stone-600 font-medium">📍 ${p.address || 'ยังไม่ได้ระบุที่อยู่'}</div>
+
+                <div class="bg-stone-100 p-3 rounded-lg border border-stone-200 space-y-1.5 text-xs">
+                  <div class="flex justify-between text-stone-500 font-medium"><span>ผ่อนมาแล้ว: <strong class="text-[#383838] font-bold">${calc.yearsTxt}</strong></span><span>เริ่มผ่อน: ${p.startDate}</span></div>
+                  <div class="w-full bg-stone-300 h-2 rounded-full overflow-hidden">
+                    <div class="bg-[#e05646] h-full" style="width: ${calc.paidPct}%"></div>
+                  </div>
+                  <div class="flex justify-between font-mono text-[11px] pt-1">
+                    <span class="text-stone-500">จ่ายเงินต้นแล้ว: ฿${calc.paidPrincipal.toLocaleString()}</span>
+                    <span class="text-[#383838] font-extrabold">หนี้คงเหลือ: ฿${calc.balance.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div class="bg-stone-50 p-3 rounded-lg border border-stone-200"><span class="text-stone-400 font-bold uppercase tracking-wider block text-[10px]">ค่างวด/เดือน:</span><strong class="text-[#383838] font-black">฿${(p.installment || 0).toLocaleString()}</strong></div>
+                  <div class="bg-stone-50 p-3 rounded-lg border border-stone-200"><span class="text-stone-400 font-bold uppercase tracking-wider block text-[10px]">Net Cashflow:</span><strong class="text-[#e05646] font-black">+฿${cashflow.toLocaleString()}</strong></div>
+                </div>
+
+                <button onclick="selectPropertyForDetail('${p.id}'); switchTab('property-detail');" class="w-full py-2 bg-[#383838] hover:bg-[#4a4a4a] text-white text-xs font-bold rounded-lg transition-colors">
+                  ดูรายละเอียดทรัพย์สิน & สินเชื่อ ➔
+                </button>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      const net = totInc - totInst;
+      const pct = totP > 0 ? Math.round(((totP - totBal) / totP) * 100) : 0;
+
+      document.getElementById('m-principal').innerText = `฿${totBal.toLocaleString()}`;
+      document.getElementById('m-progress-bar').style.width = pct + '%';
+      document.getElementById('m-progress-txt').innerText = pct + '%';
+      document.getElementById('m-income').innerText = `฿${totInc.toLocaleString()}`;
+      document.getElementById('m-installment').innerText = `฿${totInst.toLocaleString()}`;
+      document.getElementById('m-cashflow').innerText = `+฿${net.toLocaleString()}`;
+    }
+
+    function renderContractView() {
+      const prop = getCurrentProperty();
+      const currentLessor = prop ? (lessorProfiles[prop.lessorKey] || { name: 'ผู้ให้เช่า', age: '-', address: '-', imageUrl: PLACEHOLDER_SVG }) : { name: 'ผู้ให้เช่า', age: '-', address: '-', imageUrl: PLACEHOLDER_SVG };
+
+      document.getElementById('c-lessor-name-1').innerText = currentLessor.name || 'ผู้ให้เช่า';
+      document.getElementById('c-lessor-age-1').innerText = currentLessor.age || '-';
+      document.getElementById('c-lessor-address-1').innerText = currentLessor.address || '-';
+      
+      document.getElementById('c-lessee-name-1').innerText = currentTenant.fullName || 'ผู้เช่า';
+      document.getElementById('c-lessee-age-1').innerText = currentTenant.age || '-';
+      document.getElementById('c-lessee-address-1').innerText = currentTenant.address || '-';
+      document.getElementById('c-house-no-1').innerText = prop ? prop.houseNo : '-';
+      if (document.getElementById('c-full-address-1')) {
+        document.getElementById('c-full-address-1').innerText = prop ? (prop.address || '-') : '-';
+      }
+
+      document.getElementById('c-duration-1').innerText = currentTenant.duration || '1';
+
+      if (currentTenant.startDate) {
+        const sD = new Date(currentTenant.startDate);
+        document.getElementById('c-start-date-1').innerText = sD.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+      } else {
+        document.getElementById('c-start-date-1').innerText = '-';
+      }
+
+      if (currentTenant.endDate) {
+        const eD = new Date(currentTenant.endDate);
+        document.getElementById('c-end-date-1').innerText = eD.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+      } else {
+        document.getElementById('c-end-date-1').innerText = '-';
+      }
+
+      document.getElementById('c-rent-1').innerText = prop ? prop.rent.toLocaleString() : '0';
+      document.getElementById('c-deposit-1').innerText = prop ? prop.deposit.toLocaleString() : '0';
+      document.getElementById('sig-lessor-1').innerText = currentLessor.name || 'ผู้ให้เช่า';
+      document.getElementById('sig-lessee-1').innerText = currentTenant.fullName || 'ผู้เช่า';
+
+      document.getElementById('c-card-img-1').src = currentTenant.imageUrl || PLACEHOLDER_SVG;
+      document.getElementById('c-lessor-card-img-1').src = currentLessor.imageUrl || PLACEHOLDER_SVG;
+
+      const tBody = document.getElementById('c-inventory-table-body');
+      if (tBody) {
+        tBody.innerHTML = '';
+        if (prop && prop.inventoryList) {
+          prop.inventoryList.forEach((item, idx) => {
+            const name = typeof item === 'object' ? item.name : item;
+            const img = typeof item === 'object' && item.img ? item.img : PLACEHOLDER_SVG;
+
+            tBody.innerHTML += `
+              <tr class="border-b border-slate-300">
+                <td class="border border-slate-400 p-1.5 text-center font-bold">${idx + 1}</td>
+                <td class="border border-slate-400 p-1.5 font-semibold text-slate-900">${name}</td>
+                <td class="border border-slate-400 p-1.5 text-center">1 ชุด/เครื่อง</td>
+                <td class="border border-slate-400 p-1.5 text-center text-slate-800 font-bold">สมบูรณ์ดี</td>
+                <td class="border border-slate-400 p-1 text-center font-bold text-slate-500">
+                  <img src="${img}" class="w-12 h-8 object-cover mx-auto rounded border border-slate-300 cursor-pointer" onclick="openMediaPreview('${name}', '${img}')">
+                </td>
+              </tr>
+            `;
+          });
+        }
+      }
+    }
+
+    function handlePropertyDetailEditSubmit(e) {
+      e.preventDefault();
+      let prop = getCurrentProperty();
+      if (!prop) {
+        alert('ยังไม่มีอสังหาริมทรัพย์ กรุณาเพิ่มอสังหาริมทรัพย์ใหม่ก่อน');
+        toggleModal('modal-edit-property-detail');
+        toggleModal('modal-add-property');
+        return;
+      }
+
+      prop.lessorKey = document.getElementById('pde-lessor-select').value;
+      prop.name = document.getElementById('pde-name').value;
+      prop.houseNo = document.getElementById('pde-houseno').value;
+      prop.address = document.getElementById('pde-address').value;
+      prop.rent = parseFloat(document.getElementById('pde-rent').value) || 0;
+      prop.deposit = parseFloat(document.getElementById('pde-deposit').value) || 0;
+
+      const container = document.getElementById('pde-furniture-rows-container');
+      const newList = [];
+      if (container) {
+        for (let i = 0; i < container.children.length; i++) {
+          const nameInput = document.getElementById(`furniture-name-${i}`);
+          const urlInput = document.getElementById(`furniture-url-${i}`);
+          if (nameInput && nameInput.value.trim() !== '') {
+            newList.push({ name: nameInput.value.trim(), img: urlInput ? urlInput.value.trim() : '' });
+          }
+        }
+      }
+      prop.inventoryList = newList;
+
+      saveToLocalStorage();
+      toggleModal('modal-edit-property-detail');
+      renderPropertyDetailView();
+      renderAdminData();
+      renderContractView();
+      alert('บันทึกสเปก & รายละเอียดที่อยู่อสังหาริมทรัพย์เรียบร้อยแล้ว!');
+    }
+
+    function triggerBankFileInput() { document.getElementById('bankDocFile').click(); }
+    function previewBankDocFile(e) { if (e.target.files && e.target.files[0]) document.getElementById('bankFileText').innerText = e.target.files[0].name; }
+
+    function handleBankDocUploadSubmit(e) {
+      e.preventDefault();
+      const prop = getCurrentProperty();
+      if (!prop) return;
+      const fileInput = document.getElementById('bankDocFile');
+      const fileName = fileInput.files && fileInput.files[0] ? fileInput.files[0].name : 'สแกนเอกสารแนบ.pdf';
+      if (!prop.bankDocsList) prop.bankDocsList = [];
+      prop.bankDocsList.push({ type: 'เอกสารธนาคาร', title: fileName, date: new Date().toISOString().split('T')[0], url: PLACEHOLDER_SVG });
+      saveToLocalStorage();
+      toggleModal('modal-upload-bank-doc');
+      renderPropertyDetailView();
+    }
+
+    async function handleAddPropertySubmit(e) {
+      e.preventDefault();
+      const selectedLessor = document.getElementById('p-lessor').value;
+      if (!selectedLessor) {
+        alert('กรุณาลงทะเบียนผู้ให้เช่าที่แท็บ "🔑 ลงทะเบียนผู้ให้เช่า" ก่อนเริ่มเพิ่มอสังหาริมทรัพย์ครับ');
+        toggleModal('modal-add-property');
+        switchTab('register-lessor');
+        return;
+      }
+
+      const newProp = {
+        id: 'prop-' + Date.now(),
+        name: document.getElementById('p-name').value,
+        houseNo: document.getElementById('p-houseno').value,
+        address: document.getElementById('p-address').value,
+        lessorKey: selectedLessor,
+        type: 'อสังหาริมทรัพย์เพื่อการเช่า',
+        size: '40 ตารางเมตร',
+        rent: 15000,
+        deposit: 30000,
+        principal: parseFloat(document.getElementById('p-principal').value) || 0,
+        installment: parseFloat(document.getElementById('p-installment').value) || 0,
+        rate: 4.5,
+        startDate: document.getElementById('p-startdate').value,
+        meterElec: '1,000',
+        meterWater: '500',
+        income: 15000,
+        inventoryList: [
+          { name: 'เครื่องปรับอากาศ', img: PLACEHOLDER_SVG },
+          { name: 'โทรทัศน์ Smart TV', img: PLACEHOLDER_SVG },
+          { name: 'ตู้เย็น 2 ประตู', img: PLACEHOLDER_SVG }
+        ],
+        bankDocsList: [],
+        rateSchedule: [{ startMonth: 1, endMonth: 360, rate: 4.5, label: 'ปีที่ 1-30' }]
+      };
+
+      propertiesState.push(newProp);
+      currentPropertyId = newProp.id;
+
+      try {
+        await fetch('/api/properties', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newProp)
+        });
+      } catch(err) {
+        console.log("Localstorage fallback");
+      }
+
+      saveToLocalStorage();
+      toggleModal('modal-add-property');
+      renderAdminData();
+      renderPropertyDetailView();
+      renderTenantPropertyDropdown();
+      alert('บันทึกเพิ่มอสังหาริมทรัพย์ใหม่พร้อมรายละเอียดที่อยู่เรียบร้อยแล้ว!');
+    }
+
+    function renderTenantPropertyDropdown() {
+      const select = document.getElementById('t-property-bind');
+      if (!select) return;
+      select.innerHTML = '';
+      if (propertiesState.length === 0) {
+        select.innerHTML = '<option value="">ยังไม่มีทรัพย์สินในระบบ (กรุณาเพิ่มทรัพย์สินก่อน)</option>';
+      } else {
+        propertiesState.forEach(p => {
+          select.innerHTML += `<option value="${p.id}">🏡 ${p.name} (${p.houseNo})</option>`;
+        });
+      }
+    }
+
+    function handleTenantSubmit(e) {
+      e.preventDefault();
+      const bindPropId = document.getElementById('t-property-bind').value;
+      const bindProp = propertiesState.find(p => p.id === bindPropId) || propertiesState[0];
+
+      const startDateVal = document.getElementById('t-startdate').value;
+      const durationVal = document.getElementById('t-duration').value;
+      const endDateVal = calculateLeaseEndDate();
+
+      const tKey = 'tenant-' + Date.now();
+      currentTenant = {
+        fullName: document.getElementById('t-fullname').value,
+        age: document.getElementById('t-age').value,
+        idCard: document.getElementById('t-idcard').value,
+        phone: document.getElementById('t-phone').value,
+        address: document.getElementById('t-address').value,
+        startDate: startDateVal,
+        duration: durationVal,
+        endDate: endDateVal,
+        imageUrl: currentTenant.imageUrl || PLACEHOLDER_SVG
+      };
+
+      tenantDatabase[tKey] = {
+        fullName: currentTenant.fullName,
+        age: currentTenant.age,
+        idCard: currentTenant.idCard,
+        phone: currentTenant.phone,
+        address: currentTenant.address,
+        unitName: bindProp ? bindProp.name : 'ยูนิตอสังหาฯ',
+        houseNo: bindProp ? bindProp.houseNo : '',
+        rent: bindProp ? bindProp.rent : 0,
+        deposit: bindProp ? bindProp.deposit : 0,
+        startDate: startDateVal,
+        duration: durationVal,
+        endDate: endDateVal,
+        monthsPaidCount: 1,
+        payDay: 5,
+        propId: bindPropId,
+        inventory: bindProp ? bindProp.inventoryList : [],
+        paymentHistory: [{ month: 'เดือนปัจจุบัน (งวดที่ 1)', amount: bindProp ? bindProp.rent : 0, datePaid: startDateVal }]
+      };
+
+      saveToLocalStorage();
+      renderContractView();
+
+      if (currentRole === 'tenant') {
+        currentTenantId = tKey;
+        alert(`ยินดีต้อนรับคุณ ${currentTenant.fullName}! ลงทะเบียนข้อมูลผู้เช่าและสร้างสัญญา (เริ่ม ${startDateVal} ถึง ${endDateVal}) เรียบร้อยแล้ว`);
+        confirmTenantLoginDirect(tKey);
+      } else {
+        switchTab('contract');
+        alert('บันทึกผู้เช่าลงระบบเรียบร้อยแล้ว!');
+      }
+    }
+
+    function confirmTenantLoginDirect(tKey) {
+      const tData = tenantDatabase[tKey];
+      if (!tData) return;
+      currentRole = 'tenant';
+      currentTenantId = tKey;
+
+      currentTenant = {
+        fullName: tData.fullName,
+        age: tData.age,
+        idCard: tData.idCard,
+        phone: tData.phone,
+        address: tData.address,
+        startDate: tData.startDate,
+        duration: tData.duration,
+        endDate: tData.endDate,
+        imageUrl: tData.imageUrl || PLACEHOLDER_SVG
+      };
+
+      document.getElementById('header-role-title').innerText = 'ผู้เช่า (Tenant Mode)';
+      document.getElementById('user-badge-role').innerText = '👤 ผู้เช่า';
+      document.getElementById('user-badge-role').className = 'px-2 py-0.5 rounded bg-[#383838] text-white font-bold text-[10px]';
+      document.getElementById('user-badge-name').innerText = tData.fullName;
+
+      currentPropertyId = tData.propId;
+
+      document.getElementById('tenant-dash-welcome').innerText = 'สวัสดีครับ ' + tData.fullName;
+      document.getElementById('tenant-dash-unit').innerText = tData.unitName || 'ยูนิตที่เช่า';
+      document.getElementById('tenant-dash-rent').innerText = '฿' + (tData.rent || 0).toLocaleString() + ' บาท/เดือน';
+      document.getElementById('tenant-dash-deposit').innerText = '฿' + (tData.deposit || 0).toLocaleString() + ' บาท';
+
+      const sD = tData.startDate ? new Date(tData.startDate) : new Date();
+      const eD = tData.endDate ? new Date(tData.endDate) : new Date();
+      document.getElementById('tenant-dash-start-date').innerText = `สัญญาเช่า: ${sD.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })} ถึง ${eD.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+
+      document.getElementById('view-admin').classList.add('hidden');
+      document.getElementById('view-property-detail').classList.add('hidden');
+      document.getElementById('view-register-lessor').classList.add('hidden');
+      document.getElementById('view-tenant').classList.add('hidden');
+      document.getElementById('view-contract').classList.add('hidden');
+      document.getElementById('main-nav-bar').classList.add('hidden');
+
+      document.getElementById('view-tenant-dashboard').classList.remove('hidden');
+      renderContractView();
+    }
+
+    function switchTab(tab) {
+      document.getElementById('view-admin').classList.add('hidden');
+      document.getElementById('view-property-detail').classList.add('hidden');
+      document.getElementById('view-register-lessor').classList.add('hidden');
+      document.getElementById('view-tenant').classList.add('hidden');
+      document.getElementById('view-contract').classList.add('hidden');
+      document.getElementById('view-tenant-dashboard').classList.add('hidden');
+
+      document.getElementById('tab-admin').className = 'youestates-tab inactive whitespace-nowrap';
+      document.getElementById('tab-property-detail').className = 'youestates-tab inactive whitespace-nowrap';
+      document.getElementById('tab-register-lessor').className = 'youestates-tab inactive whitespace-nowrap';
+      document.getElementById('tab-tenant').className = 'youestates-tab inactive whitespace-nowrap';
+      document.getElementById('tab-contract').className = 'youestates-tab inactive whitespace-nowrap';
+
+      if (tab === 'admin') {
+        document.getElementById('view-admin').classList.remove('hidden');
+        document.getElementById('tab-admin').className = 'youestates-tab active whitespace-nowrap';
+      } else if (tab === 'property-detail') {
+        document.getElementById('view-property-detail').classList.remove('hidden');
+        document.getElementById('tab-property-detail').className = 'youestates-tab active whitespace-nowrap';
+        renderPropertyDetailView();
+      } else if (tab === 'register-lessor') {
+        document.getElementById('view-register-lessor').classList.remove('hidden');
+        document.getElementById('tab-register-lessor').className = 'youestates-tab active whitespace-nowrap';
+        renderRegisteredLessorsList();
+      } else if (tab === 'tenant') {
+        document.getElementById('view-tenant').classList.remove('hidden');
+        document.getElementById('tab-tenant').className = 'youestates-tab active whitespace-nowrap';
+        renderTenantPropertyDropdown();
+        initTenantFormDates();
+      } else if (tab === 'contract') {
+        document.getElementById('view-contract').classList.remove('hidden');
+        document.getElementById('tab-contract').className = 'youestates-tab active whitespace-nowrap';
+        renderContractView();
+      }
+    }
+
+    function toggleModal(modalId) {
+      const el = document.getElementById(modalId);
+      if (el) el.classList.toggle('hidden');
+    }
+
+    function triggerFileInput() { document.getElementById('tenantFile').click(); }
+
+    // INITIAL LOAD
+    loadPropertiesFromD1();
+  </script>
+
+  <!-- MOBILE BOTTOM NAVIGATION BAR (2026 Mobile-First SaaS) -->
+  <div class="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-slate-900/90 backdrop-blur-xl border-t border-slate-800/80 px-4 py-2.5 flex justify-around items-center text-slate-300 no-print shadow-2xl">
+    <button onclick="switchTab('admin')" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 transition-colors">
+      <span class="text-lg">📊</span>
+      <span>ภาพรวม</span>
+    </button>
+    <button onclick="switchTab('property-detail')" class="flex flex-col items-center gap-1 text-[11px] font-semibold hover:text-white transition-colors">
+      <span class="text-lg">🏡</span>
+      <span>ทรัพย์สิน</span>
+    </button>
+    <button onclick="switchTab('tenant')" class="flex flex-col items-center gap-1 text-[11px] font-semibold hover:text-white transition-colors">
+      <span class="text-lg">👤</span>
+      <span>ผู้เช่า</span>
+    </button>
+    <button onclick="switchTab('contract')" class="flex flex-col items-center gap-1 text-[11px] font-semibold hover:text-white transition-colors">
+      <span class="text-lg">📄</span>
+      <span>สัญญา A4</span>
+    </button>
+  </div>
+
+  <!-- FLOATING ACTION BUTTON (FAB) FOR QUICK ACTIONS -->
+  <div class="fixed bottom-20 right-5 md:bottom-8 md:right-8 z-40 no-print group">
+    <div id="fab-menu" class="hidden mb-3 flex flex-col gap-2.5 items-end transition-all duration-300">
+      <button onclick="toggleModal('modal-add-property')" class="bg-slate-900 text-white border border-slate-700 px-4 py-2.5 rounded-full text-xs font-bold shadow-xl hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap">
+        <span>🏡</span> <span>+ เพิ่มทรัพย์สินใหม่</span>
+      </button>
+      <button onclick="switchTab('contract')" class="bg-slate-900 text-white border border-slate-700 px-4 py-2.5 rounded-full text-xs font-bold shadow-xl hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap">
+        <span>📄</span> <span>สร้างสัญญาเช่า A4</span>
+      </button>
+      <button onclick="window.print()" class="bg-slate-900 text-white border border-slate-700 px-4 py-2.5 rounded-full text-xs font-bold shadow-xl hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap">
+        <span>🖨️</span> <span>พิมพ์เอกสาร PDF</span>
+      </button>
+    </div>
+    <button onclick="document.getElementById('fab-menu').classList.toggle('hidden')" class="fab-btn w-14 h-14 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-2xl rounded-full flex items-center justify-center shadow-2xl border border-emerald-300">
+      ⚡
+    </button>
+  </div>
+</body>
+</html>
+

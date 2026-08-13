@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node -e \"const fs=require('fs'); fs.mkdirSync('public', {recursive:true}); fs.copyFileSync('index.html', 'public/index.html'); fs.copyFileSync('demo_preview.html', 'public/demo_preview.html');\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
