@@ -105,7 +105,7 @@ export function verifyAdminPinSubmit() {
   const matchedAdmin = state.adminAccountsState.find(a => a.pin === pinVal);
 
   if (matchedAdmin || pinVal === CONFIG.DEFAULT_PIN) {
-    state.currentRole = 'landlord';
+    setCurrentRole('landlord');
     const adminName = matchedAdmin ? matchedAdmin.name : 'ผู้ดูแลพอร์ต';
     const badgeName = document.getElementById('user-badge-name');
     if (badgeName) badgeName.innerText = adminName;

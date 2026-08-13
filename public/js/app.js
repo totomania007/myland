@@ -128,15 +128,22 @@ window.switchSubTab = function(sub) {
     const view = document.getElementById(`subview-${s}`);
     const tab = document.getElementById(`subtab-${s}`);
     if (view) view.classList.add('hidden');
-    if (tab) tab.className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
+    if (tab) {
+      tab.classList.remove('bg-[#383838]', 'text-white');
+      tab.classList.add('bg-stone-200', 'text-stone-700');
+    }
   });
 
   const activeView = document.getElementById(`subview-${sub}`);
   const activeTab = document.getElementById(`subtab-${sub}`);
   if (activeView) activeView.classList.remove('hidden');
-  if (activeTab) activeTab.className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
+  if (activeTab) {
+    activeTab.classList.remove('bg-stone-200', 'text-stone-700');
+    activeTab.classList.add('bg-[#383838]', 'text-white');
+  }
 
   if (sub === 'gallery') renderPropertyGallery();
+  applyRolePermissions();
 };
 
 window.toggleModal = function(modalId) {
