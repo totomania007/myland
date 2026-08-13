@@ -72,11 +72,17 @@ window.switchTab = function(tab) {
   const tabs = ['landing', 'admin', 'property-detail', 'register-lessor', 'tenant', 'contract'];
   tabs.forEach(t => {
     const btn = document.getElementById(`tab-${t}`);
-    if (btn) btn.className = 'youestates-tab inactive whitespace-nowrap';
+    if (btn) {
+      btn.classList.remove('active');
+      btn.classList.add('inactive');
+    }
   });
 
   const activeBtn = document.getElementById(`tab-${tab}`);
-  if (activeBtn) activeBtn.className = 'youestates-tab active whitespace-nowrap';
+  if (activeBtn) {
+    activeBtn.classList.remove('inactive');
+    activeBtn.classList.add('active');
+  }
 
   const targetView = document.getElementById(`view-${tab}`);
   if (targetView) targetView.classList.remove('hidden');
@@ -87,6 +93,8 @@ window.switchTab = function(tab) {
     renderTenantPropertyDropdown();
     initTenantFormDates();
   } else if (tab === 'contract') renderContractView();
+
+  applyRolePermissions();
 };
 
 window.switchSubTab = function(sub) {

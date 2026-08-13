@@ -2679,7 +2679,6 @@
 
     function switchTab(tab) {
       if (currentRole === 'tenant' && (tab === 'admin' || tab === 'register-lessor' || tab === 'contract')) {
-        alert('🔒 หน้านี้จำกัดสิทธิ์เฉพาะผู้ให้เช่า (Landlord Admin) เท่านั้นครับ (กรอก PIN: 1234 เพื่อสลับโหมด)');
         switchTab('property-detail');
         return;
       }
@@ -2692,37 +2691,41 @@
       document.getElementById('view-contract').classList.add('hidden');
       document.getElementById('view-tenant-dashboard').classList.add('hidden');
 
-      if (document.getElementById('tab-landing')) document.getElementById('tab-landing').className = 'youestates-tab inactive whitespace-nowrap';
-      document.getElementById('tab-admin').className = 'youestates-tab inactive whitespace-nowrap';
-      document.getElementById('tab-property-detail').className = 'youestates-tab inactive whitespace-nowrap';
-      document.getElementById('tab-register-lessor').className = 'youestates-tab inactive whitespace-nowrap';
-      document.getElementById('tab-tenant').className = 'youestates-tab inactive whitespace-nowrap';
-      document.getElementById('tab-contract').className = 'youestates-tab inactive whitespace-nowrap';
+      const tabs = ['landing', 'admin', 'property-detail', 'register-lessor', 'tenant', 'contract'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-${t}`);
+        if (btn) {
+          btn.classList.remove('active');
+          btn.classList.add('inactive');
+        }
+      });
+
+      const activeBtn = document.getElementById(`tab-${tab}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('inactive');
+        activeBtn.classList.add('active');
+      }
 
       if (tab === 'landing') {
         if (document.getElementById('view-landing')) document.getElementById('view-landing').classList.remove('hidden');
-        if (document.getElementById('tab-landing')) document.getElementById('tab-landing').className = 'youestates-tab active whitespace-nowrap';
       } else if (tab === 'admin') {
         document.getElementById('view-admin').classList.remove('hidden');
-        document.getElementById('tab-admin').className = 'youestates-tab active whitespace-nowrap';
       } else if (tab === 'property-detail') {
         document.getElementById('view-property-detail').classList.remove('hidden');
-        document.getElementById('tab-property-detail').className = 'youestates-tab active whitespace-nowrap';
         renderPropertyDetailView();
       } else if (tab === 'register-lessor') {
         document.getElementById('view-register-lessor').classList.remove('hidden');
-        document.getElementById('tab-register-lessor').className = 'youestates-tab active whitespace-nowrap';
         renderRegisteredLessorsList();
       } else if (tab === 'tenant') {
         document.getElementById('view-tenant').classList.remove('hidden');
-        document.getElementById('tab-tenant').className = 'youestates-tab active whitespace-nowrap';
         renderTenantPropertyDropdown();
         initTenantFormDates();
       } else if (tab === 'contract') {
         document.getElementById('view-contract').classList.remove('hidden');
-        document.getElementById('tab-contract').className = 'youestates-tab active whitespace-nowrap';
         renderContractView();
       }
+
+      applyRolePermissions();
     }
 
     function toggleModal(modalId) {
