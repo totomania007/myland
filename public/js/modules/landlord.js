@@ -196,6 +196,8 @@ export async function handleAddPropertySubmit(e) {
   const principal = parseFloat(document.getElementById('p-principal').value) || 0;
   const installment = parseFloat(document.getElementById('p-installment').value) || 0;
   const startDate = document.getElementById('p-startdate').value;
+  const meterElec = document.getElementById('p-meter-elec')?.value.trim() || '';
+  const meterWater = document.getElementById('p-meter-water')?.value.trim() || '';
 
   const newId = 'prop-' + Date.now();
   const newProp = {
@@ -209,6 +211,8 @@ export async function handleAddPropertySubmit(e) {
     rent: Math.round(installment * 1.25),
     deposit: Math.round(installment * 2),
     startDate,
+    meterElec,
+    meterWater,
     type: 'อสังหาฯ เช่า',
     size: '40 ตร.ม.',
     gallery: [],
@@ -266,6 +270,8 @@ export async function handleEditPropertyDetailSubmit(e) {
   const rentVal = parseFloat(document.getElementById('pde-rent')?.value) || 0;
   const depositVal = parseFloat(document.getElementById('pde-deposit')?.value) || 0;
   const sizeVal = document.getElementById('pde-size')?.value.trim() || prop.size || '40 ตร.ม.';
+  const meterElecVal = document.getElementById('pde-meter-elec')?.value.trim();
+  const meterWaterVal = document.getElementById('pde-meter-water')?.value.trim();
   const lessorKeyVal = document.getElementById('pde-lessor-select')?.value;
 
   const furnRows = document.querySelectorAll('#pde-furniture-rows-container > div');
@@ -287,8 +293,14 @@ export async function handleEditPropertyDetailSubmit(e) {
   prop.rent = rentVal;
   prop.deposit = depositVal;
   prop.size = sizeVal;
+  if (meterElecVal !== undefined) prop.meterElec = meterElecVal;
+  if (meterWaterVal !== undefined) prop.meterWater = meterWaterVal;
   if (lessorKeyVal) prop.lessorKey = lessorKeyVal;
   if (updatedInventory.length > 0) prop.inventoryList = updatedInventory;
+
+  const idx = state.propertiesState.findIndex(p => p.id === prop.id);
+  if (idx !== -1) {
+    state.propertiesState[idx] = prop;
 
   const idx = state.propertiesState.findIndex(p => p.id === prop.id);
   if (idx !== -1) {

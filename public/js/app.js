@@ -203,6 +203,8 @@ window.openEditPropertyDetailModal = function() {
   if (document.getElementById('pde-rent')) document.getElementById('pde-rent').value = prop.rent || 0;
   if (document.getElementById('pde-deposit')) document.getElementById('pde-deposit').value = prop.deposit || 0;
   if (document.getElementById('pde-size')) document.getElementById('pde-size').value = prop.size || '40 ตร.ม.';
+  if (document.getElementById('pde-meter-elec')) document.getElementById('pde-meter-elec').value = prop.meterElec || '';
+  if (document.getElementById('pde-meter-water')) document.getElementById('pde-meter-water').value = prop.meterWater || '';
   if (document.getElementById('pde-lessor-select')) document.getElementById('pde-lessor-select').value = prop.lessorKey || '';
 
   const furnContainer = document.getElementById('pde-furniture-rows-container');
