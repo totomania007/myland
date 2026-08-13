@@ -261,6 +261,10 @@
 
       alert(`ลบข้อมูลผู้เช่า "${t.fullName}" เรียบร้อยแล้ว!`);
     };
+    window.openAmortizationModal = window.openAmortizationModal || function() {
+      window.toggleModal('modal-amortization-table');
+      if (window.renderAmortizationTable) window.renderAmortizationTable();
+    };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
@@ -1630,7 +1634,7 @@
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_15"></script>
+  <script type="module" src="js/app.js?v=20260814_16"></script>
 </body>
 </html>
 
