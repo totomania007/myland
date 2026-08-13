@@ -280,6 +280,18 @@ async function initApp() {
     state.propertiesState = JSON.parse(localStorage.getItem('property_os_properties') || '[]');
   }
 
+  try {
+    const resL = await fetch('/api/lessors');
+    if (resL.ok) {
+      const dbLessors = await resL.json();
+      if (Array.isArray(dbLessors) && dbLessors.length > 0) {
+        dbLessors.forEach(l => {
+          if (l.id) state.lessorProfiles[l.id] = l;
+        });
+      }
+    }
+  } catch (e) {}
+
   state.currentPropertyId = state.propertiesState.length > 0 ? state.propertiesState[0].id : '';
   
   const savedRole = getCurrentRole();

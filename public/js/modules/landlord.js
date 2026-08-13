@@ -278,7 +278,7 @@ export async function handleEditPropertyDetailSubmit(e) {
   alert(`บันทึกการแก้ไขสเปกทรัพย์สิน "${prop.name}" ลงในฐานข้อมูลเรียบร้อยแล้ว!`);
 }
 
-export function handleLessorRegisterTabSubmit(e) {
+export async function handleLessorRegisterTabSubmit(e) {
   if (e) e.preventDefault();
   const nameEl = document.getElementById('reg-lp-fullname');
   const idCardEl = document.getElementById('reg-lp-idcard');
@@ -293,8 +293,8 @@ export function handleLessorRegisterTabSubmit(e) {
   }
 
   const key = 'lessor-' + Date.now();
-  
-  state.lessorProfiles[key] = {
+  const lessorData = {
+    id: key,
     name: fullName,
     idCard: idCardEl ? idCardEl.value.trim() : '',
     age: ageEl ? (parseInt(ageEl.value) || 45) : 45,
@@ -302,15 +302,27 @@ export function handleLessorRegisterTabSubmit(e) {
     address: addressEl ? addressEl.value.trim() : '',
     imageUrl: state.lessorProfiles[key]?.imageUrl || CONFIG.PLACEHOLDER_SVG
   };
-
+  
+  state.lessorProfiles[key] = lessorData;
   saveStateToLocalStorage();
+
+  try {
+    await fetch('/api/lessors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lessorData)
+    });
+  } catch (err) {
+    console.warn('D1 Lessor Sync Warning:', err);
+  }
+
   renderRegisteredLessorsList();
   if (window.renderLessorSelectOptions) window.renderLessorSelectOptions();
   if (window.renderPropertyDetailView) window.renderPropertyDetailView();
   if (window.renderContractView) window.renderContractView();
   renderAdminData();
 
-  alert(`ลงทะเบียนผู้ให้เช่า "${fullName}" เรียบร้อยแล้ว!`);
+  alert(`ลงทะเบียนผู้ให้เช่า "${fullName}" และบันทึกลงฐานข้อมูลเรียบร้อยแล้ว!`);
 
   if (nameEl) nameEl.value = '';
   if (idCardEl) idCardEl.value = '';

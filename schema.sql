@@ -65,3 +65,15 @@ CREATE TABLE IF NOT EXISTS bank_documents (
     cloudinary_url TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 6. LESSORS TABLE (ผู้ให้เช่า)
+CREATE TABLE IF NOT EXISTS lessors (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    id_card TEXT NOT NULL,
+    age INTEGER DEFAULT 45,
+    phone TEXT,
+    address TEXT,
+    image_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

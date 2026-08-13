@@ -15,17 +15,74 @@ const MIME_TYPES = {
 };
 
 const DB_FILE = path.join(__dirname, 'db_properties.json');
+const LESSORS_DB_FILE = path.join(__dirname, 'db_lessors.json');
+
 let localDbProperties = [];
 if (fs.existsSync(DB_FILE)) {
   try { localDbProperties = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch (e) { localDbProperties = []; }
+}
+
+let localDbLessors = [];
+if (fs.existsSync(LESSORS_DB_FILE)) {
+  try { localDbLessors = JSON.parse(fs.readFileSync(LESSORS_DB_FILE, 'utf8')); } catch (e) { localDbLessors = []; }
 }
 
 function saveLocalDb() {
   fs.writeFileSync(DB_FILE, JSON.stringify(localDbProperties, null, 2));
 }
 
+function saveLessorsDb() {
+  fs.writeFileSync(LESSORS_DB_FILE, JSON.stringify(localDbLessors, null, 2));
+}
+
 const server = http.createServer((req, res) => {
   let reqUrl = req.url.split('?')[0];
+
+  if (reqUrl === '/api/lessors') {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
+    if (req.method === 'GET') {
+      res.writeHead(200);
+      res.end(JSON.stringify(localDbLessors));
+      return;
+    }
+
+    let body = '';
+    req.on('data', chunk => { body += chunk.toString(); });
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body || '{}');
+        if (req.method === 'POST') {
+          const id = data.id || `lessor-${Date.now()}`;
+          const newLessor = { ...data, id };
+          const idx = localDbLessors.findIndex(l => l.id === id);
+          if (idx !== -1) localDbLessors[idx] = newLessor;
+          else localDbLessors.unshift(newLessor);
+          saveLessorsDb();
+          res.writeHead(200);
+          res.end(JSON.stringify({ success: true, id }));
+        } else if (req.method === 'DELETE') {
+          localDbLessors = localDbLessors.filter(l => l.id !== data.id);
+          saveLessorsDb();
+          res.writeHead(200);
+          res.end(JSON.stringify({ success: true, id: data.id }));
+        }
+      } catch (err) {
+        res.writeHead(500);
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
 
   if (reqUrl === '/api/properties') {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
