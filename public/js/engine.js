@@ -555,12 +555,8 @@
       return;
     }
 
-    if (!prop.gallery || prop.gallery.length === 0) {
-      prop.gallery = [
-        { id: `g-${Date.now()}-1`, type: 'image', title: 'ห้องนั่งเล่น Living Room', category: 'interior', url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&auto=format&fit=crop&q=80', caption: 'ห้องนั่งเล่นกว้างขวาง ตกแต่งพร้อมอยู่' },
-        { id: `g-${Date.now()}-2`, type: 'image', title: 'ห้องนอน Master Bedroom', category: 'interior', url: 'https://images.unsplash.com/photo-1540518614846-7ede433c4550?w=1200&auto=format&fit=crop&q=80', caption: 'เตียง 6 ฟุต พร้อมวิวทิศตะวันออก' },
-        { id: `g-${Date.now()}-3`, type: 'image', title: 'สระว่ายน้ำโครงการ', category: 'exterior', url: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=1200&auto=format&fit=crop&q=80', caption: 'สระว่ายน้ำระบบเกลือ ชั้นดาดฟ้า' }
-      ];
+    if (!prop.gallery) {
+      prop.gallery = [];
     }
 
     // Promo Card Sync
@@ -568,12 +564,12 @@
     if (document.getElementById('pd-promo-location')) document.getElementById('pd-promo-location').innerText = prop.address || '-';
     if (document.getElementById('pd-promo-price')) document.getElementById('pd-promo-price').innerText = `฿${(prop.rent || 0).toLocaleString()} /เดือน`;
     if (document.getElementById('pd-promo-deposit')) document.getElementById('pd-promo-deposit').innerText = `฿${(prop.deposit || 0).toLocaleString()}`;
-    if (document.getElementById('pd-promo-cover-img') && prop.gallery[0]) {
-      document.getElementById('pd-promo-cover-img').src = prop.gallery[0].url || CONFIG.PLACEHOLDER_SVG;
+    if (document.getElementById('pd-promo-cover-img')) {
+      document.getElementById('pd-promo-cover-img').src = (prop.gallery && prop.gallery.length > 0 && prop.gallery[0].url) ? prop.gallery[0].url : CONFIG.PLACEHOLDER_SVG;
     }
 
     // Filter Items
-    let items = prop.gallery;
+    let items = prop.gallery || [];
     if (currentGalleryFilter && currentGalleryFilter !== 'all') {
       items = items.filter(it => it.category === currentGalleryFilter || (currentGalleryFilter === 'video' && it.type === 'video'));
     }
@@ -583,7 +579,7 @@
       grid.innerHTML = `
         <div class="col-span-full text-center py-8 text-stone-400 bg-stone-50 rounded-2xl border border-dashed border-stone-200 p-6 space-y-2">
           <div class="text-2xl">📸</div>
-          <div class="text-xs font-bold text-stone-600">ยังไม่มีรูปภาพหรือวิดีโอในหมวดหมู่นี้</div>
+          <div class="text-xs font-bold text-stone-600">ยังไม่มีรูปภาพหรือวิดีโอในคลังของ "${prop.name}"</div>
           <p class="text-[11px] text-stone-400">กดปุ่ม "+ อัปโหลดรูปภาพ" หรือ "แทรกลิงก์" ด้านบนเพื่อเพิ่มสื่อ</p>
         </div>
       `;
@@ -661,22 +657,31 @@
     try {
       const compressedDataUrl = await compressImageFile(file, 1200, 0.8);
       const title = prompt('กรุณาใส่ชื่อรูปภาพ (เช่น ห้องนั่งเล่น, วิวระเบียง, ห้องน้ำ):', file.name.replace(/\.[^/.]+$/, "")) || 'รูปภาพทรัพย์สิน';
-      const category = prompt('กรุณาเลือกหมวดหมู่ (พิมพ์ 1=ภายนอก, 2=ภายใน, 3=จุดเด่น):', '2') === '1' ? 'exterior' : 'interior';
+      const catChoice = prompt('กรุณาเลือกหมวดหมู่ (พิมพ์ 1=ภายนอก, 2=ภายใน, 3=จุดเด่น):', '2');
+      const category = catChoice === '1' ? 'exterior' : (catChoice === '3' ? 'highlight' : 'interior');
 
       if (!prop.gallery) prop.gallery = [];
       const newItem = {
         id: `g-${Date.now()}`,
         type: 'image',
         title,
-        category,
+        category: category || 'interior',
         url: compressedDataUrl,
         caption: 'อัปโหลดพร้อมบีบอัดความละเอียดสูง'
       };
 
       prop.gallery.unshift(newItem);
+
+      const propIdx = state.propertiesState.findIndex(p => String(p.id) === String(prop.id));
+      if (propIdx >= 0) {
+        state.propertiesState[propIdx] = prop;
+      }
+
       saveStateToLocalStorage();
       renderPropertyGallery();
-      alert(`✅ บันทึกรูปภาพ "${title}" ลงในคลังภาพเรียบร้อยแล้ว (บีบอัดขนาดไฟล์เล็ก โหลดเร็วบนมือถือ)!`);
+      alert(`✅ บันทึกรูปภาพ "${title}" ลงในคลังของ "${prop.name}" เรียบร้อยแล้ว!`);
+
+      event.target.value = '';
 
       try {
         await fetch('/api/properties', {
@@ -728,10 +733,16 @@
     };
 
     prop.gallery.unshift(newItem);
+
+    const propIdx = state.propertiesState.findIndex(p => String(p.id) === String(prop.id));
+    if (propIdx >= 0) {
+      state.propertiesState[propIdx] = prop;
+    }
+
     saveStateToLocalStorage();
     renderPropertyGallery();
     toggleModal('modal-add-media-link');
-    alert(`✅ บันทึกลิงก์ "${title}" ลงในคลังสื่อเรียบร้อยแล้ว!`);
+    alert(`✅ บันทึกลิงก์ "${title}" ลงในคลังของ "${prop.name}" เรียบร้อยแล้ว!`);
 
     if (document.getElementById('gml-url')) document.getElementById('gml-url').value = '';
     if (document.getElementById('gml-title')) document.getElementById('gml-title').value = '';
@@ -753,12 +764,18 @@
     const item = prop.gallery.find(it => String(it.id) === String(itemId));
     if (!item) return;
 
-    if (!confirm(`คุณต้องการลบสื่อ "${item.title || 'รายการนี้'}" ออกจากคลังใช่หรือไม่?`)) return;
+    if (!confirm(`คุณต้องการลบ "${item.title || 'สื่อรายการนี้'}" ออกจากคลังของ "${prop.name}" ใช่หรือไม่?`)) return;
 
     prop.gallery = prop.gallery.filter(it => String(it.id) !== String(itemId));
+
+    const propIdx = state.propertiesState.findIndex(p => String(p.id) === String(prop.id));
+    if (propIdx >= 0) {
+      state.propertiesState[propIdx] = prop;
+    }
+
     saveStateToLocalStorage();
     renderPropertyGallery();
-    alert(`✅ ลบสื่อเรียบร้อยแล้ว!`);
+    alert(`✅ ลบสื่อออกจากคลังและบันทึกเรียบร้อยแล้ว!`);
 
     try {
       await fetch('/api/properties', {

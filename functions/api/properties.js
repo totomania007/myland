@@ -20,12 +20,14 @@ async function ensurePropertiesTable(env) {
         meter_water TEXT,
         inventory_json TEXT,
         rate_schedule_json TEXT,
+        gallery_json TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `).run();
   } catch(e) {}
 
   const migrations = [
+    "ALTER TABLE properties ADD COLUMN gallery_json TEXT",
     "ALTER TABLE properties ADD COLUMN rate_schedule_json TEXT",
     "ALTER TABLE properties ADD COLUMN inventory_json TEXT",
     "ALTER TABLE properties ADD COLUMN meter_elec TEXT",
@@ -71,7 +73,8 @@ export async function onRequestGet(context) {
       meterElec: r.meter_elec || '',
       meterWater: r.meter_water || '',
       inventoryList: r.inventory_json ? JSON.parse(r.inventory_json) : [],
-      rateSchedule: r.rate_schedule_json ? JSON.parse(r.rate_schedule_json) : []
+      rateSchedule: r.rate_schedule_json ? JSON.parse(r.rate_schedule_json) : [],
+      gallery: r.gallery_json ? JSON.parse(r.gallery_json) : []
     }));
     return new Response(JSON.stringify(formatted), {
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
@@ -92,8 +95,8 @@ export async function onRequestPost(context) {
     const id = data.id || `prop-${Date.now()}`;
     
     await env.DB.prepare(`
-      INSERT INTO properties (id, name, lessor_key, type, address, house_no, size, rent, deposit, principal, installment, rate, start_date, meter_elec, meter_water, inventory_json, rate_schedule_json)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO properties (id, name, lessor_key, type, address, house_no, size, rent, deposit, principal, installment, rate, start_date, meter_elec, meter_water, inventory_json, rate_schedule_json, gallery_json)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         lessor_key = excluded.lessor_key,
@@ -110,7 +113,8 @@ export async function onRequestPost(context) {
         meter_elec = excluded.meter_elec,
         meter_water = excluded.meter_water,
         inventory_json = excluded.inventory_json,
-        rate_schedule_json = excluded.rate_schedule_json
+        rate_schedule_json = excluded.rate_schedule_json,
+        gallery_json = excluded.gallery_json
     `).bind(
       id,
       String(data.name || ''),
@@ -128,7 +132,8 @@ export async function onRequestPost(context) {
       String(data.meterElec || ''),
       String(data.meterWater || ''),
       JSON.stringify(data.inventoryList || []),
-      JSON.stringify(data.rateSchedule || [])
+      JSON.stringify(data.rateSchedule || []),
+      JSON.stringify(data.gallery || [])
     ).run();
 
     return new Response(JSON.stringify({ success: true, id }), {
