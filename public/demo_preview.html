@@ -53,9 +53,17 @@
       ['specs', 'gallery', 'loan', 'lessor'].forEach(s => {
         const view = document.getElementById(`subview-${s}`);
         if (view) view.classList.add('hidden');
+        const btn = document.getElementById(`subtab-${s}`);
+        if (btn) {
+          btn.className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
+        }
       });
       const activeView = document.getElementById(`subview-${sub}`);
       if (activeView) activeView.classList.remove('hidden');
+      const activeBtn = document.getElementById(`subtab-${sub}`);
+      if (activeBtn) {
+        activeBtn.className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
+      }
     };
     window.openAmortizationModal = function() {
       window.toggleModal('modal-amortization-table');
@@ -206,6 +214,7 @@
         });
       }
 
+      // 1. Specs
       if (document.getElementById('pd-name')) document.getElementById('pd-name').innerText = prop.name || 'สเปกอสังหาริมทรัพย์';
       if (document.getElementById('pd-address')) document.getElementById('pd-address').innerText = prop.address || '-';
       if (document.getElementById('pd-type')) document.getElementById('pd-type').innerText = prop.type || 'อสังหาฯ เช่า';
@@ -216,8 +225,123 @@
       if (document.getElementById('pd-deposit')) document.getElementById('pd-deposit').innerText = `฿${(prop.deposit || 0).toLocaleString()} บาท`;
       if (document.getElementById('pd-meter-elec')) document.getElementById('pd-meter-elec').innerText = prop.meterElec || '-';
       if (document.getElementById('pd-meter-water')) document.getElementById('pd-meter-water').innerText = prop.meterWater || '-';
+
+      // 2. Loan & Retention Numbers
+      let balance = prop.principal || 0;
+      let totalPaidPrincipal = 0;
+      let totalPaidInterest = 0;
+      let elapsedMonths = 0;
+      if (prop.startDate) {
+        const start = new Date(prop.startDate);
+        const now = new Date();
+        if (!isNaN(start.getTime())) {
+          elapsedMonths = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+          if (elapsedMonths < 0) elapsedMonths = 0;
+        }
+      }
+
+      let currentBalance = prop.principal || 0;
+      let currentPaidPrincipal = 0;
+      let currentPaidInterest = 0;
+      let totalMonths = 0;
+
+      for (let i = 1; i <= 360; i++) {
+        if (balance <= 0) break;
+        let rate = prop.rate || 4.5;
+        if (prop.rateSchedule && prop.rateSchedule.length > 0) {
+          for (let s = 0; s < prop.rateSchedule.length; s++) {
+            if (i >= prop.rateSchedule[s].startMonth && i <= prop.rateSchedule[s].endMonth) {
+              rate = prop.rateSchedule[s].rate;
+              break;
+            }
+          }
+        }
+        const monthlyRate = (rate / 100) / 12;
+        const interest = balance * monthlyRate;
+        let princPay = (prop.installment || 0) - interest;
+        if (princPay <= 0) princPay = 0;
+        if (princPay > balance) princPay = balance;
+
+        balance -= princPay;
+        totalPaidPrincipal += princPay;
+        totalPaidInterest += interest;
+        totalMonths++;
+
+        if (i <= elapsedMonths) {
+          currentBalance = balance;
+          currentPaidPrincipal = totalPaidPrincipal;
+          currentPaidInterest = totalPaidInterest;
+        }
+      }
+
+      if (elapsedMonths === 0) {
+        currentBalance = prop.principal || 0;
+        currentPaidPrincipal = 0;
+        currentPaidInterest = 0;
+      }
+
+      const paidPct = (prop.principal || 0) > 0 ? Math.round((currentPaidPrincipal / (prop.principal || 1)) * 100) : 0;
+      const years = (totalMonths / 12).toFixed(1);
+
+      if (document.getElementById('pd-balance-display')) document.getElementById('pd-balance-display').innerText = `฿${Math.round(currentBalance).toLocaleString()}`;
+      if (document.getElementById('pd-balance-progress')) document.getElementById('pd-balance-progress').innerText = `ผ่อนชำระแล้ว ${paidPct}% (ชำระเงินต้นสะสม ฿${Math.round(currentPaidPrincipal).toLocaleString()} / ดอกเบี้ยสะสม ฿${Math.round(currentPaidInterest).toLocaleString()})`;
       if (document.getElementById('pd-principal-display')) document.getElementById('pd-principal-display').innerText = `฿${(prop.principal || 0).toLocaleString()}`;
       if (document.getElementById('pd-installment-display')) document.getElementById('pd-installment-display').innerText = `฿${(prop.installment || 0).toLocaleString()} /เดือน`;
+
+      // 3. Retention Schedule Cards
+      const retContainer = document.getElementById('pd-rate-schedule-summary');
+      if (retContainer) {
+        retContainer.innerHTML = '';
+        const schedule = (prop.rateSchedule && prop.rateSchedule.length > 0) ? prop.rateSchedule : [
+          { startMonth: 1, endMonth: 36, rate: prop.rate || 4.5, label: 'โปรโมชั่น Retention ปีที่ 1-3' },
+          { startMonth: 37, endMonth: 360, rate: (prop.rate || 4.5) + 1.5, label: 'อัตราดอกเบี้ยลอยตัว (MRR-0.5%)' }
+        ];
+
+        schedule.forEach(item => {
+          const startYear = Math.ceil(item.startMonth / 12);
+          const endYear = Math.ceil(item.endMonth / 12);
+          retContainer.innerHTML += `
+            <div class="p-3.5 bg-stone-50 border border-stone-200 rounded-xl flex items-center justify-between text-xs">
+              <div>
+                <div class="font-extrabold text-[#383838]">📌 ช่วงเดือนที่ ${item.startMonth}–${item.endMonth} (ประมาณปีที่ ${startYear}–${endYear})</div>
+                <div class="text-[11px] text-stone-500 font-medium">${item.label || 'ช่วงดอกเบี้ยสัญญาเงินกู้'}</div>
+              </div>
+              <div class="text-right">
+                <span class="text-base font-black text-[#e05646]">${item.rate}%</span>
+                <span class="text-[10px] text-stone-400 block font-bold">ต่อปี</span>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      // 4. Inventory Container
+      const invContainer = document.getElementById('pd-inventory-container');
+      if (invContainer) {
+        invContainer.innerHTML = '';
+        const inventory = prop.inventoryList || [];
+        if (inventory.length === 0) {
+          invContainer.innerHTML = `<div class="text-stone-400 text-center py-4 font-bold">ยังไม่มีรายการเฟอร์นิเจอร์</div>`;
+        } else {
+          inventory.forEach(item => {
+            const itemObj = typeof item === 'object' ? item : { name: item, img: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%23e2ded8'><rect width='400' height='250'/></svg>" };
+            invContainer.innerHTML += `
+              <div class="p-2 bg-stone-50 border border-stone-200 rounded-lg flex items-center justify-between">
+                <span class="font-bold text-stone-800">${itemObj.name}</span>
+                <img src="${itemObj.img}" class="w-10 h-8 object-cover rounded border border-stone-300">
+              </div>
+            `;
+          });
+        }
+      }
+
+      // 5. Lessor Details
+      const profiles = (window.state && window.state.lessorProfiles) ? window.state.lessorProfiles : JSON.parse(localStorage.getItem('property_os_lessors') || '{}');
+      const lessor = profiles[prop.lessorKey] || Object.values(profiles)[0] || { name: 'ผู้ให้เช่า', idCard: '-', address: '-' };
+      if (document.getElementById('pd-lessor-display')) document.getElementById('pd-lessor-display').innerText = lessor.name || 'ผู้ให้เช่า';
+      if (document.getElementById('pd-lessor-detail')) document.getElementById('pd-lessor-detail').innerText = `บัตรประชาชน: ${lessor.idCard || '-'}`;
+      if (document.getElementById('pd-lessor-address-detail')) document.getElementById('pd-lessor-address-detail').innerText = `ที่อยู่: ${lessor.address || '-'}`;
+      if (document.getElementById('pd-lessor-card-img') && lessor.imageUrl) document.getElementById('pd-lessor-card-img').src = lessor.imageUrl;
     };
 
     window.renderRegisteredLessorsList = window.renderRegisteredLessorsList || function() {
@@ -1778,14 +1902,22 @@
       ['specs', 'gallery', 'loan', 'lessor'].forEach(s => {
         const view = document.getElementById(`subview-${s}`);
         if (view) view.classList.add('hidden');
+        const btn = document.getElementById(`subtab-${s}`);
+        if (btn) {
+          btn.className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
+        }
       });
       const activeView = document.getElementById(`subview-${sub}`);
       if (activeView) activeView.classList.remove('hidden');
+      const activeBtn = document.getElementById(`subtab-${sub}`);
+      if (activeBtn) {
+        activeBtn.className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
+      }
     };
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_25"></script>
+  <script type="module" src="js/app.js?v=20260814_26"></script>
 </body>
 </html>
 

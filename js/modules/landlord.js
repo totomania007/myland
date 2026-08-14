@@ -20,9 +20,23 @@ export function getRateForMonth(monthIndex, rateSchedule) {
 
 export function calculateMortgage(principal, monthlyPayment, annualRate, startDateStr, rateSchedule) {
   let balance = principal;
-  let paidPrincipal = 0;
-  let paidInterest = 0;
-  let months = 0;
+  let totalPaidPrincipal = 0;
+  let totalPaidInterest = 0;
+  let totalMonths = 0;
+
+  let elapsedMonths = 0;
+  if (startDateStr) {
+    const start = new Date(startDateStr);
+    const now = new Date();
+    if (!isNaN(start.getTime())) {
+      elapsedMonths = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+      if (elapsedMonths < 0) elapsedMonths = 0;
+    }
+  }
+
+  let currentBalance = principal;
+  let currentPaidPrincipal = 0;
+  let currentPaidInterest = 0;
 
   for (let i = 1; i <= 360; i++) {
     if (balance <= 0) break;
@@ -36,14 +50,34 @@ export function calculateMortgage(principal, monthlyPayment, annualRate, startDa
     if (princPay > balance) princPay = balance;
 
     balance -= princPay;
-    paidPrincipal += princPay;
-    paidInterest += interest;
-    months++;
+    totalPaidPrincipal += princPay;
+    totalPaidInterest += interest;
+    totalMonths++;
+
+    if (i <= elapsedMonths) {
+      currentBalance = balance;
+      currentPaidPrincipal = totalPaidPrincipal;
+      currentPaidInterest = totalPaidInterest;
+    }
   }
 
-  const years = (months / 12).toFixed(1);
-  const paidPct = principal > 0 ? Math.round((paidPrincipal / principal) * 100) : 0;
-  return { months, yearsTxt: `${months} งวด (${years} ปี)`, balance, paidPrincipal: Math.round(paidPrincipal), paidInterest: Math.round(paidInterest), paidPct };
+  if (elapsedMonths === 0) {
+    currentBalance = principal;
+    currentPaidPrincipal = 0;
+    currentPaidInterest = 0;
+  }
+
+  const years = (totalMonths / 12).toFixed(1);
+  const paidPct = principal > 0 ? Math.round((currentPaidPrincipal / principal) * 100) : 0;
+  return { 
+    months: totalMonths, 
+    yearsTxt: `${totalMonths} งวด (${years} ปี)`, 
+    balance: Math.round(currentBalance), 
+    paidPrincipal: Math.round(currentPaidPrincipal), 
+    paidInterest: Math.round(currentPaidInterest), 
+    paidPct,
+    elapsedMonths 
+  };
 }
 
 export function renderAdminData() {
