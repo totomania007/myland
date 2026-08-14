@@ -68,14 +68,19 @@
       if (window.renderPropertyDetailView) window.renderPropertyDetailView();
       if (window.renderContractView) window.renderContractView();
     }
-    async function syncFromCloudflareD1(silent) {
+    async function syncFromCloudflareD1(silent = true) {
       try {
         const resP = await fetch('/api/properties');
         if (resP.ok) {
           const dbProps = await resP.json();
           if (Array.isArray(dbProps) && dbProps.length > 0) {
             localStorage.setItem('property_os_properties', JSON.stringify(dbProps));
-            if (window.state) window.state.propertiesState = dbProps;
+            if (window.state) {
+              window.state.propertiesState = dbProps;
+              if (!window.state.currentPropertyId || !dbProps.find(p => p.id === window.state.currentPropertyId)) {
+                window.state.currentPropertyId = dbProps[0].id;
+              }
+            }
           }
         }
       } catch (e) {}
@@ -102,11 +107,23 @@
       if (window.renderLessorSelectOptions) window.renderLessorSelectOptions();
       if (window.renderTenantPropertyDropdown) window.renderTenantPropertyDropdown();
 
+      const d1Status = document.getElementById('d1-live-badge');
+      if (d1Status) {
+        d1Status.innerText = '● D1 Synced';
+        d1Status.className = 'text-emerald-600 font-black text-sm';
+      }
+
       if (silent !== true) {
         alert('✅ ซิงค์ข้อมูลล่าสุดจาก Cloudflare D1 สำเร็จแล้ว!');
       }
     }
     window.syncFromCloudflareD1 = syncFromCloudflareD1;
+
+    // AUTO-EXECUTE SYNC IMMEDIATELY AND ON EVERY ENTRY / FOCUS
+    syncFromCloudflareD1(true);
+    document.addEventListener('DOMContentLoaded', () => syncFromCloudflareD1(true));
+    window.addEventListener('pageshow', () => syncFromCloudflareD1(true));
+    window.addEventListener('focus', () => syncFromCloudflareD1(true));
 
     window.verifyAdminPinSubmit = function() {
       window.currentRole = 'landlord';
@@ -675,6 +692,10 @@
       </div>
 
       <div class="flex items-center gap-4">
+        <div class="text-xs text-right hidden md:block">
+          <span class="text-stone-400 font-bold uppercase tracking-wider text-[10px] block">CLOUDFLARE D1</span>
+          <strong id="d1-live-badge" class="text-emerald-600 font-black text-sm">● D1 Auto-Sync</strong>
+        </div>
         <div class="text-xs text-right hidden md:block">
           <span class="text-stone-400 font-bold uppercase tracking-wider text-[10px] block">CLOUDINARY STORAGE</span>
           <strong class="text-emerald-600 font-black text-sm">● ogdfbbpw (Active)</strong>
@@ -1764,7 +1785,7 @@
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_24"></script>
+  <script type="module" src="js/app.js?v=20260814_25"></script>
 </body>
 </html>
 
