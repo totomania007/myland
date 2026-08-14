@@ -788,6 +788,29 @@
     });
   }
 
+  function renderLessorSelectOptions() {
+    const selects = ['p-lessor', 'pde-lessor-select'];
+    selects.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.innerHTML = '';
+      const keys = Object.keys(state.lessorProfiles || {});
+      keys.forEach(k => {
+        const prof = state.lessorProfiles[k];
+        el.innerHTML += `<option value="${k}">👤 ${prof.name}</option>`;
+      });
+    });
+  }
+
+  function renderTenantPropertyDropdown() {
+    const sel = document.getElementById('tenant-prop-id');
+    if (!sel) return;
+    sel.innerHTML = '';
+    state.propertiesState.forEach(p => {
+      sel.innerHTML += `<option value="${p.id}">🏡 ${p.name} ${p.houseNo ? `(${p.houseNo})` : ''}</option>`;
+    });
+  }
+
   function deleteRegisteredLessor(key) {
     const prof = state.lessorProfiles[key];
     if (!prof) return;
