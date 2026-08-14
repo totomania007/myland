@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_37"></script>
+  <script src="js/engine.js?v=20260814_38"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -151,24 +151,66 @@
       transform: scale(1.08) rotate(3deg);
     }
 
+    .a4-preview-canvas {
+      background-color: #4a4d52;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+      border-radius: 1.25rem;
+      overflow-x: auto;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .a4-sheet {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 20mm 20mm 20mm 25mm;
+      background: #ffffff;
+      color: #000000;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
+      font-family: 'Sarabun', 'TH Sarabun PSK', sans-serif !important;
+      font-size: 16pt !important;
+      line-height: 1.45 !important;
+      box-sizing: border-box;
+      position: relative;
+    }
+
     .sarabun-contract {
       font-family: 'Sarabun', 'TH Sarabun PSK', sans-serif !important;
       font-size: 16pt !important;
-      line-height: 1.6 !important;
+      line-height: 1.45 !important;
       color: #000000 !important;
-      padding: 1in !important;
+    }
+
+    .sarabun-contract p {
+      margin-bottom: 0.35em;
+      text-align: justify;
+      text-indent: 2.5em;
+      line-height: 1.45;
+    }
+
+    .sarabun-contract p.no-indent {
+      text-indent: 0 !important;
     }
 
     @page {
-      size: A4;
-      margin: 1in;
+      size: A4 portrait;
+      margin: 20mm 20mm 20mm 25mm;
     }
 
     @media print {
       .no-print { display: none !important; }
-      .page-break { break-after: page; page-break-after: always; }
-      body { background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; }
-      .a4-container { box-shadow: none !important; border: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      body { background: white !important; padding: 0 !important; margin: 0 !important; }
+      .a4-preview-canvas { background: transparent !important; padding: 0 !important; display: block !important; box-shadow: none !important; border-radius: 0 !important; }
+      .a4-sheet {
+        width: 100% !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        font-size: 16pt !important;
+      }
     }
   </style>
 </head>
@@ -1056,82 +1098,90 @@
       <div id="view-contract" class="hidden space-y-6 max-w-5xl mx-auto">
         <div class="flex justify-between items-center no-print youestates-card p-4">
           <div>
-            <h3 class="font-extrabold text-[#383838] text-sm">สัญญาเช่าบ้าน (TH Sarabun 16pt — ขอบ 1 นิ้ว)</h3>
-            <p class="text-xs text-stone-400 font-medium">สัญญามาตรฐาน 7 ข้อ พร้อมรูปเฟอร์นิเจอร์และบัตรประชาชนแนบท้ายครบชุด</p>
+            <h3 class="font-extrabold text-[#383838] text-sm">📄 หนังสือสัญญาเช่าบ้าน (มาตรฐานราชการ A4 ฟอนต์ TH Sarabun 16pt)</h3>
+            <p class="text-xs text-stone-400 font-medium">สัดส่วนขนาดจริง 210 x 297 มม. ขอบซ้าย 2.5 ซม. / ขอบอื่น 2.0 ซม. พร้อมสั่งพิมพ์หรือบันทึกเป็น PDF</p>
           </div>
           <button onclick="window.print()" class="youestates-btn-coral text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-sm flex items-center gap-2">
-            🖨️ พิมพ์สัญญา A4 (Print)
+            🖨️ สั่งพิมพ์สัญญา / บันทึก PDF (Print A4)
           </button>
         </div>
 
-        <div class="a4-container sarabun-contract bg-white text-black shadow-xl relative space-y-8 border border-stone-300 rounded-sm">
-          <div class="relative border-b-2 border-dashed border-stone-400 pb-12">
-            <div class="absolute top-0 right-0 border border-black px-3 py-0.5 text-xs font-bold">ต้นฉบับ (Original)</div>
+        <div class="a4-preview-canvas">
+          <div class="a4-sheet sarabun-contract">
+            <div class="absolute top-6 right-6 border border-black px-2 py-0.5 text-[11pt] font-bold">ต้นฉบับ</div>
             
-            <div class="text-center font-bold text-2xl mb-6 tracking-wide">หนังสือสัญญาเช่าบ้าน</div>
+            <div class="text-center font-bold text-[20pt] mb-4 tracking-normal">หนังสือสัญญาเช่าบ้าน</div>
             
-            <div class="text-right mb-4">
-              สัญญานี้ทำที่: <span id="c-place-1" class="font-bold">-</span><br>
-              วันที่: <span id="c-date-1" class="font-bold">-</span>
+            <div class="text-right mb-4 text-[16pt]">
+              ทำที่ <span id="c-place-1" class="font-bold border-b border-dotted border-black pb-0.5 px-2">-</span><br>
+              วันที่ <span id="c-date-1" class="font-bold border-b border-dotted border-black pb-0.5 px-2">-</span>
             </div>
 
-            <div class="space-y-3 text-justify">
-              <p>ระหว่าง <strong><span id="c-lessor-name-1">ผู้ให้เช่า</span></strong> อายุ <span id="c-lessor-age-1">-</span> ปี อยู่ที่ <span id="c-lessor-address-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ผู้ให้เช่า”</strong> ฝ่ายหนึ่ง</p>
-              <p>กับ <strong><span id="c-lessee-name-1">ผู้เช่า</span></strong> อายุ <span id="c-lessee-age-1">-</span> ปี อยู่ที่ <span id="c-lessee-address-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ผู้เช่า”</strong> อีกฝ่ายหนึ่ง</p>
+            <div class="space-y-2 text-[16pt] leading-normal">
+              <p>สัญญานี้ทำขึ้นระหว่าง <strong><span id="c-lessor-name-1">ผู้ให้เช่า</span></strong> อายุ <span id="c-lessor-age-1">-</span> ปี อยู่บ้านเลขที่ <span id="c-lessor-address-1">-</span> เลขประจำตัวประชาชน <span id="c-lessor-idcard-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ผู้ให้เช่า”</strong> ฝ่ายหนึ่ง</p>
+              <p>กับ <strong><span id="c-lessee-name-1">ผู้เช่า</span></strong> อายุ <span id="c-lessee-age-1">-</span> ปี อยู่บ้านเลขที่ <span id="c-lessee-address-1">-</span> เลขประจำตัวประชาชน <span id="c-lessee-idcard-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ผู้เช่า”</strong> อีกฝ่ายหนึ่ง</p>
 
-              <p class="indent-8 font-semibold">ทั้งสองฝ่ายตกลงทำสัญญากันไว้มีข้อความดังต่อไปนี้</p>
+              <p class="font-bold pt-1">คู่สัญญาทั้งสองฝ่ายได้ตกลงทำสัญญากันไว้มีข้อความดังต่อไปนี้</p>
 
-              <p><strong>ข้อ ๑</strong> ผู้ให้เช่าตกลงให้เช่าและผู้เช่าตกลงรับเช่าบ้านเลขที่ <strong><span id="c-house-no-1">-</span></strong> ซึ่งอยู่ที่ <span id="c-full-address-1">ถนน/แขวง/เขต...</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ทรัพย์สิน”</strong> มีกำหนดเวลา <strong><span id="c-duration-1">1</span> ปี</strong> เพื่อใช้เป็นที่อยู่อาศัย นับตั้งแต่วันที่ <strong><span id="c-start-date-1">-</span></strong> ถึงวันที่ <strong><span id="c-end-date-1">-</span></strong> และผู้เช่ายอมเสียค่าเช่าให้เดือนละ <strong><span id="c-rent-1">0</span> บาท (<span id="c-rent-text-1">ศูนย์บาทถ้วน</span>)</strong> มีกำหนดชำระเงินค่าเช่าทุกวันที่ <strong><span id="c-pay-day-1">5</span></strong> ของทุกๆ เดือน</p>
-              <p><strong>ข้อ ๒</strong> เพื่อเป็นการประกันในการปฏิบัติตามสัญญาเช่า ผู้เช่าตกลงมอบเงินประกันการเช่าจำนวน <strong><span id="c-deposit-1">0</span> บาท (<span id="c-deposit-text-1">ศูนย์บาทถ้วน</span>)</strong> ให้แก่ผู้ให้เช่าเรียบร้อยแล้วในวันทำสัญญาฉบับนี้</p>
+              <p><strong>ข้อ ๑</strong> ผู้ให้เช่าตกลงให้เช่าและผู้เช่าตกลงรับเช่าบ้านเลขที่ <strong><span id="c-house-no-1">-</span></strong> รายละเอียดที่ตั้ง <span id="c-full-address-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ทรัพย์สินที่เช่า”</strong> มีกำหนดระยะเวลาเช่า <strong><span id="c-duration-1">1 ปี</span></strong> เพื่อใช้เป็นที่พักอาศัย นับตั้งแต่วันที่ <strong><span id="c-start-date-1">-</span></strong> ถึงวันที่ <strong><span id="c-end-date-1">-</span></strong> และผู้เช่ายอมเสียค่าเช่าให้เดือนละ <strong><span id="c-rent-1">0</span> บาท (<span id="c-rent-text-1">ศูนย์บาทถ้วน</span>)</strong> มีกำหนดชำระเงินค่าเช่าทุกวันที่ <strong>๕</strong> ของทุกเดือน</p>
+              
+              <p><strong>ข้อ ๒</strong> ในวันทำสัญญานี้ ผู้เช่าได้มอบเงินประกันการปฏิบัติตามสัญญาเช่าจำนวน <strong><span id="c-deposit-1">0</span> บาท (<span id="c-deposit-text-1">ศูนย์บาทถ้วน</span>)</strong> ให้แก่ผู้ให้เช่าเรียบร้อยแล้ว โดยผู้ให้เช่าจะคืนเงินประกันนี้ให้เมื่อสิ้นสุดสัญญาและผู้เช่าส่งมอบทรัพย์สินคืนในสภาพเรียบร้อย</p>
 
-              <p><strong>ข้อ ๓</strong> ผู้เช่าสัญญาว่าจะชำระค่าน้ำ ค่าไฟฟ้า ค่าภาษี และบำรุงรักษาอาคารให้อยู่ในสภาพดี ไม่ให้เช่าช่วง และไม่กระทำสิ่งผิดกฎหมายในสถานที่เช่า</p>
-              <p><strong>ข้อ ๔</strong> ผู้ให้เช่าสัญญาว่าจะออกใบรับเงินค่าเช่าทุกคราว และซ่อมแซมทรัพย์สินตามหน้าที่ผู้ให้เช่า</p>
-              <p><strong>ข้อ ๕</strong> ถ้าผู้เช่าไม่ปฏิบัติตามสัญญา ผู้ให้เช่ามีสิทธิบอกเลิกสัญญาเช่าได้ทันที</p>
-              <p><strong>ข้อ ๖</strong> เมื่อสัญญาเช่าระงับสิ้นไป ผู้ให้เช่ามีสิทธิเข้าครอบครองทรัพย์สินและขนย้ายทรัพย์สินของผู้เช่าออกได้</p>
-              <p><strong>ข้อ ๗</strong> ในวันทำสัญญานี้ผู้เช่าได้ตรวจตราทรัพย์สินที่เช่าแล้ว เห็นว่ามีสภาพดีและเป็นปกติดีทุกประการ</p>
+              <p><strong>ข้อ ๓</strong> ผู้เช่าสัญญาว่าจะชำระค่าน้ำ ค่าไฟฟ้า ค่าภาษีโรงเรือน/ที่ดิน และค่าบำรุงรักษาตามปกติ ไม่นำทรัพย์สินไปให้เช่าช่วง และไม่กระทำการใดอันผิดกฎหมายหรือสร้างความเดือดร้อนรำคาญ</p>
+              
+              <p><strong>ข้อ ๔</strong> ผู้ให้เช่าสัญญาว่าจะออกใบรับเงินค่าเช่าให้แก่ผู้เช่าทุกคราว และดูแลรักษาโครงสร้างอาคารตามหน้าที่ผู้ให้เช่า</p>
+              
+              <p><strong>ข้อ ๕</strong> หากผู้เช่าผิดนัดชำระค่าเช่าหรือผิดสัญญาข้อหนึ่งข้อใด ผู้ให้เช่ามีสิทธิบอกเลิกสัญญาเช่าได้ทันที</p>
+              
+              <p><strong>ข้อ ๖</strong> เมื่อสัญญาเช่าสิ้นสุดลง ไม่ว่าด้วยเหตุใด ผู้ให้เช่ามีสิทธิกลับเข้าครอบครองทรัพย์สินและขนย้ายทรัพย์สินของผู้เช่าออกได้</p>
+              
+              <p><strong>ข้อ ๗</strong> ในวันทำสัญญานี้ ผู้เช่าได้ตรวจตราทรัพย์สินที่เช่าและรายการอุปกรณ์เฟอร์นิเจอร์แล้ว เห็นว่ามีสภาพเรียบร้อยสมบูรณ์ทุกประการ</p>
             </div>
 
-            <div class="mt-8 pt-4 border-t border-slate-400">
-              <div class="font-bold text-sm mb-3 text-slate-800 flex justify-between items-center">
-                <span>เอกสารแนบท้าย ๑: รายการและรูปถ่ายเฟอร์นิเจอร์/เครื่องใช้ไฟฟ้า ภายในทรัพย์สินที่เช่า</span>
+            <!-- ATTACHMENT 1: INVENTORY TABLE -->
+            <div class="mt-6 pt-3 border-t border-black text-[14pt]">
+              <div class="font-bold mb-2 text-black">
+                เอกสารแนบท้าย ๑: รายการเฟอร์นิเจอร์และอุปกรณ์ส่งมอบ ณ วันทำสัญญา
               </div>
-              <table class="w-full text-xs border-collapse border border-slate-400">
+              <table class="w-full border-collapse border border-black text-[13pt]">
                 <thead>
-                  <tr class="bg-slate-100 border-b border-slate-400">
-                    <th class="border border-slate-400 p-2 text-center w-12">ลำดับ</th>
-                    <th class="border border-slate-400 p-2 text-left">รายการเฟอร์นิเจอร์</th>
-                    <th class="border border-slate-400 p-2 text-center w-24">จำนวน</th>
-                    <th class="border border-slate-400 p-2 text-center w-24">สภาพ</th>
-                    <th class="border border-slate-400 p-2 text-center w-36">ภาพถ่ายส่งมอบ</th>
+                  <tr class="bg-stone-100 border-b border-black font-bold">
+                    <th class="border border-black p-1 text-center w-12">ลำดับ</th>
+                    <th class="border border-black p-1 text-left">รายการ</th>
+                    <th class="border border-black p-1 text-center w-20">จำนวน</th>
+                    <th class="border border-black p-1 text-center w-24">สภาพ</th>
+                    <th class="border border-black p-1 text-center w-28">ภาพถ่าย</th>
                   </tr>
                 </thead>
                 <tbody id="c-inventory-table-body"></tbody>
               </table>
             </div>
 
-            <div class="mt-6 pt-4 border-t border-slate-300 grid grid-cols-2 gap-6">
+            <!-- ATTACHMENT 2 & 3: ID CARD PHOTOCOPIES -->
+            <div class="mt-6 pt-3 border-t border-black grid grid-cols-2 gap-4 text-[13pt]">
               <div>
-                <div class="text-xs font-bold text-slate-800 mb-1">เอกสารแนบท้าย ๒: สำเนาบัตรประชาชนผู้เช่า</div>
-                <div class="w-full h-32 border border-slate-400 rounded overflow-hidden bg-slate-100 flex items-center justify-center cursor-pointer" onclick="openMediaPreview('สำเนาบัตรประชาชนผู้เช่า', document.getElementById('c-card-img-1').src)">
-                  <img id="c-card-img-1" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250' fill='none'><rect width='400' height='250' rx='12' fill='%23e2ded8'/><path d='M160 90C160 112.091 142.091 130 120 130C97.9086 130 80 112.091 80 90C80 67.9086 97.9086 50 120 50C142.091 50 160 67.9086 160 90Z' fill='%23a8a29e'/><path d='M50 200C50 161.34 81.3401 130 120 130C158.66 130 190 161.34 190 200H50Z' fill='%23a8a29e'/><rect x='220' y='65' width='130' height='14' rx='4' fill='%23a8a29e'/><rect x='220' y='95' width='110' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='115' width='90' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='145' width='120' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='165' width='80' height='10' rx='4' fill='%23a8a29e'/></svg>" alt="Lessee ID Card Attachment" class="w-full h-full object-cover grayscale">
+                <div class="font-bold text-black mb-1">เอกสารแนบท้าย ๒: สำเนาบัตรประชาชนผู้เช่า</div>
+                <div class="w-full h-28 border border-black bg-stone-50 flex items-center justify-center overflow-hidden">
+                  <img id="c-card-img-1" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250' fill='none'><rect width='400' height='250' fill='%23f5f5f5'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='18'>สำเนาถูกต้อง ผู้เช่า</text></svg>" alt="Tenant ID" class="w-full h-full object-cover">
                 </div>
               </div>
               <div>
-                <div class="text-xs font-bold text-slate-800 mb-1">เอกสารแนบท้าย ๓: สำเนาบัตรประชาชนผู้ให้เช่า</div>
-                <div class="w-full h-32 border border-slate-400 rounded overflow-hidden bg-slate-100 flex items-center justify-center cursor-pointer" onclick="openMediaPreview('สำเนาบัตรประชาชนผู้ให้เช่า', document.getElementById('c-lessor-card-img-1').src)">
-                  <img id="c-lessor-card-img-1" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250' fill='none'><rect width='400' height='250' rx='12' fill='%23e2ded8'/><path d='M160 90C160 112.091 142.091 130 120 130C97.9086 130 80 112.091 80 90C80 67.9086 97.9086 50 120 50C142.091 50 160 67.9086 160 90Z' fill='%23a8a29e'/><path d='M50 200C50 161.34 81.3401 130 120 130C158.66 130 190 161.34 190 200H50Z' fill='%23a8a29e'/><rect x='220' y='65' width='130' height='14' rx='4' fill='%23a8a29e'/><rect x='220' y='95' width='110' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='115' width='90' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='145' width='120' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='165' width='80' height='10' rx='4' fill='%23a8a29e'/></svg>" alt="Lessor ID Card Attachment" class="w-full h-full object-cover grayscale">
+                <div class="font-bold text-black mb-1">เอกสารแนบท้าย ๓: สำเนาบัตรประชาชนผู้ให้เช่า</div>
+                <div class="w-full h-28 border border-black bg-stone-50 flex items-center justify-center overflow-hidden">
+                  <img id="c-lessor-card-img-1" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250' fill='none'><rect width='400' height='250' fill='%23f5f5f5'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='18'>สำเนาถูกต้อง ผู้ให้เช่า</text></svg>" alt="Lessor ID" class="w-full h-full object-cover">
                 </div>
               </div>
             </div>
 
-            <div class="mt-12 pt-6 border-t border-slate-400 grid grid-cols-2 gap-8 text-center text-xs">
+            <!-- SIGNATURE SECTION -->
+            <div class="mt-8 pt-4 border-t border-black grid grid-cols-2 gap-8 text-center text-[15pt]">
               <div>
-                <div class="mb-12 font-bold">ลงชื่อ..........................................................ผู้ให้เช่า</div>
-                <div>(<span id="sig-lessor-1">ผู้ให้เช่า</span>)</div>
+                <div class="mb-8 font-bold">ลงชื่อ..........................................................ผู้ให้เช่า</div>
+                <div>( <span id="sig-lessor-1">ผู้ให้เช่า</span> )</div>
               </div>
               <div>
-                <div class="mb-12 font-bold">ลงชื่อ..........................................................ผู้เช่า</div>
-                <div>(<span id="sig-lessee-1">ผู้เช่า</span>)</div>
+                <div class="mb-8 font-bold">ลงชื่อ..........................................................ผู้เช่า</div>
+                <div>( <span id="sig-lessee-1">ผู้เช่า</span> )</div>
               </div>
             </div>
           </div>

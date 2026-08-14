@@ -1040,6 +1040,28 @@
     };
   }
 
+  function thaiBahtText(num) {
+    if (!num || isNaN(num)) return 'ศูนย์บาทถ้วน';
+    const numbers = ['ศูนย์', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า'];
+    const units = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน'];
+    num = Math.round(Number(num));
+    let str = num.toString();
+    let text = '';
+    const len = str.length;
+    for (let i = 0; i < len; i++) {
+      let digit = parseInt(str.charAt(i));
+      let pos = len - i - 1;
+      if (digit !== 0) {
+        if (pos === 1 && digit === 1) text += '';
+        else if (pos === 1 && digit === 2) text += 'ยี่';
+        else if (pos === 0 && digit === 1 && len > 1 && str.charAt(i - 1) !== '0') text += 'เอ็ด';
+        else text += numbers[digit];
+        text += units[pos];
+      }
+    }
+    return text + 'บาทถ้วน';
+  }
+
   function renderContractView() {
     const prop = getCurrentProperty();
     if (!prop) return;
@@ -1054,30 +1076,58 @@
       if (el) el.innerText = txt;
     };
 
-    safeSetText('c-lessor-name', lessor.name || '-');
-    safeSetText('c-lessor-age', lessor.age || '-');
-    safeSetText('c-lessor-idcard', lessor.idCard || '-');
-    safeSetText('c-lessor-address', lessor.address || '-');
+    const rentVal = prop.rent || tenant.rent || 0;
+    const depositVal = prop.deposit || tenant.deposit || 0;
 
-    safeSetText('c-tenant-name', tenant.fullName || '-');
-    safeSetText('c-tenant-age', tenant.age || '-');
-    safeSetText('c-tenant-idcard', tenant.idCard || '-');
-    safeSetText('c-tenant-address', tenant.address || '-');
+    ['c-place-1', 'c-place'].forEach(id => safeSetText(id, prop.address || prop.name || 'กรุงเทพมหานคร'));
+    ['c-date-1', 'c-date'].forEach(id => safeSetText(id, dates.startThai || '-'));
 
-    safeSetText('c-property-name', prop.name || '-');
-    safeSetText('c-property-houseno', prop.houseNo || '-');
-    safeSetText('c-property-address', prop.address || '-');
-    safeSetText('c-property-rent', `฿${(prop.rent || 0).toLocaleString()} บาท/เดือน`);
-    safeSetText('c-property-deposit', `฿${(prop.deposit || 0).toLocaleString()} บาท`);
-    safeSetText('c-property-meter-elec', prop.meterElec || '-');
-    safeSetText('c-property-meter-water', prop.meterWater || '-');
+    ['c-lessor-name-1', 'c-lessor-name'].forEach(id => safeSetText(id, lessor.name || '-'));
+    ['c-lessor-age-1', 'c-lessor-age'].forEach(id => safeSetText(id, lessor.age || '-'));
+    ['c-lessor-idcard-1', 'c-lessor-idcard'].forEach(id => safeSetText(id, lessor.idCard || '-'));
+    ['c-lessor-address-1', 'c-lessor-address'].forEach(id => safeSetText(id, lessor.address || '-'));
 
-    safeSetText('c-lease-start', dates.startThai || '-');
-    safeSetText('c-lease-end', dates.endThai || '-');
-    safeSetText('c-lease-duration', `${tenant.duration || 1} ปี`);
+    ['c-lessee-name-1', 'c-tenant-name-1', 'c-tenant-name'].forEach(id => safeSetText(id, tenant.fullName || '-'));
+    ['c-lessee-age-1', 'c-tenant-age-1', 'c-tenant-age'].forEach(id => safeSetText(id, tenant.age || '-'));
+    ['c-lessee-idcard-1', 'c-tenant-idcard-1', 'c-tenant-idcard'].forEach(id => safeSetText(id, tenant.idCard || '-'));
+    ['c-lessee-address-1', 'c-tenant-address-1', 'c-tenant-address'].forEach(id => safeSetText(id, tenant.address || '-'));
 
-    safeSetText('sig-lessor-name', `( ${lessor.name || 'ผู้ให้เช่า'} )`);
-    safeSetText('sig-tenant-name', `( ${tenant.fullName || 'ผู้เช่า'} )`);
+    ['c-house-no-1', 'c-property-houseno'].forEach(id => safeSetText(id, prop.houseNo || '-'));
+    ['c-full-address-1', 'c-property-address'].forEach(id => safeSetText(id, `${prop.name || ''} ${prop.address || ''}`));
+    ['c-duration-1', 'c-lease-duration'].forEach(id => safeSetText(id, `${tenant.duration || 1} ปี`));
+    ['c-start-date-1', 'c-lease-start'].forEach(id => safeSetText(id, dates.startThai || '-'));
+    ['c-end-date-1', 'c-lease-end'].forEach(id => safeSetText(id, dates.endThai || '-'));
+
+    ['c-rent-1', 'c-property-rent'].forEach(id => safeSetText(id, rentVal.toLocaleString()));
+    ['c-rent-text-1'].forEach(id => safeSetText(id, thaiBahtText(rentVal)));
+    ['c-deposit-1', 'c-property-deposit'].forEach(id => safeSetText(id, depositVal.toLocaleString()));
+    ['c-deposit-text-1'].forEach(id => safeSetText(id, thaiBahtText(depositVal)));
+
+    ['sig-lessor-1', 'sig-lessor-name'].forEach(id => safeSetText(id, lessor.name || 'ผู้ให้เช่า'));
+    ['sig-lessee-1', 'sig-tenant-name'].forEach(id => safeSetText(id, tenant.fullName || 'ผู้เช่า'));
+
+    const tableBody = document.getElementById('c-inventory-table-body');
+    if (tableBody) {
+      tableBody.innerHTML = '';
+      const list = prop.inventoryList || [];
+      if (list.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="border border-black p-2 text-center text-[12pt] text-stone-500">ไม่มีรายการเฟอร์นิเจอร์แนบท้าย</td></tr>`;
+      } else {
+        list.forEach((item, idx) => {
+          tableBody.innerHTML += `
+            <tr class="border-b border-black text-center text-[12pt]">
+              <td class="border border-black p-1.5">${idx + 1}</td>
+              <td class="border border-black p-1.5 text-left font-semibold">${item.name || '-'}</td>
+              <td class="border border-black p-1.5">1 รายการ</td>
+              <td class="border border-black p-1.5">สมบูรณ์พร้อมใช้</td>
+              <td class="border border-black p-1.5">
+                <img src="${item.img || CONFIG.PLACEHOLDER_SVG}" class="h-10 mx-auto object-cover rounded border border-stone-300">
+              </td>
+            </tr>
+          `;
+        });
+      }
+    }
   }
 
   // 10. MODAL & TAB CONTROLLERS
