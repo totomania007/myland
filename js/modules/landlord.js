@@ -154,8 +154,10 @@ export function renderAdminData() {
 }
 
 export function getCurrentProperty() {
-  if (state.propertiesState.length === 0) return null;
-  return state.propertiesState.find(p => p.id === state.currentPropertyId) || state.propertiesState[0];
+  if (!state.propertiesState || state.propertiesState.length === 0) return null;
+  const storedId = (typeof localStorage !== 'undefined') ? localStorage.getItem('property_os_current_prop_id') : null;
+  const targetId = state.currentPropertyId || (typeof window !== 'undefined' && window.state && window.state.currentPropertyId) || storedId;
+  return state.propertiesState.find(p => String(p.id) === String(targetId)) || state.propertiesState[0];
 }
 
 export function renderRegisteredLessorsList() {

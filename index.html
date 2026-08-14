@@ -72,10 +72,20 @@
       window.toggleModal('modal-edit-property-detail');
     };
     function handleDetailPropertySwitch(propId) {
+      if (!propId) {
+        const sel = document.getElementById('pd-property-selector');
+        if (sel) propId = sel.value;
+      }
+      if (!propId) return;
+
       if (window.state) window.state.currentPropertyId = propId;
-      if (window.renderPropertyDetailView) window.renderPropertyDetailView();
+      localStorage.setItem('property_os_current_prop_id', propId);
+
+      if (window.renderPropertyDetailView) window.renderPropertyDetailView(propId);
       if (window.renderContractView) window.renderContractView();
+      if (window.renderAdminData) window.renderAdminData();
     }
+    window.handleDetailPropertySwitch = handleDetailPropertySwitch;
     async function syncFromCloudflareD1(silent = true) {
       try {
         const resP = await fetch('/api/properties');
@@ -196,22 +206,32 @@
       });
     };
 
-    window.renderPropertyDetailView = function() {
+    window.renderPropertyDetailView = function(targetPropId) {
       const props = (window.state && window.state.propertiesState && window.state.propertiesState.length > 0) 
         ? window.state.propertiesState 
         : JSON.parse(localStorage.getItem('property_os_properties') || '[]');
       if (props.length === 0) return;
 
-      const currentId = (window.state && window.state.currentPropertyId) || props[0].id;
-      const prop = props.find(p => p.id === currentId) || props[0];
+      const storedId = localStorage.getItem('property_os_current_prop_id');
+      const currentId = targetPropId || (window.state && window.state.currentPropertyId) || storedId || props[0].id;
+      if (window.state) window.state.currentPropertyId = currentId;
+      localStorage.setItem('property_os_current_prop_id', currentId);
+
+      const prop = props.find(p => String(p.id) === String(currentId)) || props[0];
       if (!prop) return;
 
       const select = document.getElementById('pd-property-selector');
       if (select) {
-        select.innerHTML = '';
-        props.forEach(p => {
-          select.innerHTML += `<option value="${p.id}" ${p.id === prop.id ? 'selected' : ''}>🏡 ${p.name} ${p.houseNo ? `(${p.houseNo})` : ''}</option>`;
-        });
+        if (select.options.length !== props.length) {
+          select.innerHTML = '';
+          props.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.innerText = `🏡 ${p.name} ${p.houseNo ? `(${p.houseNo})` : ''}`;
+            select.appendChild(opt);
+          });
+        }
+        select.value = prop.id;
       }
 
       // 1. Specs
@@ -1917,7 +1937,7 @@
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_26"></script>
+  <script type="module" src="js/app.js?v=20260814_27"></script>
 </body>
 </html>
 

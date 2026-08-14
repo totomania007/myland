@@ -227,14 +227,29 @@ window.openEditPropertyDetailModal = function() {
   window.toggleModal('modal-edit-property-detail');
 };
 
-function renderPropertyDetailView() {
+function renderPropertyDetailView(targetPropId) {
   renderLessorSelectOptions();
+  const props = state.propertiesState || [];
+  if (props.length === 0) return;
+
+  const storedId = localStorage.getItem('property_os_current_prop_id');
+  const currentId = targetPropId || state.currentPropertyId || (window.state && window.state.currentPropertyId) || storedId || props[0].id;
+  state.currentPropertyId = currentId;
+  if (window.state) window.state.currentPropertyId = currentId;
+  localStorage.setItem('property_os_current_prop_id', currentId);
+
   const select = document.getElementById('pd-property-selector');
-  if (select && state.propertiesState.length > 0) {
-    select.innerHTML = '';
-    state.propertiesState.forEach(p => {
-      select.innerHTML += `<option value="${p.id}" ${p.id === state.currentPropertyId ? 'selected' : ''}>🏡 ${p.name} ${p.houseNo ? `(${p.houseNo})` : ''}</option>`;
-    });
+  if (select) {
+    if (select.options.length !== props.length) {
+      select.innerHTML = '';
+      props.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.innerText = `🏡 ${p.name} ${p.houseNo ? `(${p.houseNo})` : ''}`;
+        select.appendChild(opt);
+      });
+    }
+    select.value = currentId;
   }
 
   const prop = getCurrentProperty();
