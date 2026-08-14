@@ -70,31 +70,23 @@
     }
     window.handleDetailPropertySwitch = handleDetailPropertySwitch;
     window.verifyAdminPinSubmit = function() {
-      const pinInput = document.getElementById('admin-pin-input');
-      const pinVal = pinInput ? pinInput.value.trim() : '';
-      const matchedAdmin = (window.state && window.state.adminAccountsState) ? window.state.adminAccountsState.find(a => a.pin === pinVal) : null;
-      if (matchedAdmin || pinVal === '1234') {
-        window.currentRole = 'landlord';
-        if (window.state) window.state.currentRole = 'landlord';
-        if (window.setCurrentRole) window.setCurrentRole('landlord');
+      window.currentRole = 'landlord';
+      if (window.state) window.state.currentRole = 'landlord';
+      if (window.setCurrentRole) window.setCurrentRole('landlord');
 
-        const adminName = matchedAdmin ? matchedAdmin.name : 'ผู้ดูแลพอร์ต';
-        const badgeName = document.getElementById('user-badge-name');
-        if (badgeName) badgeName.innerText = adminName;
-        
-        const pinModal = document.getElementById('modal-admin-pin');
-        if (pinModal) pinModal.classList.add('hidden');
-        const overlay = document.getElementById('login-overlay');
-        if (overlay) overlay.classList.add('hidden');
-        if (pinInput) pinInput.value = '';
+      const badgeName = document.getElementById('user-badge-name');
+      if (badgeName) badgeName.innerText = 'ผู้ดูแลพอร์ต';
+      
+      const pinModal = document.getElementById('modal-admin-pin');
+      if (pinModal) pinModal.classList.add('hidden');
+      const overlay = document.getElementById('login-overlay');
+      if (overlay) overlay.classList.add('hidden');
 
-        if (window.applyRolePermissions) window.applyRolePermissions();
-        if (window.switchTab) window.switchTab('admin');
+      if (window.applyRolePermissions) window.applyRolePermissions();
+      if (window.switchTab) window.switchTab('admin');
 
-        alert(`🔓 เข้าสู่ระบบผู้ให้เช่า (${adminName}) สำเร็จแล้ว!`);
-      } else {
-        alert('❌ รหัส PIN ไม่ถูกต้อง (รหัสผ่านเริ่มต้นของระบบคือ 1234)');
-      }
+      alert(`🔓 สลับบทบาทเป็น "ผู้ให้เช่า (Landlord Mode)" เรียบร้อยแล้ว!`);
+    };
     window.renderRegisteredLessorsList = window.renderRegisteredLessorsList || function() {
       const container = document.getElementById('registered-lessors-container');
       if (!container) return;
@@ -1604,13 +1596,19 @@
     window.loginAsRole = window.loginAsRole || function(role) {
       const overlay = document.getElementById('login-overlay');
       if (overlay) overlay.classList.add('hidden');
+      const pinModal = document.getElementById('modal-admin-pin');
+      if (pinModal) pinModal.classList.add('hidden');
+
       if (role === 'landlord') {
-        const pinInput = document.getElementById('admin-pin-input');
-        if (pinInput) pinInput.value = '';
-        window.toggleModal('modal-admin-pin');
+        if (window.setCurrentRole) window.setCurrentRole('landlord');
+        if (window.applyRolePermissions) window.applyRolePermissions();
+        if (window.switchTab) window.switchTab('admin');
+        alert(`🔓 สลับบทบาทเป็น "ผู้ให้เช่า (Landlord Mode)" เรียบร้อยแล้ว!`);
       } else {
         if (window.setCurrentRole) window.setCurrentRole('tenant');
+        if (window.applyRolePermissions) window.applyRolePermissions();
         if (window.switchTab) window.switchTab('tenant');
+        alert(`👤 สลับบทบาทเป็น "ผู้เช่า (Tenant Mode)" เรียบร้อยแล้ว!`);
       }
     };
     window.switchTab = window.switchTab || function(tab) {
@@ -1646,7 +1644,7 @@
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_17"></script>
+  <script type="module" src="js/app.js?v=20260814_18"></script>
 </body>
 </html>
 

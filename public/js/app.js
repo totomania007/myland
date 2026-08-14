@@ -4,7 +4,7 @@
  */
 
 import { CONFIG, state, saveStateToLocalStorage } from './config.js';
-import { applyRolePermissions, checkTabAccess, checkSubTabAccess, verifyAdminPinSubmit, renderAdminAccountsList, handleAddAdminSubmit, deleteAdminAccount, getCurrentRole, setCurrentRole } from './modules/auth.js';
+import { applyRolePermissions, checkTabAccess, checkSubTabAccess, verifyAdminPinSubmit, loginAsRole, renderAdminAccountsList, handleAddAdminSubmit, deleteAdminAccount, getCurrentRole, setCurrentRole } from './modules/auth.js';
 import { renderAdminData, renderRegisteredLessorsList, getCurrentProperty, calculateMortgage, getRateForMonth, handleAddPropertySubmit, handleLessorRegisterTabSubmit, editRegisteredLessor, deleteRegisteredLessor, uploadToCloudinaryAndPreview, addFurnitureEditRow, handleEditPropertyDetailSubmit } from './modules/landlord.js';
 import { calculateLeaseEndDate, initTenantFormDates, handleTenantSubmit, confirmTenantLoginDirect, renderRegisteredTenantsList, editRegisteredTenant, deleteRegisteredTenant } from './modules/tenant.js';
 import { renderPropertyGallery, filterGalleryPhotos, copyPropertyPromoLink } from './modules/gallery.js';
@@ -19,6 +19,7 @@ window.setCurrentRole = setCurrentRole;
 
 window.applyRolePermissions = applyRolePermissions;
 window.verifyAdminPinSubmit = verifyAdminPinSubmit;
+window.loginAsRole = loginAsRole;
 window.renderAdminAccountsList = renderAdminAccountsList;
 window.handleAddAdminSubmit = handleAddAdminSubmit;
 window.deleteAdminAccount = deleteAdminAccount;

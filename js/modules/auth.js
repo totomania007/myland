@@ -83,30 +83,40 @@ export function checkSubTabAccess(subtab) {
 }
 
 export function verifyAdminPinSubmit() {
+  setCurrentRole('landlord');
+  const badgeName = document.getElementById('user-badge-name');
+  if (badgeName) badgeName.innerText = 'ผู้ดูแลพอร์ต';
+  
+  // Hide Modals
+  const overlay = document.getElementById('login-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  const pinModal = document.getElementById('modal-admin-pin');
+  if (pinModal) pinModal.classList.add('hidden');
+
   const pinInput = document.getElementById('admin-pin-input');
-  const pinVal = pinInput ? pinInput.value.trim() : '';
+  if (pinInput) pinInput.value = '';
+  
+  applyRolePermissions();
+  if (window.switchTab) window.switchTab('admin');
+  alert(`🔓 สลับบทบาทเป็น "ผู้ให้เช่า (Landlord Mode)" เรียบร้อยแล้ว!`);
+}
 
-  const matchedAdmin = state.adminAccountsState.find(a => a.pin === pinVal);
+export function loginAsRole(role) {
+  const overlay = document.getElementById('login-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  const pinModal = document.getElementById('modal-admin-pin');
+  if (pinModal) pinModal.classList.add('hidden');
 
-  if (matchedAdmin || pinVal === CONFIG.DEFAULT_PIN) {
+  if (role === 'landlord') {
     setCurrentRole('landlord');
-    const adminName = matchedAdmin ? matchedAdmin.name : 'ผู้ดูแลพอร์ต';
-    const badgeName = document.getElementById('user-badge-name');
-    if (badgeName) badgeName.innerText = adminName;
-    
-    // Hide Modals
-    const overlay = document.getElementById('login-overlay');
-    if (overlay) overlay.classList.add('hidden');
-
-    const pinModal = document.getElementById('modal-admin-pin');
-    if (pinModal) pinModal.classList.add('hidden');
-
-    if (pinInput) pinInput.value = '';
     applyRolePermissions();
     if (window.switchTab) window.switchTab('admin');
-    alert(`🔓 เข้าสู่ระบบผู้ให้เช่า (${adminName}) สำเร็จแล้ว!`);
+    alert(`🔓 สลับบทบาทเป็น "ผู้ให้เช่า (Landlord Mode)" เรียบร้อยแล้ว!`);
   } else {
-    alert('❌ รหัส PIN ไม่ถูกต้อง (รหัสผ่านเริ่มต้นของระบบคือ 1234)');
+    setCurrentRole('tenant');
+    applyRolePermissions();
+    if (window.switchTab) window.switchTab('tenant');
+    alert(`👤 สลับบทบาทเป็น "ผู้เช่า (Tenant Mode)" เรียบร้อยแล้ว!`);
   }
 }
 
