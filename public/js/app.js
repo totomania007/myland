@@ -344,7 +344,12 @@ window.openAmortizationModal = function() {
   if (document.getElementById('amo-installment')) document.getElementById('amo-installment').value = prop.installment || 0;
   if (document.getElementById('amo-startdate')) document.getElementById('amo-startdate').value = prop.startDate || new Date().toISOString().split('T')[0];
 
-  renderRatePeriodEditors(prop.rateSchedule);
+  const schedule = (prop.rateSchedule && prop.rateSchedule.length > 0) ? prop.rateSchedule : [
+    { startMonth: 1, endMonth: 36, rate: prop.rate || 4.5, label: 'โปรโมชั่น Retention ปีที่ 1-3' },
+    { startMonth: 37, endMonth: 360, rate: (prop.rate || 4.5) + 1.5, label: 'อัตราดอกเบี้ยลอยตัว (MRR-0.5%)' }
+  ];
+
+  renderRatePeriodEditors(schedule);
   renderAmortizationTable();
   window.toggleModal('modal-amortization-table');
 };
@@ -354,9 +359,12 @@ function renderRatePeriodEditors(schedule) {
   if (!container) return;
   container.innerHTML = '';
 
+  const prop = getCurrentProperty();
+  const baseRate = (prop && prop.rate) ? prop.rate : 4.5;
+
   const list = schedule && schedule.length > 0 ? schedule : [
-    { startMonth: 1, endMonth: 36, rate: 3.5, label: 'โปรโมชั่น Retention ปีที่ 1-3' },
-    { startMonth: 37, endMonth: 360, rate: 5.5, label: 'ลอยตัว MRR' }
+    { startMonth: 1, endMonth: 36, rate: baseRate, label: 'โปรโมชั่น Retention ปีที่ 1-3' },
+    { startMonth: 37, endMonth: 360, rate: baseRate + 1.5, label: 'อัตราดอกเบี้ยลอยตัว (MRR-0.5%)' }
   ];
 
   list.forEach((item, idx) => {

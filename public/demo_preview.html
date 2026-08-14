@@ -66,6 +66,58 @@
       }
     };
     window.openAmortizationModal = function() {
+      const props = (window.state && window.state.propertiesState && window.state.propertiesState.length > 0) 
+        ? window.state.propertiesState 
+        : JSON.parse(localStorage.getItem('property_os_properties') || '[]');
+      if (props.length === 0) {
+        alert('กรุณากด "+ เพิ่มทรัพย์สินใหม่" เพื่อสร้างอสังหาริมทรัพย์ยูนิตแรกในระบบก่อนครับ');
+        window.toggleModal('modal-add-property');
+        return;
+      }
+      const currentId = (window.state && window.state.currentPropertyId) || localStorage.getItem('property_os_current_prop_id') || props[0].id;
+      const prop = props.find(p => String(p.id) === String(currentId)) || props[0];
+
+      if (document.getElementById('amo-principal')) document.getElementById('amo-principal').value = prop.principal || 0;
+      if (document.getElementById('amo-installment')) document.getElementById('amo-installment').value = prop.installment || 0;
+      if (document.getElementById('amo-startdate')) document.getElementById('amo-startdate').value = prop.startDate || new Date().toISOString().split('T')[0];
+
+      const schedule = (prop.rateSchedule && prop.rateSchedule.length > 0) ? prop.rateSchedule : [
+        { startMonth: 1, endMonth: 36, rate: prop.rate || 4.5, label: 'โปรโมชั่น Retention ปีที่ 1-3' },
+        { startMonth: 37, endMonth: 360, rate: (prop.rate || 4.5) + 1.5, label: 'อัตราดอกเบี้ยลอยตัว (MRR-0.5%)' }
+      ];
+
+      const container = document.getElementById('rate-periods-editor-container');
+      if (container) {
+        container.innerHTML = '';
+        schedule.forEach((item, idx) => {
+          const rowId = `rate-row-${idx}-${Date.now()}`;
+          const row = document.createElement('div');
+          row.id = rowId;
+          row.className = 'p-2.5 bg-white border border-stone-300 rounded-lg grid grid-cols-12 gap-2 items-center text-xs';
+          row.innerHTML = `
+            <div class="col-span-3 flex items-center gap-1">
+              <span class="text-stone-400 font-bold">งวด</span>
+              <input type="number" class="rp-start w-12 bg-stone-100 border border-stone-300 rounded p-1 text-center font-bold" value="${item.startMonth}">
+              <span class="text-stone-400">-</span>
+              <input type="number" class="rp-end w-12 bg-stone-100 border border-stone-300 rounded p-1 text-center font-bold" value="${item.endMonth}">
+            </div>
+            <div class="col-span-3 flex items-center gap-1">
+              <span class="text-stone-400 font-bold">ดอกเบี้ย</span>
+              <input type="number" step="0.1" class="rp-rate w-16 bg-stone-100 border border-stone-300 rounded p-1 text-right font-black text-[#e05646]" value="${item.rate}">
+              <span class="text-stone-500 font-bold">%</span>
+            </div>
+            <div class="col-span-5">
+              <input type="text" class="rp-label w-full bg-stone-100 border border-stone-300 rounded p-1 font-medium" value="${item.label || ''}" placeholder="รายละเอียดช่วง Retention...">
+            </div>
+            <div class="col-span-1 text-right">
+              <button type="button" onclick="document.getElementById('${rowId}').remove(); if(window.renderAmortizationTable) window.renderAmortizationTable();" class="text-rose-500 font-bold px-1.5 py-0.5 hover:bg-rose-50 rounded">✕</button>
+            </div>
+          `;
+          container.appendChild(row);
+        });
+      }
+
+      if (window.renderAmortizationTable) window.renderAmortizationTable();
       window.toggleModal('modal-amortization-table');
     };
     window.openEditPropertyDetailModal = function() {
@@ -1937,7 +1989,7 @@
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_27"></script>
+  <script type="module" src="js/app.js?v=20260814_28"></script>
 </body>
 </html>
 
