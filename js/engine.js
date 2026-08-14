@@ -588,6 +588,20 @@
     const startDate = new Date(startDateStr);
     const rowsHtml = [];
 
+    let elapsedMonths = 0;
+    if (startDateStr) {
+      const start = new Date(startDateStr);
+      const now = new Date();
+      if (!isNaN(start.getTime())) {
+        elapsedMonths = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+        if (elapsedMonths < 0) elapsedMonths = 0;
+      }
+    }
+
+    let currentBalance = principal;
+    let currentPaidPrinc = 0;
+    let currentPaidInt = 0;
+
     for (let m = 1; m <= 360; m++) {
       if (balance <= 0) break;
       let rate = prop.rate || 4.5;
@@ -610,28 +624,46 @@
       totalPaidPrinc += princPay;
       totalPaidInt += interest;
 
+      if (m <= elapsedMonths) {
+        currentBalance = balance;
+        currentPaidPrinc = totalPaidPrinc;
+        currentPaidInt = totalPaidInt;
+      }
+
       const curDate = new Date(startDate);
       curDate.setMonth(curDate.getMonth() + m - 1);
       const dateTxt = isNaN(curDate.getTime()) ? `งวดที่ ${m}` : curDate.toLocaleDateString('th-TH', { month: 'short', year: '2-digit' });
 
+      const isCurrent = (m === elapsedMonths || (elapsedMonths === 0 && m === 1));
+      const isPast = (m < elapsedMonths);
+      const badgeClass = isCurrent ? 'bg-amber-100 text-amber-900 border border-amber-300 font-black' : (isPast ? 'bg-emerald-100 text-emerald-800 font-bold' : 'bg-stone-100 text-stone-600 font-bold');
+      const badgeTxt = isCurrent ? `★ งวดปัจจุบัน (${m})` : (isPast ? `ชำระแล้ว (${m})` : `งวดที่ ${m}`);
+      const rowHighlight = isCurrent ? 'bg-amber-50/70 border-l-4 border-amber-500 font-semibold' : 'border-b border-stone-200 hover:bg-stone-50';
+
       rowsHtml.push(`
-        <tr class="border-b border-stone-200 hover:bg-stone-50 text-xs">
+        <tr class="${rowHighlight} text-xs">
           <td class="p-2 text-center font-bold text-stone-700">${m}</td>
           <td class="p-2 text-center font-medium text-stone-600">${dateTxt}</td>
           <td class="p-2 text-right font-black text-[#e05646]">฿${installment.toLocaleString()}</td>
           <td class="p-2 text-right font-bold text-stone-800">${rate}% <span class="text-[10px] text-stone-400 font-normal block">(฿${Math.round(interest).toLocaleString()})</span></td>
           <td class="p-2 text-right font-bold text-emerald-700">฿${Math.round(princPay).toLocaleString()}</td>
           <td class="p-2 text-right font-black text-stone-900">฿${Math.round(balance).toLocaleString()}</td>
-          <td class="p-2 text-center"><span class="px-1.5 py-0.5 bg-stone-100 text-stone-600 rounded text-[10px] font-bold">งวดที่ ${m}</span></td>
+          <td class="p-2 text-center"><span class="px-2 py-0.5 rounded text-[10px] ${badgeClass}">${badgeTxt}</span></td>
         </tr>
       `);
     }
 
+    if (elapsedMonths === 0) {
+      currentBalance = principal;
+      currentPaidPrinc = 0;
+      currentPaidInt = 0;
+    }
+
     rowsContainer.innerHTML = rowsHtml.join('');
 
-    if (document.getElementById('amo-sum-balance')) document.getElementById('amo-sum-balance').innerText = `฿${Math.round(balance).toLocaleString()}`;
-    if (document.getElementById('amo-sum-paid-princ')) document.getElementById('amo-sum-paid-princ').innerText = `฿${Math.round(totalPaidPrinc).toLocaleString()}`;
-    if (document.getElementById('amo-sum-paid-int')) document.getElementById('amo-sum-paid-int').innerText = `฿${Math.round(totalPaidInt).toLocaleString()}`;
+    if (document.getElementById('amo-sum-balance')) document.getElementById('amo-sum-balance').innerText = `฿${Math.round(currentBalance).toLocaleString()}`;
+    if (document.getElementById('amo-sum-paid-princ')) document.getElementById('amo-sum-paid-princ').innerText = `฿${Math.round(currentPaidPrinc).toLocaleString()}`;
+    if (document.getElementById('amo-sum-paid-int')) document.getElementById('amo-sum-paid-int').innerText = `฿${Math.round(currentPaidInt).toLocaleString()} (รวมสัญญา ฿${Math.round(totalPaidInt).toLocaleString()})`;
   }
 
   async function applyAmortizationEdit() {
