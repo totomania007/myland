@@ -68,7 +68,46 @@
       if (window.renderPropertyDetailView) window.renderPropertyDetailView();
       if (window.renderContractView) window.renderContractView();
     }
-    window.handleDetailPropertySwitch = handleDetailPropertySwitch;
+    async function syncFromCloudflareD1(silent) {
+      try {
+        const resP = await fetch('/api/properties');
+        if (resP.ok) {
+          const dbProps = await resP.json();
+          if (Array.isArray(dbProps) && dbProps.length > 0) {
+            localStorage.setItem('property_os_properties', JSON.stringify(dbProps));
+            if (window.state) window.state.propertiesState = dbProps;
+          }
+        }
+      } catch (e) {}
+
+      try {
+        const resL = await fetch('/api/lessors');
+        if (resL.ok) {
+          const dbLessors = await resL.json();
+          if (Array.isArray(dbLessors) && dbLessors.length > 0) {
+            const freshLessors = {};
+            dbLessors.forEach(l => { if (l.id) freshLessors[l.id] = l; });
+            localStorage.setItem('property_os_lessors', JSON.stringify(freshLessors));
+            if (window.state) window.state.lessorProfiles = freshLessors;
+          }
+        }
+      } catch (e) {}
+
+      if (window.renderAdminData) window.renderAdminData();
+      if (window.renderPropertyDetailView) window.renderPropertyDetailView();
+      if (window.renderContractView) window.renderContractView();
+      if (window.renderRegisteredLessorsList) window.renderRegisteredLessorsList();
+      if (window.renderRegisteredTenantsList) window.renderRegisteredTenantsList();
+      if (window.renderAdminAccountsList) window.renderAdminAccountsList();
+      if (window.renderLessorSelectOptions) window.renderLessorSelectOptions();
+      if (window.renderTenantPropertyDropdown) window.renderTenantPropertyDropdown();
+
+      if (silent !== true) {
+        alert('✅ ซิงค์ข้อมูลล่าสุดจาก Cloudflare D1 สำเร็จแล้ว!');
+      }
+    }
+    window.syncFromCloudflareD1 = syncFromCloudflareD1;
+
     window.verifyAdminPinSubmit = function() {
       window.currentRole = 'landlord';
       if (window.state) window.state.currentRole = 'landlord';
@@ -1648,7 +1687,7 @@
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_22"></script>
+  <script type="module" src="js/app.js?v=20260814_23"></script>
 </body>
 </html>
 
