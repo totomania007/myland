@@ -1601,6 +1601,22 @@
     }
   }
 
+  function addFurnitureEditRow(name = '', img = CONFIG.PLACEHOLDER_SVG) {
+    const container = document.getElementById('pde-furniture-rows-container');
+    if (!container) return;
+    const rowId = `furn-row-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
+    const row = document.createElement('div');
+    row.id = rowId;
+    row.className = 'flex items-center gap-2 bg-white border border-stone-300 rounded-lg p-2';
+    row.innerHTML = `
+      <input type="text" class="pde-furn-name flex-1 bg-stone-50 border border-stone-200 rounded p-1.5 text-xs font-bold text-stone-800" placeholder="ชื่อเฟอร์นิเจอร์ เช่น ตู้เย็น, แอร์" value="${name}">
+      <input type="hidden" class="pde-furn-img" value="${img}">
+      <img src="${img}" class="w-8 h-8 rounded object-cover border border-stone-200" alt="Furn">
+      <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-rose-600 hover:text-rose-800 font-bold px-2 text-xs">✕</button>
+    `;
+    container.appendChild(row);
+  }
+
   function openEditPropertyDetailModal() {
     const prop = getCurrentProperty();
     if (!prop) {
@@ -1621,28 +1637,66 @@
     if (document.getElementById('pde-meter-water')) document.getElementById('pde-meter-water').value = prop.meterWater || '';
     if (document.getElementById('pde-lessor-select')) document.getElementById('pde-lessor-select').value = prop.lessorKey || '';
 
+    const furnContainer = document.getElementById('pde-furniture-rows-container');
+    if (furnContainer) {
+      furnContainer.innerHTML = '';
+      const list = prop.inventoryList || [];
+      if (list.length === 0) {
+        addFurnitureEditRow('เครื่องปรับอากาศ', CONFIG.PLACEHOLDER_SVG);
+      } else {
+        list.forEach(item => {
+          const itemObj = typeof item === 'object' ? item : { name: item, img: CONFIG.PLACEHOLDER_SVG };
+          addFurnitureEditRow(itemObj.name, itemObj.img);
+        });
+      }
+    }
+
     toggleModal('modal-edit-property-detail');
   }
 
-  async function handlePropertyEditSubmit(e) {
+  async function handlePropertyDetailEditSubmit(e) {
     if (e && e.preventDefault) e.preventDefault();
     const prop = getCurrentProperty();
     if (!prop) return;
 
-    prop.name = document.getElementById('pde-name')?.value || prop.name;
-    prop.houseNo = document.getElementById('pde-houseno')?.value || prop.houseNo;
-    prop.address = document.getElementById('pde-address')?.value || prop.address;
+    prop.name = document.getElementById('pde-name')?.value.trim() || prop.name;
+    prop.houseNo = document.getElementById('pde-houseno')?.value.trim() || prop.houseNo;
+    prop.address = document.getElementById('pde-address')?.value.trim() || prop.address;
     prop.rent = parseFloat(document.getElementById('pde-rent')?.value) || prop.rent;
     prop.deposit = parseFloat(document.getElementById('pde-deposit')?.value) || prop.deposit;
-    prop.size = document.getElementById('pde-size')?.value || prop.size;
-    prop.meterElec = document.getElementById('pde-meter-elec')?.value || prop.meterElec;
-    prop.meterWater = document.getElementById('pde-meter-water')?.value || prop.meterWater;
+    prop.size = document.getElementById('pde-size')?.value.trim() || prop.size;
+    prop.meterElec = document.getElementById('pde-meter-elec')?.value.trim() || prop.meterElec;
+    prop.meterWater = document.getElementById('pde-meter-water')?.value.trim() || prop.meterWater;
     prop.lessorKey = document.getElementById('pde-lessor-select')?.value || prop.lessorKey;
+
+    // Collect furniture items
+    const furnRows = document.querySelectorAll('#pde-furniture-rows-container > div');
+    const newInventory = [];
+    furnRows.forEach(r => {
+      const name = r.querySelector('.pde-furn-name')?.value.trim();
+      const img = r.querySelector('.pde-furn-img')?.value.trim() || CONFIG.PLACEHOLDER_SVG;
+      if (name) {
+        newInventory.push({ name, img });
+      }
+    });
+    if (newInventory.length > 0) {
+      prop.inventoryList = newInventory;
+    }
+
+    // Ensure array element is updated in state.propertiesState
+    const propIdx = state.propertiesState.findIndex(p => String(p.id) === String(prop.id));
+    if (propIdx >= 0) {
+      state.propertiesState[propIdx] = prop;
+    } else {
+      state.propertiesState.push(prop);
+    }
 
     saveStateToLocalStorage();
     renderAllViews();
+    renderPropertyDetailView(prop.id);
+    renderContractView();
     toggleModal('modal-edit-property-detail');
-    alert(`✅ บันทึกการแก้ไขสเปก "${prop.name}" เรียบร้อยแล้ว!`);
+    alert(`✅ บันทึกการแก้ไขสเปก & ที่อยู่ "${prop.name}" เรียบร้อยแล้ว!`);
 
     try {
       await fetch('/api/properties', {
@@ -1652,6 +1706,8 @@
       });
     } catch (err) {}
   }
+
+  const handlePropertyEditSubmit = handlePropertyDetailEditSubmit;
 
   function openQuickMeterModal() {
     const prop = getCurrentProperty();
@@ -1784,6 +1840,8 @@
   window.switchSubTab = switchSubTab;
   window.openEditPropertyDetailModal = openEditPropertyDetailModal;
   window.handlePropertyEditSubmit = handlePropertyEditSubmit;
+  window.handlePropertyDetailEditSubmit = handlePropertyDetailEditSubmit;
+  window.addFurnitureEditRow = addFurnitureEditRow;
   window.deleteRegisteredTenant = deleteRegisteredTenant;
   window.editRegisteredTenant = editRegisteredTenant;
   window.handleTenantSubmit = handleTenantSubmit;

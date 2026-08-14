@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_39"></script>
+  <script src="js/engine.js?v=20260814_40"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -745,7 +745,12 @@
 
         <div id="subview-specs" class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="youestates-card p-6 space-y-4">
-            <h3 class="font-extrabold text-sm text-[#383838] border-b border-stone-200 pb-3">รายละเอียดทรัพย์สิน & ที่อยู่</h3>
+            <div class="flex justify-between items-center border-b border-stone-200 pb-3">
+              <h3 class="font-extrabold text-sm text-[#383838]">รายละเอียดทรัพย์สิน & ที่อยู่</h3>
+              <button type="button" onclick="openEditPropertyDetailModal()" class="px-2.5 py-1 bg-[#383838] hover:bg-black text-white rounded-lg font-bold text-xs shadow-sm flex items-center gap-1">
+                <span>✏️ แก้ไขสเปก & ที่อยู่</span>
+              </button>
+            </div>
             <div class="space-y-3 text-xs">
               <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">ประเภททรัพย์สิน:</span> <strong class="text-stone-800 font-bold" id="pd-type">-</strong></div>
               <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">บ้านเลขที่:</span> <strong class="text-[#e05646] font-black" id="pd-houseno">-</strong></div>
@@ -772,8 +777,8 @@
           <div class="youestates-card p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-stone-200 pb-3">
               <h3 class="font-extrabold text-sm text-[#383838]">รายการเฟอร์นิเจอร์แนบท้ายสัญญา & รูปถ่าย</h3>
-              <button onclick="openEditPropertyDetailModal()" id="btn-upload-furniture-img" class="text-xs text-[#e05646] font-bold hover:underline hidden">
-                📷 อัปโหลดรูปเฟอร์นิเจอร์
+              <button type="button" onclick="openEditPropertyDetailModal()" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-[#e05646] border border-rose-200 rounded-lg font-bold text-xs shadow-sm flex items-center gap-1">
+                <span>🛋️ แก้ไขเฟอร์นิเจอร์</span>
               </button>
             </div>
             <div class="space-y-3 text-xs" id="pd-inventory-container"></div>
