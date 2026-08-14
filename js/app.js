@@ -3,12 +3,12 @@
  * 2026 Modular Architecture Integration
  */
 
-import { CONFIG, state, saveStateToLocalStorage, DEFAULT_PROPERTIES, DEFAULT_LESSORS, DEFAULT_TENANTS } from './config.js';
-import { applyRolePermissions, checkTabAccess, checkSubTabAccess, verifyAdminPinSubmit, loginAsRole, renderAdminAccountsList, handleAddAdminSubmit, deleteAdminAccount, getCurrentRole, setCurrentRole } from './modules/auth.js';
-import { renderAdminData, renderRegisteredLessorsList, getCurrentProperty, calculateMortgage, getRateForMonth, handleAddPropertySubmit, handleLessorRegisterTabSubmit, editRegisteredLessor, deleteRegisteredLessor, uploadToCloudinaryAndPreview, addFurnitureEditRow, handleEditPropertyDetailSubmit } from './modules/landlord.js';
-import { calculateLeaseEndDate, initTenantFormDates, handleTenantSubmit, confirmTenantLoginDirect, renderRegisteredTenantsList, editRegisteredTenant, deleteRegisteredTenant } from './modules/tenant.js';
-import { renderPropertyGallery, filterGalleryPhotos, copyPropertyPromoLink } from './modules/gallery.js';
-import { renderContractView } from './modules/contract.js';
+import { CONFIG, state, saveStateToLocalStorage, DEFAULT_PROPERTIES, DEFAULT_LESSORS, DEFAULT_TENANTS } from './config.js?v=20260814_22';
+import { applyRolePermissions, checkTabAccess, checkSubTabAccess, verifyAdminPinSubmit, loginAsRole, renderAdminAccountsList, handleAddAdminSubmit, deleteAdminAccount, getCurrentRole, setCurrentRole } from './modules/auth.js?v=20260814_22';
+import { renderAdminData, renderRegisteredLessorsList, getCurrentProperty, calculateMortgage, getRateForMonth, handleAddPropertySubmit, handleLessorRegisterTabSubmit, editRegisteredLessor, deleteRegisteredLessor, uploadToCloudinaryAndPreview, addFurnitureEditRow, handleEditPropertyDetailSubmit } from './modules/landlord.js?v=20260814_22';
+import { calculateLeaseEndDate, initTenantFormDates, handleTenantSubmit, confirmTenantLoginDirect, renderRegisteredTenantsList, editRegisteredTenant, deleteRegisteredTenant } from './modules/tenant.js?v=20260814_22';
+import { renderPropertyGallery, filterGalleryPhotos, copyPropertyPromoLink } from './modules/gallery.js?v=20260814_22';
+import { renderContractView } from './modules/contract.js?v=20260814_22';
 
 // Expose functions globally for inline HTML onclick handlers
 window.state = state;
@@ -514,49 +514,15 @@ function renderTenantPropertyDropdown() {
 }
 window.renderTenantPropertyDropdown = renderTenantPropertyDropdown;
 
-// INITIALIZATION PIPELINE
-async function initApp() {
-  if (!state.propertiesState || state.propertiesState.length === 0) {
-    try {
-      const stored = JSON.parse(localStorage.getItem('property_os_properties') || '[]');
-      state.propertiesState = (Array.isArray(stored) && stored.length > 0) ? stored : DEFAULT_PROPERTIES;
-    } catch(e) {
-      state.propertiesState = DEFAULT_PROPERTIES;
-    }
-  }
-
-  if (!state.lessorProfiles || Object.keys(state.lessorProfiles).length === 0) {
-    try {
-      const storedL = JSON.parse(localStorage.getItem('property_os_lessors') || '{}');
-      state.lessorProfiles = (storedL && Object.keys(storedL).length > 0) ? storedL : DEFAULT_LESSORS;
-    } catch(e) {
-      state.lessorProfiles = DEFAULT_LESSORS;
-    }
-  }
-
-  if (!state.tenantDatabase || Object.keys(state.tenantDatabase).length === 0) {
-    try {
-      const storedT = JSON.parse(localStorage.getItem('property_os_tenants') || '{}');
-      state.tenantDatabase = (storedT && Object.keys(storedT).length > 0) ? storedT : DEFAULT_TENANTS;
-    } catch(e) {
-      state.tenantDatabase = DEFAULT_TENANTS;
-    }
-  }
-
+export async function syncFromCloudflareD1(silent = false) {
+  let updated = false;
   try {
     const res = await fetch('/api/properties');
     if (res.ok) {
       const dbProps = await res.json();
       if (Array.isArray(dbProps) && dbProps.length > 0) {
-        dbProps.forEach(dp => {
-          const idx = state.propertiesState.findIndex(p => p.id === dp.id);
-          if (idx !== -1) {
-            state.propertiesState[idx] = { ...state.propertiesState[idx], ...dp };
-          } else {
-            state.propertiesState.push(dp);
-          }
-        });
-        saveStateToLocalStorage();
+        state.propertiesState = dbProps;
+        updated = true;
       }
     }
   } catch (e) {}
@@ -566,19 +532,31 @@ async function initApp() {
     if (resL.ok) {
       const dbLessors = await resL.json();
       if (Array.isArray(dbLessors) && dbLessors.length > 0) {
+        const freshLessors = {};
         dbLessors.forEach(l => {
-          if (l.id) state.lessorProfiles[l.id] = l;
+          if (l.id) freshLessors[l.id] = l;
         });
-        saveStateToLocalStorage();
+        state.lessorProfiles = freshLessors;
+        updated = true;
       }
     }
   } catch (e) {}
 
-  state.currentPropertyId = state.propertiesState.length > 0 ? state.propertiesState[0].id : DEFAULT_PROPERTIES[0].id;
-  
-  const savedRole = getCurrentRole();
-  setCurrentRole(savedRole);
+  if (!state.propertiesState || state.propertiesState.length === 0) {
+    state.propertiesState = DEFAULT_PROPERTIES;
+  }
+  if (!state.lessorProfiles || Object.keys(state.lessorProfiles).length === 0) {
+    state.lessorProfiles = DEFAULT_LESSORS;
+  }
+  if (!state.tenantDatabase || Object.keys(state.tenantDatabase).length === 0) {
+    state.tenantDatabase = DEFAULT_TENANTS;
+  }
 
+  if (!state.currentPropertyId || !state.propertiesState.find(p => p.id === state.currentPropertyId)) {
+    state.currentPropertyId = state.propertiesState[0].id;
+  }
+
+  saveStateToLocalStorage();
   renderAdminData();
   renderPropertyDetailView();
   renderContractView();
@@ -586,8 +564,22 @@ async function initApp() {
   renderRegisteredTenantsList();
   renderAdminAccountsList();
   renderLessorSelectOptions();
-  initTenantFormDates();
+  renderTenantPropertyDropdown();
+
+  if (!silent) {
+    alert('✅ ซิงค์ข้อมูลล่าสุดจาก Cloudflare D1 สำเร็จแล้ว!');
+  }
+}
+window.syncFromCloudflareD1 = syncFromCloudflareD1;
+
+// INITIALIZATION PIPELINE
+async function initApp() {
+  await syncFromCloudflareD1(true);
+
+  const savedRole = getCurrentRole();
+  setCurrentRole(savedRole);
   applyRolePermissions();
+  initTenantFormDates();
 
   if (savedRole === 'landlord') {
     if (window.switchTab) window.switchTab('admin');
