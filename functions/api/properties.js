@@ -1,4 +1,5 @@
 async function ensurePropertiesTable(env) {
+  if (!env || !env.DB) return;
   try {
     await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS properties (
@@ -7,7 +8,7 @@ async function ensurePropertiesTable(env) {
         lessor_key TEXT NOT NULL DEFAULT 'husband',
         type TEXT DEFAULT 'อสังหาฯ เช่า',
         address TEXT,
-        house_no TEXT NOT NULL,
+        house_no TEXT NOT NULL DEFAULT '',
         size TEXT,
         rent INTEGER DEFAULT 0,
         deposit INTEGER DEFAULT 0,
@@ -23,6 +24,29 @@ async function ensurePropertiesTable(env) {
       )
     `).run();
   } catch(e) {}
+
+  const migrations = [
+    "ALTER TABLE properties ADD COLUMN rate_schedule_json TEXT",
+    "ALTER TABLE properties ADD COLUMN inventory_json TEXT",
+    "ALTER TABLE properties ADD COLUMN meter_elec TEXT",
+    "ALTER TABLE properties ADD COLUMN meter_water TEXT",
+    "ALTER TABLE properties ADD COLUMN start_date TEXT",
+    "ALTER TABLE properties ADD COLUMN principal INTEGER DEFAULT 0",
+    "ALTER TABLE properties ADD COLUMN installment INTEGER DEFAULT 0",
+    "ALTER TABLE properties ADD COLUMN rate REAL DEFAULT 4.5",
+    "ALTER TABLE properties ADD COLUMN lessor_key TEXT DEFAULT 'husband'",
+    "ALTER TABLE properties ADD COLUMN type TEXT DEFAULT 'อสังหาฯ เช่า'",
+    "ALTER TABLE properties ADD COLUMN address TEXT",
+    "ALTER TABLE properties ADD COLUMN house_no TEXT DEFAULT ''",
+    "ALTER TABLE properties ADD COLUMN size TEXT",
+    "ALTER TABLE properties ADD COLUMN rent INTEGER DEFAULT 0",
+    "ALTER TABLE properties ADD COLUMN deposit INTEGER DEFAULT 0"
+  ];
+  for (const sql of migrations) {
+    try {
+      await env.DB.prepare(sql).run();
+    } catch(err) {}
+  }
 }
 
 export async function onRequestGet(context) {
@@ -33,19 +57,19 @@ export async function onRequestGet(context) {
     const formatted = (results || []).map(r => ({
       id: r.id,
       name: r.name,
-      lessorKey: r.lessor_key,
-      type: r.type,
-      address: r.address,
-      houseNo: r.house_no,
-      size: r.size,
-      rent: r.rent,
-      deposit: r.deposit,
-      principal: r.principal,
-      installment: r.installment,
-      rate: r.rate,
-      startDate: r.start_date,
-      meterElec: r.meter_elec,
-      meterWater: r.meter_water,
+      lessorKey: r.lessor_key || 'husband',
+      type: r.type || 'อสังหาฯ เช่า',
+      address: r.address || '',
+      houseNo: r.house_no || '',
+      size: r.size || '',
+      rent: Number(r.rent) || 0,
+      deposit: Number(r.deposit) || 0,
+      principal: Number(r.principal) || 0,
+      installment: Number(r.installment) || 0,
+      rate: Number(r.rate) || 4.5,
+      startDate: r.start_date || '',
+      meterElec: r.meter_elec || '',
+      meterWater: r.meter_water || '',
       inventoryList: r.inventory_json ? JSON.parse(r.inventory_json) : [],
       rateSchedule: r.rate_schedule_json ? JSON.parse(r.rate_schedule_json) : []
     }));
@@ -53,7 +77,10 @@ export async function onRequestGet(context) {
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: err.message }), { 
+      status: 500,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+    });
   }
 }
 
@@ -85,18 +112,33 @@ export async function onRequestPost(context) {
         inventory_json = excluded.inventory_json,
         rate_schedule_json = excluded.rate_schedule_json
     `).bind(
-      id, data.name || '', data.lessorKey || 'husband', data.type || 'อสังหาฯ เช่า',
-      data.address || '', data.houseNo || '', data.size || '40 ตร.ม.', data.rent || 0,
-      data.deposit || 0, data.principal || 0, data.installment || 0,
-      data.rate || 4.5, data.startDate || '', data.meterElec || '', data.meterWater || '',
-      JSON.stringify(data.inventoryList || []), JSON.stringify(data.rateSchedule || [])
+      id,
+      String(data.name || ''),
+      String(data.lessorKey || 'husband'),
+      String(data.type || 'อสังหาฯ เช่า'),
+      String(data.address || ''),
+      String(data.houseNo || ''),
+      String(data.size || '40 ตร.ม.'),
+      Number(data.rent) || 0,
+      Number(data.deposit) || 0,
+      Number(data.principal) || 0,
+      Number(data.installment) || 0,
+      Number(data.rate) || 4.5,
+      String(data.startDate || ''),
+      String(data.meterElec || ''),
+      String(data.meterWater || ''),
+      JSON.stringify(data.inventoryList || []),
+      JSON.stringify(data.rateSchedule || [])
     ).run();
 
     return new Response(JSON.stringify({ success: true, id }), {
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: err.message, stack: err.stack }), { 
+      status: 500,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+    });
   }
 }
 

@@ -660,6 +660,14 @@
       prop.rate = rateSchedule[0].rate;
     }
 
+    // Ensure array element is updated in state
+    const propIdx = state.propertiesState.findIndex(p => String(p.id) === String(prop.id));
+    if (propIdx >= 0) {
+      state.propertiesState[propIdx] = prop;
+    } else {
+      state.propertiesState.push(prop);
+    }
+
     saveStateToLocalStorage();
     renderAdminData();
     renderPropertyDetailView(prop.id);
@@ -667,12 +675,20 @@
     alert(`✅ คำนวณและบันทึกตารางผ่อนชำระ & Retention ของ "${prop.name}" เรียบร้อยแล้ว!`);
 
     try {
-      await fetch('/api/properties', {
+      const resp = await fetch('/api/properties', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(prop)
       });
-    } catch (err) {}
+      if (resp.ok) {
+        console.log('✅ Synchronized to Cloudflare D1 successfully');
+      } else {
+        const errTxt = await resp.text();
+        console.warn('⚠️ Cloudflare D1 Sync Warning:', errTxt);
+      }
+    } catch (err) {
+      console.warn('⚠️ Network Sync Warning:', err);
+    }
   }
 
   // 8. LESSOR & TENANT MANAGEMENT
