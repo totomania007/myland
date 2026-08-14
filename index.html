@@ -126,6 +126,83 @@
 
       alert(`🔓 สลับบทบาทเป็น "ผู้ให้เช่า (Landlord Mode)" เรียบร้อยแล้ว!`);
     };
+    window.renderAdminData = function() {
+      const container = document.getElementById('propertyContainer');
+      if (!container) return;
+      const props = (window.state && window.state.propertiesState && window.state.propertiesState.length > 0) 
+        ? window.state.propertiesState 
+        : JSON.parse(localStorage.getItem('property_os_properties') || '[]');
+      const lessors = (window.state && window.state.lessorProfiles) 
+        ? window.state.lessorProfiles 
+        : JSON.parse(localStorage.getItem('property_os_lessors') || '{}');
+
+      container.innerHTML = '';
+      if (props.length === 0) {
+        container.innerHTML = `<div class="col-span-full p-8 text-center text-stone-400 bg-stone-50 rounded-xl border border-stone-200">ยังไม่มีทรัพย์สินในพอร์ต</div>`;
+        return;
+      }
+      props.forEach(p => {
+        const lessorName = (lessors[p.lessorKey] && lessors[p.lessorKey].name) ? lessors[p.lessorKey].name : 'ผู้ให้เช่า';
+        const houseNoTxt = p.houseNo ? ` (${p.houseNo})` : '';
+        container.innerHTML += `
+          <div class="youestates-card p-6 space-y-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="px-2.5 py-0.5 rounded bg-stone-100 text-stone-700 font-bold text-[10px] uppercase border border-stone-300">
+                  ${p.type || 'อสังหาฯ เช่า'}
+                </span>
+                <h3 class="font-extrabold text-base text-[#383838] mt-1">🏡 ${p.name}${houseNoTxt}</h3>
+                <p class="text-xs text-stone-500 font-medium">ผู้ให้เช่า: ${lessorName}</p>
+              </div>
+              <span class="px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 font-bold text-xs">active</span>
+            </div>
+            <div class="space-y-2 text-xs border-t border-b border-stone-200 py-3">
+              <div class="flex justify-between"><span class="text-stone-500">ยอดกู้เริ่มต้น:</span> <strong class="text-stone-800">฿${(p.principal || 0).toLocaleString()}</strong></div>
+              <div class="flex justify-between"><span class="text-stone-500">ค่างวดผ่อน:</span> <strong class="text-[#e05646]">฿${(p.installment || 0).toLocaleString()} /เดือน</strong></div>
+              <div class="flex justify-between"><span class="text-stone-500">อัตราค่าเช่า:</span> <strong class="text-emerald-700">฿${(p.rent || 0).toLocaleString()} /เดือน</strong></div>
+            </div>
+            <div class="flex justify-between items-center pt-1">
+              <button onclick="if(window.handleDetailPropertySwitch) window.handleDetailPropertySwitch('${p.id}'); if(window.switchTab) window.switchTab('property-detail');" class="text-xs font-bold text-[#e05646] hover:underline">
+                ดูรายละเอียด & สเปก →
+              </button>
+            </div>
+          </div>
+        `;
+      });
+    };
+
+    window.renderPropertyDetailView = function() {
+      const props = (window.state && window.state.propertiesState && window.state.propertiesState.length > 0) 
+        ? window.state.propertiesState 
+        : JSON.parse(localStorage.getItem('property_os_properties') || '[]');
+      if (props.length === 0) return;
+
+      const currentId = (window.state && window.state.currentPropertyId) || props[0].id;
+      const prop = props.find(p => p.id === currentId) || props[0];
+      if (!prop) return;
+
+      const select = document.getElementById('pd-property-selector');
+      if (select) {
+        select.innerHTML = '';
+        props.forEach(p => {
+          select.innerHTML += `<option value="${p.id}" ${p.id === prop.id ? 'selected' : ''}>🏡 ${p.name} ${p.houseNo ? `(${p.houseNo})` : ''}</option>`;
+        });
+      }
+
+      if (document.getElementById('pd-name')) document.getElementById('pd-name').innerText = prop.name || 'สเปกอสังหาริมทรัพย์';
+      if (document.getElementById('pd-address')) document.getElementById('pd-address').innerText = prop.address || '-';
+      if (document.getElementById('pd-type')) document.getElementById('pd-type').innerText = prop.type || 'อสังหาฯ เช่า';
+      if (document.getElementById('pd-houseno')) document.getElementById('pd-houseno').innerText = prop.houseNo || '-';
+      if (document.getElementById('pd-full-address')) document.getElementById('pd-full-address').innerText = prop.address || '-';
+      if (document.getElementById('pd-size')) document.getElementById('pd-size').innerText = prop.size || '40 ตร.ม.';
+      if (document.getElementById('pd-rent')) document.getElementById('pd-rent').innerText = `฿${(prop.rent || 0).toLocaleString()} บาท`;
+      if (document.getElementById('pd-deposit')) document.getElementById('pd-deposit').innerText = `฿${(prop.deposit || 0).toLocaleString()} บาท`;
+      if (document.getElementById('pd-meter-elec')) document.getElementById('pd-meter-elec').innerText = prop.meterElec || '-';
+      if (document.getElementById('pd-meter-water')) document.getElementById('pd-meter-water').innerText = prop.meterWater || '-';
+      if (document.getElementById('pd-principal-display')) document.getElementById('pd-principal-display').innerText = `฿${(prop.principal || 0).toLocaleString()}`;
+      if (document.getElementById('pd-installment-display')) document.getElementById('pd-installment-display').innerText = `฿${(prop.installment || 0).toLocaleString()} /เดือน`;
+    };
+
     window.renderRegisteredLessorsList = window.renderRegisteredLessorsList || function() {
       const container = document.getElementById('registered-lessors-container');
       if (!container) return;
@@ -1687,7 +1764,7 @@
   </script>
 
   <!-- 2026 MODULAR ARCHITECTURE SCRIPTS -->
-  <script type="module" src="js/app.js?v=20260814_23"></script>
+  <script type="module" src="js/app.js?v=20260814_24"></script>
 </body>
 </html>
 
