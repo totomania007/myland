@@ -802,14 +802,138 @@
     });
   }
 
+  function calculateLeaseEndDate() {
+    const startEl = document.getElementById('t-startdate');
+    const durEl = document.getElementById('t-duration');
+    const displayEl = document.getElementById('t-enddate-display');
+    if (!startEl || !durEl || !displayEl) return;
+    const dates = calculateLeaseDates(startEl.value, durEl.value);
+    displayEl.innerText = dates.endThai ? `${dates.endThai} (${dates.endDate})` : '-';
+  }
+
   function renderTenantPropertyDropdown() {
-    const sel = document.getElementById('tenant-prop-id');
-    if (!sel) return;
-    sel.innerHTML = '';
-    state.propertiesState.forEach(p => {
-      sel.innerHTML += `<option value="${p.id}">🏡 ${p.name} ${p.houseNo ? `(${p.houseNo})` : ''}</option>`;
+    const selects = ['t-property-bind', 'tenant-prop-id'];
+    selects.forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      sel.innerHTML = '';
+      if (!state.propertiesState || state.propertiesState.length === 0) {
+        sel.innerHTML = `<option value="">(ยังไม่มีทรัพย์สินในระบบ - กรุณาเพิ่มก่อน)</option>`;
+        return;
+      }
+      state.propertiesState.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.innerText = `🏡 ${p.name} ${p.houseNo ? `(${p.houseNo})` : ''} - ค่าเช่า ฿${(p.rent || 0).toLocaleString()}`;
+        sel.appendChild(opt);
+      });
+    });
+    calculateLeaseEndDate();
+  }
+
+  function deleteRegisteredTenant(tKey) {
+    const t = state.tenantDatabase[tKey];
+    if (!t) return;
+    if (!confirm(`คุณต้องการลบข้อมูลผู้เช่า "${t.fullName}" ออกจากระบบใช่หรือไม่?`)) return;
+
+    delete state.tenantDatabase[tKey];
+    saveStateToLocalStorage();
+    renderRegisteredTenantsList();
+    renderContractView();
+    alert(`✅ ลบข้อมูลผู้เช่า "${t.fullName}" เรียบร้อยแล้ว!`);
+  }
+
+  function editRegisteredTenant(tKey) {
+    const t = state.tenantDatabase[tKey];
+    if (!t) return;
+
+    const safeSet = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+    };
+
+    safeSet('t-fullname', t.fullName || '');
+    safeSet('t-age', t.age || '');
+    safeSet('t-idcard', t.idCard || '');
+    safeSet('t-phone', t.phone || '');
+    safeSet('t-address', t.address || '');
+    safeSet('t-property-bind', t.propId || '');
+    safeSet('t-startdate', t.startDate || '');
+    safeSet('t-duration', t.duration || '1');
+    safeSet('editing-tenant-key', tKey);
+
+    safeSet('tenant-fullname', t.fullName || '');
+    safeSet('tenant-age', t.age || '');
+    safeSet('tenant-idcard', t.idCard || '');
+    safeSet('tenant-phone', t.phone || '');
+    safeSet('tenant-address', t.address || '');
+    safeSet('tenant-prop-id', t.propId || '');
+    safeSet('tenant-rent', t.rent || '');
+    safeSet('tenant-deposit', t.deposit || '');
+    safeSet('tenant-start-date', t.startDate || '');
+    safeSet('tenant-duration', t.duration || '1');
+
+    calculateLeaseEndDate();
+
+    const btn = document.getElementById('btn-submit-tenant');
+    if (btn) {
+      btn.innerText = `✏️ อัปเดตข้อมูลผู้เช่า "${t.fullName}" & ซิงค์ลงสัญญา`;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function handleTenantSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const fullName = (document.getElementById('t-fullname')?.value || document.getElementById('tenant-fullname')?.value || '').trim();
+    if (!fullName) {
+      alert('กรุณากรอกชื่อ-นามสกุล ผู้เช่า');
+      return;
+    }
+    const editingKey = document.getElementById('editing-tenant-key')?.value.trim();
+    const key = editingKey || ('tenant-' + Date.now());
+
+    const propId = document.getElementById('t-property-bind')?.value || document.getElementById('tenant-prop-id')?.value;
+    const prop = state.propertiesState.find(p => String(p.id) === String(propId)) || state.propertiesState[0] || {};
+    const startDate = document.getElementById('t-startdate')?.value || document.getElementById('tenant-start-date')?.value || new Date().toISOString().split('T')[0];
+    const duration = document.getElementById('t-duration')?.value || document.getElementById('tenant-duration')?.value || '1';
+    const dates = calculateLeaseDates(startDate, duration);
+
+    const tenantData = {
+      id: key,
+      fullName,
+      age: parseInt(document.getElementById('t-age')?.value || document.getElementById('tenant-age')?.value) || 30,
+      idCard: (document.getElementById('t-idcard')?.value || document.getElementById('tenant-idcard')?.value || '-').trim(),
+      phone: (document.getElementById('t-phone')?.value || document.getElementById('tenant-phone')?.value || '-').trim(),
+      address: (document.getElementById('t-address')?.value || document.getElementById('tenant-address')?.value || '-').trim(),
+      unitName: prop.name || '-',
+      houseNo: prop.houseNo || '-',
+      rent: prop.rent || 0,
+      deposit: prop.deposit || 0,
+      startDate,
+      duration,
+      endDate: dates.endDate,
+      propId: prop.id
+    };
+
+    state.tenantDatabase[key] = tenantData;
+    saveStateToLocalStorage();
+
+    if (document.getElementById('editing-tenant-key')) document.getElementById('editing-tenant-key').value = '';
+    const btn = document.getElementById('btn-submit-tenant');
+    if (btn) {
+      btn.innerText = `💾 บันทึกผู้เช่าลงระบบ & ออกสัญญาเช่าทันที`;
+    }
+
+    renderRegisteredTenantsList();
+    renderContractView();
+    alert(`✅ บันทึกลงทะเบียนผู้เช่า "${fullName}" เรียบร้อยแล้ว!`);
+
+    ['t-fullname', 't-age', 't-idcard', 't-phone', 't-address', 'tenant-fullname', 'tenant-age', 'tenant-idcard', 'tenant-phone', 'tenant-address'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
     });
   }
+  const handleTenantRegisterTabSubmit = handleTenantSubmit;
 
   function deleteRegisteredLessor(key) {
     const prof = state.lessorProfiles[key];
@@ -893,93 +1017,6 @@
         body: JSON.stringify(lessorData)
       });
     } catch(err) {}
-  }
-
-  function deleteRegisteredTenant(tKey) {
-    const t = state.tenantDatabase[tKey];
-    if (!t) return;
-    if (!confirm(`คุณต้องการลบข้อมูลผู้เช่า "${t.fullName}" ออกจากระบบใช่หรือไม่?`)) return;
-
-    delete state.tenantDatabase[tKey];
-    saveStateToLocalStorage();
-    renderRegisteredTenantsList();
-    renderContractView();
-    alert(`✅ ลบข้อมูลผู้เช่า "${t.fullName}" เรียบร้อยแล้ว!`);
-  }
-
-  function editRegisteredTenant(tKey) {
-    const t = state.tenantDatabase[tKey];
-    if (!t) return;
-
-    if (document.getElementById('tenant-fullname')) document.getElementById('tenant-fullname').value = t.fullName || '';
-    if (document.getElementById('tenant-age')) document.getElementById('tenant-age').value = t.age || '';
-    if (document.getElementById('tenant-idcard')) document.getElementById('tenant-idcard').value = t.idCard || '';
-    if (document.getElementById('tenant-phone')) document.getElementById('tenant-phone').value = t.phone || '';
-    if (document.getElementById('tenant-address')) document.getElementById('tenant-address').value = t.address || '';
-    if (document.getElementById('tenant-prop-id')) document.getElementById('tenant-prop-id').value = t.propId || '';
-    if (document.getElementById('tenant-rent')) document.getElementById('tenant-rent').value = t.rent || '';
-    if (document.getElementById('tenant-deposit')) document.getElementById('tenant-deposit').value = t.deposit || '';
-    if (document.getElementById('tenant-start-date')) document.getElementById('tenant-start-date').value = t.startDate || '';
-    if (document.getElementById('tenant-duration')) document.getElementById('tenant-duration').value = t.duration || '1';
-    if (document.getElementById('editing-tenant-key')) document.getElementById('editing-tenant-key').value = tKey;
-
-    const btn = document.getElementById('btn-submit-tenant');
-    if (btn) {
-      btn.innerText = `✏️ อัปเดตข้อมูลผู้เช่า "${t.fullName}" & ซิงค์ลงสัญญา`;
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function handleTenantRegisterTabSubmit(e) {
-    if (e && e.preventDefault) e.preventDefault();
-    const fullName = document.getElementById('tenant-fullname')?.value.trim();
-    if (!fullName) {
-      alert('กรุณากรอกชื่อ-นามสกุล ผู้เช่า');
-      return;
-    }
-    const editingKey = document.getElementById('editing-tenant-key')?.value.trim();
-    const key = editingKey || ('tenant-' + Date.now());
-
-    const propId = document.getElementById('tenant-prop-id')?.value;
-    const prop = state.propertiesState.find(p => String(p.id) === String(propId)) || state.propertiesState[0] || {};
-    const startDate = document.getElementById('tenant-start-date')?.value || new Date().toISOString().split('T')[0];
-    const duration = document.getElementById('tenant-duration')?.value || '1';
-    const dates = calculateLeaseDates(startDate, duration);
-
-    const tenantData = {
-      id: key,
-      fullName,
-      age: parseInt(document.getElementById('tenant-age')?.value) || 30,
-      idCard: document.getElementById('tenant-idcard')?.value.trim() || '-',
-      phone: document.getElementById('tenant-phone')?.value.trim() || '-',
-      address: document.getElementById('tenant-address')?.value.trim() || '-',
-      unitName: prop.name || '-',
-      houseNo: prop.houseNo || '-',
-      rent: parseFloat(document.getElementById('tenant-rent')?.value) || prop.rent || 0,
-      deposit: parseFloat(document.getElementById('tenant-deposit')?.value) || prop.deposit || 0,
-      startDate,
-      duration,
-      endDate: dates.endDate,
-      propId: prop.id
-    };
-
-    state.tenantDatabase[key] = tenantData;
-    saveStateToLocalStorage();
-
-    if (document.getElementById('editing-tenant-key')) document.getElementById('editing-tenant-key').value = '';
-    const btn = document.getElementById('btn-submit-tenant');
-    if (btn) {
-      btn.innerText = `💾 บันทึกลงทะเบียนผู้เช่า & ออกสัญญาเช่า A4 ทันที`;
-    }
-
-    renderRegisteredTenantsList();
-    renderContractView();
-    alert(`✅ บันทึกลงทะเบียนผู้เช่า "${fullName}" เรียบร้อยแล้ว!`);
-
-    ['tenant-fullname', 'tenant-age', 'tenant-idcard', 'tenant-phone', 'tenant-address', 'tenant-rent', 'tenant-deposit'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
-    });
   }
 
   // 9. LEASE CONTRACT & PRINT ENGINE
@@ -1319,6 +1356,7 @@
   window.renderLessorSelectOptions = renderLessorSelectOptions;
   window.renderTenantPropertyDropdown = renderTenantPropertyDropdown;
   window.calculateLeaseDates = calculateLeaseDates;
+  window.calculateLeaseEndDate = calculateLeaseEndDate;
   window.renderContractView = renderContractView;
   window.toggleModal = toggleModal;
   window.openLoginOverlay = openLoginOverlay;
@@ -1332,6 +1370,7 @@
   window.handlePropertyEditSubmit = handlePropertyEditSubmit;
   window.deleteRegisteredTenant = deleteRegisteredTenant;
   window.editRegisteredTenant = editRegisteredTenant;
+  window.handleTenantSubmit = handleTenantSubmit;
   window.handleTenantRegisterTabSubmit = handleTenantRegisterTabSubmit;
   window.deleteRegisteredLessor = deleteRegisteredLessor;
   window.editRegisteredLessor = editRegisteredLessor;
