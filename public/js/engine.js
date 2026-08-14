@@ -1029,6 +1029,103 @@
     } catch (err) {}
   }
 
+  function openQuickMeterModal() {
+    const prop = getCurrentProperty();
+    if (!prop) {
+      alert('กรุณาเลือกทรัพย์สินก่อนครับ');
+      return;
+    }
+    if (document.getElementById('qm-meter-elec')) document.getElementById('qm-meter-elec').value = prop.meterElec || '';
+    if (document.getElementById('qm-meter-water')) document.getElementById('qm-meter-water').value = prop.meterWater || '';
+    toggleModal('modal-quick-meters');
+  }
+
+  async function handleQuickMeterSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const prop = getCurrentProperty();
+    if (!prop) return;
+
+    prop.meterElec = document.getElementById('qm-meter-elec')?.value.trim() || '';
+    prop.meterWater = document.getElementById('qm-meter-water')?.value.trim() || '';
+
+    const propIdx = state.propertiesState.findIndex(p => String(p.id) === String(prop.id));
+    if (propIdx >= 0) {
+      state.propertiesState[propIdx] = prop;
+    }
+
+    saveStateToLocalStorage();
+    renderPropertyDetailView(prop.id);
+    renderContractView();
+    toggleModal('modal-quick-meters');
+    alert(`✅ บันทึกเลขมิเตอร์ไฟ (${prop.meterElec || '-'}) และมิเตอร์น้ำ (${prop.meterWater || '-'}) เรียบร้อยแล้ว!`);
+
+    try {
+      await fetch('/api/properties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(prop)
+      });
+    } catch (err) {}
+  }
+
+  async function handleAddPropertySubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const name = document.getElementById('p-name')?.value.trim();
+    const houseNo = document.getElementById('p-houseno')?.value.trim();
+    const address = document.getElementById('p-address')?.value.trim();
+    const lessorKey = document.getElementById('p-lessor')?.value || 'lessor-1786648676672';
+    const principal = parseFloat(document.getElementById('p-principal')?.value) || 0;
+    const installment = parseFloat(document.getElementById('p-installment')?.value) || 0;
+    const startDate = document.getElementById('p-startdate')?.value || new Date().toISOString().split('T')[0];
+    const meterElec = document.getElementById('p-meter-elec')?.value.trim() || '';
+    const meterWater = document.getElementById('p-meter-water')?.value.trim() || '';
+
+    if (!name || !houseNo) {
+      alert('กรุณากรอกชื่อโครงการและบ้านเลขที่');
+      return;
+    }
+
+    const newProp = {
+      id: `prop-${Date.now()}`,
+      name,
+      houseNo,
+      address,
+      lessorKey,
+      type: 'อสังหาริมทรัพย์เพื่อการเช่า',
+      size: '35 ตารางเมตร',
+      rent: installment > 0 ? installment : 10000,
+      deposit: installment > 0 ? installment * 2 : 20000,
+      principal,
+      installment,
+      rate: 4.5,
+      startDate,
+      meterElec,
+      meterWater,
+      inventoryList: [
+        { name: 'เครื่องปรับอากาศ (Air Conditioner)', img: CONFIG.PLACEHOLDER_SVG }
+      ],
+      rateSchedule: [
+        { startMonth: 1, endMonth: 36, rate: 4.5, label: 'โปรโมชั่น Retention ปีที่ 1-3' },
+        { startMonth: 37, endMonth: 360, rate: 6.0, label: 'อัตราดอกเบี้ยลอยตัว (MRR-0.5%)' }
+      ]
+    };
+
+    state.propertiesState.unshift(newProp);
+    state.currentPropertyId = newProp.id;
+    saveStateToLocalStorage();
+    renderAllViews();
+    toggleModal('modal-add-property');
+    alert(`✅ เพิ่มทรัพย์สินใหม่ "${newProp.name}" เรียบร้อยแล้ว!`);
+
+    try {
+      await fetch('/api/properties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProp)
+      });
+    } catch (err) {}
+  }
+
   // 11. GLOBAL BINDINGS EXPOSURE
   window.CONFIG = CONFIG;
   window.state = state;
@@ -1062,6 +1159,9 @@
   window.switchSubTab = switchSubTab;
   window.openEditPropertyDetailModal = openEditPropertyDetailModal;
   window.handlePropertyEditSubmit = handlePropertyEditSubmit;
+  window.openQuickMeterModal = openQuickMeterModal;
+  window.handleQuickMeterSubmit = handleQuickMeterSubmit;
+  window.handleAddPropertySubmit = handleAddPropertySubmit;
 
   // 12. AUTO-START & LIFECYCLE LISTENERS
   syncFromCloudflareD1(true);

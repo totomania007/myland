@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_33"></script>
+  <script src="js/engine.js?v=20260814_34"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -710,9 +710,20 @@
               <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">รายละเอียดที่อยู่อสังหาฯ:</span> <strong class="text-stone-800 font-bold text-right" id="pd-full-address">-</strong></div>
               <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">ขนาดพื้นที่:</span> <strong class="text-stone-800 font-bold" id="pd-size">-</strong></div>
               <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">อัตราค่าเช่า/เดือน:</span> <strong class="text-stone-900 font-black" id="pd-rent">฿0 บาท</strong></div>
-              <div class="flex justify-between py-2 border-b border-stone-100"><span class="text-stone-400 font-medium">เงินประกันสัญญา:</span> <strong class="text-stone-800 font-bold" id="pd-deposit">฿0 บาท</strong></div>
-              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">มิเตอร์ไฟฟ้าเริ่มต้น:</span> <strong class="text-stone-800 font-semibold" id="pd-meter-elec">-</strong></div>
-              <div class="flex justify-between py-1.5"><span class="text-stone-400 font-medium">มิเตอร์น้ำเริ่มต้น:</span> <strong class="text-stone-800 font-semibold" id="pd-meter-water">-</strong></div>
+              <div class="flex justify-between py-1.5 border-b border-stone-100 items-center">
+                <span class="text-stone-400 font-medium">⚡ มิเตอร์ไฟฟ้าเริ่มต้น:</span> 
+                <div class="flex items-center gap-2">
+                  <strong class="text-stone-800 font-bold" id="pd-meter-elec">-</strong>
+                  <button type="button" onclick="openQuickMeterModal()" class="px-2 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded border border-amber-300 font-bold text-[10px] shadow-sm">✏️ แก้ไขเลขมิเตอร์</button>
+                </div>
+              </div>
+              <div class="flex justify-between py-1.5 items-center">
+                <span class="text-stone-400 font-medium">💧 มิเตอร์น้ำเริ่มต้น:</span> 
+                <div class="flex items-center gap-2">
+                  <strong class="text-stone-800 font-bold" id="pd-meter-water">-</strong>
+                  <button type="button" onclick="openQuickMeterModal()" class="px-2 py-0.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 rounded border border-cyan-300 font-bold text-[10px] shadow-sm">✏️ แก้ไขเลขมิเตอร์</button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1229,6 +1240,30 @@
         </div>
 
         <button type="submit" class="w-full youestates-btn-coral font-bold py-2.5 rounded-lg text-white text-xs mt-2 shadow-sm">💾 บันทึกสเปก & ที่อยู่ทรัพย์สิน</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- QUICK METER EDIT MODAL -->
+  <div id="modal-quick-meters" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="youestates-card p-6 max-w-sm w-full space-y-4">
+      <div class="flex justify-between items-center border-b border-stone-200 pb-2">
+        <h3 class="font-bold text-sm text-[#383838]">⚡💧 แก้ไขเลขมิเตอร์ไฟ & มิเตอร์น้ำ</h3>
+        <button type="button" onclick="toggleModal('modal-quick-meters')" class="text-stone-400 font-bold hover:text-stone-600">✕</button>
+      </div>
+      <form onsubmit="handleQuickMeterSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-stone-600 font-bold mb-1">⚡ เลขมิเตอร์ไฟฟ้าเริ่มต้น (Unit)</label>
+          <input type="text" id="qm-meter-elec" required placeholder="เช่น 12345" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-black text-amber-700 text-sm">
+        </div>
+        <div>
+          <label class="block text-stone-600 font-bold mb-1">💧 เลขมิเตอร์น้ำประปาเริ่มต้น (Unit)</label>
+          <input type="text" id="qm-meter-water" required placeholder="เช่น 67890" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-black text-cyan-700 text-sm">
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="toggleModal('modal-quick-meters')" class="flex-1 py-2.5 bg-stone-200 text-stone-700 font-bold rounded-lg text-xs hover:bg-stone-300">ยกเลิก</button>
+          <button type="submit" class="flex-1 py-2.5 youestates-btn-coral text-white font-bold rounded-lg text-xs shadow-sm">💾 บันทึกเลขมิเตอร์</button>
+        </div>
       </form>
     </div>
   </div>
