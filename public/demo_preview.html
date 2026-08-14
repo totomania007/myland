@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_42"></script>
+  <script src="js/engine.js?v=20260814_43"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -756,6 +756,19 @@
                 <span>✏️ แก้ไขสเปก & ที่อยู่</span>
               </button>
             </div>
+
+            <!-- OCCUPANCY STATUS CARD -->
+            <div id="pd-occupancy-card" class="p-3.5 rounded-xl border text-xs flex items-start gap-2.5 transition-all shadow-sm">
+              <span id="pd-occ-icon" class="text-xl">🟢</span>
+              <div class="flex-1 space-y-0.5">
+                <div class="flex justify-between items-center">
+                  <span class="font-black text-xs" id="pd-occ-title">สถานะ: มีผู้เช่า</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold" id="pd-occ-badge">เหลืออีก 7 เดือน</span>
+                </div>
+                <div id="pd-occ-desc" class="text-[11px] leading-relaxed mt-0.5"></div>
+              </div>
+            </div>
+
             <div class="space-y-3 text-xs">
               <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">ประเภททรัพย์สิน:</span> <strong class="text-stone-800 font-bold" id="pd-type">-</strong></div>
               <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">บ้านเลขที่:</span> <strong class="text-[#e05646] font-black" id="pd-houseno">-</strong></div>
@@ -1032,8 +1045,17 @@
             <input type="hidden" id="editing-tenant-key" value="">
             <div>
               <label class="block font-bold text-stone-700 mb-1">เลือกอสังหาริมทรัพย์ที่เช่า</label>
-              <select id="t-property-bind" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-3 font-bold text-stone-800">
+              <select id="t-property-bind" onchange="calculateLeaseEndDate()" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-3 font-bold text-stone-800">
               </select>
+            </div>
+
+            <!-- REAL-TIME OCCUPANCY & LEASE OVERLAP STATUS BANNER -->
+            <div id="t-occupancy-status-banner" class="hidden p-3.5 rounded-xl border text-xs flex items-start gap-2.5 transition-all shadow-sm">
+              <span id="t-occ-icon" class="text-lg">ℹ️</span>
+              <div class="flex-1 space-y-0.5">
+                <div id="t-occ-title" class="font-black text-xs"></div>
+                <div id="t-occ-desc" class="text-[11px] leading-relaxed"></div>
+              </div>
             </div>
 
             <div class="grid grid-cols-3 gap-3">

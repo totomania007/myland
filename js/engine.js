@@ -253,6 +253,112 @@
     };
   }
 
+  function getPropertyOccupancy(propId) {
+    if (!propId) return { isOccupied: false, status: 'vacant', label: '⚪ ว่าง (พร้อมปล่อยเช่า)', remainingMonths: 0, remainingDays: 0, tenant: null };
+    const prop = (state.propertiesState || []).find(p => String(p.id) === String(propId));
+    const tenants = Object.values(state.tenantDatabase || {});
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const propTenants = tenants.filter(t => String(t.propId) === String(propId) || (prop && t.unitName === prop.name));
+
+    // Active lease: start <= now <= end
+    for (const t of propTenants) {
+      if (!t.startDate || !t.endDate) continue;
+      const start = new Date(t.startDate);
+      const end = new Date(t.endDate);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
+
+      if (start <= now && now <= end) {
+        const diffMs = end.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        const remainingMonths = Math.ceil(diffDays / 30.4375);
+        return {
+          isOccupied: true,
+          status: 'occupied',
+          label: `🟢 มีผู้เช่า (เหลืออีก ${remainingMonths} เดือน)`,
+          remainingMonths,
+          remainingDays: Math.max(0, diffDays),
+          tenant: t,
+          startDate: t.startDate,
+          endDate: t.endDate
+        };
+      }
+    }
+
+    // Future booking: start > now
+    for (const t of propTenants) {
+      if (!t.startDate || !t.endDate) continue;
+      const start = new Date(t.startDate);
+      start.setHours(0, 0, 0, 0);
+      if (start > now) {
+        return {
+          isOccupied: true,
+          status: 'booked',
+          label: `🟡 จองแล้ว (เริ่ม ${t.startDate})`,
+          remainingMonths: 0,
+          remainingDays: 0,
+          tenant: t,
+          startDate: t.startDate,
+          endDate: t.endDate
+        };
+      }
+    }
+
+    return {
+      isOccupied: false,
+      status: 'vacant',
+      label: '⚪ ว่าง (พร้อมเช่า)',
+      remainingMonths: 0,
+      remainingDays: 0,
+      tenant: null
+    };
+  }
+
+  function checkLeaseDateConflict(propId, targetStartDate, targetEndDate, ignoreTenantKey) {
+    if (!propId || !targetStartDate || !targetEndDate) return { hasConflict: false };
+    const reqStart = new Date(targetStartDate);
+    const reqEnd = new Date(targetEndDate);
+    reqStart.setHours(0, 0, 0, 0);
+    reqEnd.setHours(23, 59, 59, 999);
+
+    if (isNaN(reqStart.getTime()) || isNaN(reqEnd.getTime())) return { hasConflict: false };
+
+    const prop = (state.propertiesState || []).find(p => String(p.id) === String(propId));
+    const tenants = Object.values(state.tenantDatabase || {});
+    for (const t of tenants) {
+      if (ignoreTenantKey && String(t.id) === String(ignoreTenantKey)) continue;
+      if (String(t.propId) !== String(propId) && (!prop || t.unitName !== prop.name)) continue;
+
+      if (!t.startDate || !t.endDate) continue;
+      const tStart = new Date(t.startDate);
+      const tEnd = new Date(t.endDate);
+      tStart.setHours(0, 0, 0, 0);
+      tEnd.setHours(23, 59, 59, 999);
+
+      // Overlap condition: (reqStart <= tEnd) && (reqEnd >= tStart)
+      if (reqStart <= tEnd && reqEnd >= tStart) {
+        const nextAvail = new Date(tEnd.getTime() + 86400000);
+        const nextAvailStr = nextAvail.toISOString().split('T')[0];
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const remDays = Math.max(0, Math.ceil((tEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+        const remMonths = Math.ceil(remDays / 30.4375);
+        return {
+          hasConflict: true,
+          conflictingTenant: t,
+          conflictStartDate: t.startDate,
+          conflictEndDate: t.endDate,
+          nextAvailableDate: nextAvailStr,
+          remainingMonths: remMonths,
+          message: `ช่วงเวลาที่เลือก (${targetStartDate} ถึง ${targetEndDate}) ซ้อนทับกับสัญญาของผู้เช่าปัจจุบันคือ คุณ "${t.fullName}" (ติดสัญญาถึง ${t.endDate})`
+        };
+      }
+    }
+    return { hasConflict: false };
+  }
+
   // 5. CLOUDFLARE D1 BACKGROUND SYNCHRONIZATION
   async function syncFromCloudflareD1(silent = true) {
     try {
@@ -335,6 +441,20 @@
         const lessor = state.lessorProfiles[p.lessorKey] || Object.values(state.lessorProfiles)[0] || { name: 'ผู้ให้เช่า' };
         const houseNoTxt = p.houseNo ? ` (${p.houseNo})` : '';
 
+        const occ = getPropertyOccupancy(p.id);
+        let occBadge = '';
+        let occRow = '';
+        if (occ.status === 'occupied') {
+          occBadge = `<span class="px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 font-bold text-xs">🟢 มีผู้เช่า (เหลืออีก ${occ.remainingMonths} ด.)</span>`;
+          occRow = `<div class="flex justify-between"><span class="text-stone-500">ผู้เช่าปัจจุบัน:</span> <strong class="text-emerald-700 font-bold">👤 ${occ.tenant.fullName} (ถึง ${occ.endDate})</strong></div>`;
+        } else if (occ.status === 'booked') {
+          occBadge = `<span class="px-2.5 py-1 rounded bg-amber-100 text-amber-800 font-bold text-xs">🟡 จองแล้ว (เริ่ม ${occ.startDate})</span>`;
+          occRow = `<div class="flex justify-between"><span class="text-stone-500">สถานะ:</span> <strong class="text-amber-700 font-bold">จองแล้วโดย ${occ.tenant.fullName}</strong></div>`;
+        } else {
+          occBadge = `<span class="px-2.5 py-1 rounded bg-stone-100 text-stone-600 font-bold text-xs">⚪ ว่าง (พร้อมเช่า)</span>`;
+          occRow = `<div class="flex justify-between"><span class="text-stone-500">สถานะ:</span> <strong class="text-stone-600 font-bold">⚪ พร้อมปล่อยเช่าทันที</strong></div>`;
+        }
+
         container.innerHTML += `
           <div class="youestates-card p-6 space-y-4">
             <div class="flex justify-between items-start">
@@ -345,10 +465,11 @@
                 <h3 class="font-extrabold text-base text-[#383838] mt-1">🏡 ${p.name}${houseNoTxt}</h3>
                 <p class="text-xs text-stone-500 font-medium">ผู้ให้เช่า: ${lessor.name}</p>
               </div>
-              <span class="px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 font-bold text-xs">active</span>
+              ${occBadge}
             </div>
 
             <div class="space-y-2 text-xs border-t border-b border-stone-200 py-3">
+              ${occRow}
               <div class="flex justify-between"><span class="text-stone-500">ยอดกู้เริ่มต้น:</span> <strong class="text-stone-800">฿${(p.principal || 0).toLocaleString()}</strong></div>
               <div class="flex justify-between"><span class="text-stone-500">ค่างวดผ่อน:</span> <strong class="text-[#e05646]">฿${(p.installment || 0).toLocaleString()} /เดือน</strong></div>
               <div class="flex justify-between"><span class="text-stone-500">อัตราค่าเช่า:</span> <strong class="text-emerald-700">฿${(p.rent || 0).toLocaleString()} /เดือน</strong></div>
@@ -410,13 +531,54 @@
       if (select.options.length !== props.length) {
         select.innerHTML = '';
         props.forEach(p => {
+          const occ = getPropertyOccupancy(p.id);
           const opt = document.createElement('option');
           opt.value = p.id;
-          opt.innerText = `🏡 ${p.name} ${p.houseNo ? `(${p.houseNo})` : ''}`;
+          const occTxt = occ.status === 'occupied' ? `[🟢 มีผู้เช่าถึง ${occ.endDate}]` : `[⚪ ว่าง]`;
+          opt.innerText = `🏡 ${p.name} ${p.houseNo ? `(${p.houseNo})` : ''} ${occTxt}`;
           select.appendChild(opt);
         });
       }
       select.value = prop.id;
+    }
+
+    // 0. Occupancy Status Card
+    const occ = getPropertyOccupancy(prop.id);
+    const occCard = document.getElementById('pd-occupancy-card');
+    if (occCard) {
+      const occIcon = document.getElementById('pd-occ-icon');
+      const occTitle = document.getElementById('pd-occ-title');
+      const occBadge = document.getElementById('pd-occ-badge');
+      const occDesc = document.getElementById('pd-occ-desc');
+
+      if (occ.status === 'occupied') {
+        occCard.className = 'p-3.5 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-950 text-xs flex items-start gap-2.5 transition-all shadow-sm';
+        if (occIcon) occIcon.innerText = '🟢';
+        if (occTitle) occTitle.innerText = `สถานะ: มีผู้เช่า (คุณ ${occ.tenant.fullName})`;
+        if (occBadge) {
+          occBadge.innerText = `เหลืออีก ${occ.remainingMonths} เดือน`;
+          occBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-200 text-emerald-900 border border-emerald-300';
+        }
+        if (occDesc) occDesc.innerHTML = `สัญญาเช่า: <strong>${occ.startDate}</strong> ถึง <strong>${occ.endDate}</strong> (คงเหลือประมาณ <strong>${occ.remainingDays}</strong> วัน / เบอร์โทร: ${occ.tenant.phone || '-'})`;
+      } else if (occ.status === 'booked') {
+        occCard.className = 'p-3.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-950 text-xs flex items-start gap-2.5 transition-all shadow-sm';
+        if (occIcon) occIcon.innerText = '🟡';
+        if (occTitle) occTitle.innerText = `สถานะ: จองแล้ว (คุณ ${occ.tenant.fullName})`;
+        if (occBadge) {
+          occBadge.innerText = `เริ่ม ${occ.startDate}`;
+          occBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-900 border border-amber-300';
+        }
+        if (occDesc) occDesc.innerHTML = `กำหนดเริ่มสัญญา: <strong>${occ.startDate}</strong> ถึง <strong>${occ.endDate}</strong>`;
+      } else {
+        occCard.className = 'p-3.5 rounded-xl border border-stone-200 bg-stone-50 text-stone-800 text-xs flex items-start gap-2.5 transition-all shadow-sm';
+        if (occIcon) occIcon.innerText = '⚪';
+        if (occTitle) occTitle.innerText = 'สถานะ: ทรัพย์สินว่าง (พร้อมปล่อยเช่า)';
+        if (occBadge) {
+          occBadge.innerText = 'พร้อมทำสัญญา';
+          occBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-stone-200 text-stone-700 border border-stone-300';
+        }
+        if (occDesc) occDesc.innerText = 'ไม่มีสัญญาเช่าเดิมผูกอยู่ สามารถเปิดรับผู้เช่าใหม่และทำสัญญาเช่าได้ทันที';
+      }
     }
 
     // 1. Specs
@@ -1186,12 +1348,50 @@
   }
 
   function calculateLeaseEndDate() {
-    const startEl = document.getElementById('t-startdate');
-    const durEl = document.getElementById('t-duration');
+    const propSel = document.getElementById('t-property-bind') || document.getElementById('tenant-prop-id');
+    const startEl = document.getElementById('t-startdate') || document.getElementById('tenant-start-date');
+    const durEl = document.getElementById('t-duration') || document.getElementById('tenant-duration');
     const displayEl = document.getElementById('t-enddate-display');
+    const banner = document.getElementById('t-occupancy-status-banner');
+    const occIcon = document.getElementById('t-occ-icon');
+    const occTitle = document.getElementById('t-occ-title');
+    const occDesc = document.getElementById('t-occ-desc');
+    const editingKey = (document.getElementById('editing-tenant-key')?.value || '').trim();
+
     if (!startEl || !durEl || !displayEl) return;
     const dates = calculateLeaseDates(startEl.value, durEl.value);
     displayEl.innerText = dates.endThai ? `${dates.endThai} (${dates.endDate})` : '-';
+
+    const propId = propSel?.value;
+    if (!propId || !banner) return;
+
+    banner.classList.remove('hidden');
+    const occ = getPropertyOccupancy(propId);
+    const conflict = checkLeaseDateConflict(propId, startEl.value, dates.endDate, editingKey);
+
+    const submitBtn = document.getElementById('btn-submit-tenant');
+
+    if (conflict.hasConflict) {
+      banner.className = 'p-3.5 rounded-xl border border-rose-300 bg-rose-50 text-rose-950 text-xs flex items-start gap-2.5 transition-all shadow-sm';
+      if (occIcon) occIcon.innerText = '⛔';
+      if (occTitle) occTitle.innerHTML = `<span class="text-rose-700 font-black">ไม่สามารถเลือกช่วงเวลานี้ได้ (ติดสัญญาเช่าซ้อนทับ)</span>`;
+      if (occDesc) occDesc.innerHTML = `${conflict.message}<br>💡 ทรัพย์สินนี้จะว่างให้เช่าได้ตั้งแต่วันที่ <strong class="text-emerald-700 underline font-black">${conflict.nextAvailableDate}</strong> เป็นต้นไป (หรือกรุณาเปลี่ยนวันเริ่มเช่า)`;
+      if (submitBtn) {
+        submitBtn.classList.add('opacity-50');
+      }
+    } else if (occ.status === 'occupied') {
+      banner.className = 'p-3.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-950 text-xs flex items-start gap-2.5 transition-all shadow-sm';
+      if (occIcon) occIcon.innerText = '⚠️';
+      if (occTitle) occTitle.innerHTML = `<span class="text-amber-800 font-bold">ทรัพย์สินนี้ปัจจุบันมีผู้เช่าอยู่ (คุณ ${occ.tenant.fullName})</span>`;
+      if (occDesc) occDesc.innerHTML = `สัญญาปัจจุบันจะสิ้นสุดวันที่ <strong>${occ.endDate}</strong> (เหลืออีก ${occ.remainingMonths} เดือน) — ช่วงเวลาที่คุณเลือก (${startEl.value} ถึง ${dates.endDate}) <strong>ไม่ซ้อนทับและสามารถทำสัญญาต่อเนื่องได้</strong>`;
+      if (submitBtn) submitBtn.classList.remove('opacity-50');
+    } else {
+      banner.className = 'p-3.5 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-950 text-xs flex items-start gap-2.5 transition-all shadow-sm';
+      if (occIcon) occIcon.innerText = '✅';
+      if (occTitle) occTitle.innerHTML = `<span class="text-emerald-800 font-bold">ทรัพย์สินว่าง พร้อมทำสัญญาเช่าทันที</span>`;
+      if (occDesc) occDesc.innerHTML = `ไม่มีสัญญาเช่าเดิมผูกอยู่ สามารถระบุวันเริ่มเช่าและทำสัญญาเช่า A4 ได้ทันที`;
+      if (submitBtn) submitBtn.classList.remove('opacity-50');
+    }
   }
 
   function renderTenantPropertyDropdown() {
@@ -1205,9 +1405,13 @@
         return;
       }
       state.propertiesState.forEach(p => {
+        const occ = getPropertyOccupancy(p.id);
         const opt = document.createElement('option');
         opt.value = p.id;
-        opt.innerText = `🏡 ${p.name} ${p.houseNo ? `(${p.houseNo})` : ''} - ค่าเช่า ฿${(p.rent || 0).toLocaleString()}`;
+        const statusTxt = occ.status === 'occupied' 
+          ? `[🟢 มีผู้เช่าถึง ${occ.endDate} - เหลืออีก ${occ.remainingMonths} ด.]` 
+          : (occ.status === 'booked' ? `[🟡 จองแล้วเริ่ม ${occ.startDate}]` : `[⚪ ว่าง - พร้อมเช่าทันที]`);
+        opt.innerText = `🏡 ${p.name} ${p.houseNo ? `(${p.houseNo})` : ''} — ${statusTxt}`;
         sel.appendChild(opt);
       });
     });
@@ -1222,7 +1426,10 @@
     delete state.tenantDatabase[tKey];
     saveStateToLocalStorage();
     renderRegisteredTenantsList();
+    renderTenantPropertyDropdown();
+    renderPropertyDetailView();
     renderContractView();
+    renderAdminData();
     alert(`✅ ลบข้อมูลผู้เช่า "${t.fullName}" เรียบร้อยแล้ว!`);
   }
 
@@ -1272,7 +1479,7 @@
       alert('กรุณากรอกชื่อ-นามสกุล ผู้เช่า');
       return;
     }
-    const editingKey = document.getElementById('editing-tenant-key')?.value.trim();
+    const editingKey = (document.getElementById('editing-tenant-key')?.value || '').trim();
     const key = editingKey || ('tenant-' + Date.now());
 
     const propId = document.getElementById('t-property-bind')?.value || document.getElementById('tenant-prop-id')?.value;
@@ -1280,6 +1487,13 @@
     const startDate = document.getElementById('t-startdate')?.value || document.getElementById('tenant-start-date')?.value || new Date().toISOString().split('T')[0];
     const duration = document.getElementById('t-duration')?.value || document.getElementById('tenant-duration')?.value || '1';
     const dates = calculateLeaseDates(startDate, duration);
+
+    // Enforce No-Overlap Validation
+    const conflict = checkLeaseDateConflict(prop.id, startDate, dates.endDate, editingKey);
+    if (conflict.hasConflict) {
+      alert(`⛔ ไม่สามารถบันทึกสัญญาเช่าได้!\n\n${conflict.message}\n\n💡 กรุณาเลือกวันเริ่มต้นสัญญาตั้งแต่วันที่ ${conflict.nextAvailableDate} เป็นต้นไป หรือเลือกอสังหาริมทรัพย์อื่นที่ว่างอยู่ครับ`);
+      return;
+    }
 
     const tenantData = {
       id: key,
@@ -1308,7 +1522,10 @@
     }
 
     renderRegisteredTenantsList();
+    renderTenantPropertyDropdown();
+    renderPropertyDetailView();
     renderContractView();
+    renderAdminData();
     alert(`✅ บันทึกลงทะเบียนผู้เช่า "${fullName}" เรียบร้อยแล้ว!`);
 
     ['t-fullname', 't-age', 't-idcard', 't-phone', 't-address', 'tenant-fullname', 'tenant-age', 'tenant-idcard', 'tenant-phone', 'tenant-address'].forEach(id => {
@@ -1839,6 +2056,8 @@
   window.saveStateToLocalStorage = saveStateToLocalStorage;
   window.getCurrentProperty = getCurrentProperty;
   window.calculateMortgage = calculateMortgage;
+  window.getPropertyOccupancy = getPropertyOccupancy;
+  window.checkLeaseDateConflict = checkLeaseDateConflict;
   window.syncFromCloudflareD1 = syncFromCloudflareD1;
   window.renderAllViews = renderAllViews;
   window.renderAdminData = renderAdminData;
