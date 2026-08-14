@@ -363,11 +363,14 @@
       const resP = await fetch('/api/properties');
       if (resP.ok) {
         const dbProps = await resP.json();
-        if (Array.isArray(dbProps) && dbProps.length > 0) {
-          state.propertiesState = dbProps;
-          localStorage.setItem('property_os_properties', JSON.stringify(dbProps));
-          if (!state.currentPropertyId || !dbProps.find(p => String(p.id) === String(state.currentPropertyId))) {
-            state.currentPropertyId = dbProps[0].id;
+        if (Array.isArray(dbProps)) {
+          if (dbProps.length > 0 || localStorage.getItem('property_os_properties_synced')) {
+            state.propertiesState = dbProps;
+            localStorage.setItem('property_os_properties', JSON.stringify(dbProps));
+            localStorage.setItem('property_os_properties_synced', 'true');
+            if (!state.currentPropertyId || !dbProps.find(p => String(p.id) === String(state.currentPropertyId))) {
+              state.currentPropertyId = dbProps[0]?.id || null;
+            }
           }
         }
       }
@@ -492,9 +495,14 @@
 
             <div class="flex justify-between items-center pt-1">
               <span class="text-xs text-stone-400 font-semibold">ผ่อนชำระ: ${mortgage.paidPct}%</span>
-              <button onclick="window.handleDetailPropertySwitch('${p.id}'); window.switchTab('property-detail');" class="text-xs text-[#e05646] font-bold hover:underline">
-                ดูรายละเอียด & สินเชื่อ ➔
-              </button>
+              <div class="flex items-center gap-3">
+                <button onclick="window.deleteProperty('${p.id}')" class="text-xs text-rose-600 hover:text-rose-800 font-bold flex items-center gap-0.5 hover:underline">
+                  <span>🗑️ ลบ</span>
+                </button>
+                <button onclick="window.handleDetailPropertySwitch('${p.id}'); window.switchTab('property-detail');" class="text-xs text-[#e05646] font-bold hover:underline">
+                  ดูรายละเอียด & สินเชื่อ ➔
+                </button>
+              </div>
             </div>
           </div>
         `;
@@ -510,6 +518,55 @@
     if (document.getElementById('m-income')) document.getElementById('m-income').innerText = `฿${totInc.toLocaleString()}`;
     if (document.getElementById('m-installment')) document.getElementById('m-installment').innerText = `฿${totInst.toLocaleString()}`;
     if (document.getElementById('m-cashflow')) document.getElementById('m-cashflow').innerText = `+฿${net.toLocaleString()}`;
+  }
+
+  async function deleteProperty(propId) {
+    if (!propId) {
+      const prop = getCurrentProperty();
+      propId = prop?.id;
+    }
+    if (!propId) {
+      alert('ไม่พบทรัพย์สินที่ต้องการลบ');
+      return;
+    }
+
+    const prop = (state.propertiesState || []).find(p => String(p.id) === String(propId));
+    if (!prop) {
+      alert('ไม่พบข้อมูลทรัพย์สินในระบบ');
+      return;
+    }
+
+    const occ = getPropertyOccupancy(propId);
+    let confirmMsg = `คุณต้องการลบทรัพย์สิน "${prop.name}" ${prop.houseNo ? `(${prop.houseNo})` : ''} ออกจากพอร์ตใช่หรือไม่?`;
+    if (occ.isOccupied) {
+      confirmMsg = `⚠️ คำเตือน: ทรัพย์สิน "${prop.name}" ปัจจุบันมีสัญญาผู้เช่าอยู่ (คุณ ${occ.tenant.fullName})\n\nคุณแน่ใจหรือไม่ว่าต้องการลบทรัพย์สินนี้ออกจากระบบอย่างถาวร?`;
+    }
+
+    if (!confirm(confirmMsg)) return;
+
+    state.propertiesState = (state.propertiesState || []).filter(p => String(p.id) !== String(propId));
+    localStorage.setItem('property_os_properties_synced', 'true');
+
+    if (String(state.currentPropertyId) === String(propId)) {
+      state.currentPropertyId = state.propertiesState[0]?.id || null;
+      if (state.currentPropertyId) {
+        localStorage.setItem('property_os_current_prop_id', state.currentPropertyId);
+      } else {
+        localStorage.removeItem('property_os_current_prop_id');
+      }
+    }
+
+    saveStateToLocalStorage();
+    renderAllViews();
+    alert(`✅ ลบทรัพย์สิน "${prop.name}" ออกจากระบบเรียบร้อยแล้ว!`);
+
+    try {
+      await fetch(`/api/properties?id=${encodeURIComponent(propId)}`, {
+        method: 'DELETE'
+      });
+    } catch (err) {
+      console.warn('D1 deleteProperty error:', err);
+    }
   }
 
   function handleDetailPropertySwitch(propId) {
@@ -2118,6 +2175,7 @@
   window.handlePropertyEditSubmit = handlePropertyEditSubmit;
   window.handlePropertyDetailEditSubmit = handlePropertyDetailEditSubmit;
   window.addFurnitureEditRow = addFurnitureEditRow;
+  window.deleteProperty = deleteProperty;
   window.deleteRegisteredTenant = deleteRegisteredTenant;
   window.editRegisteredTenant = editRegisteredTenant;
   window.handleTenantSubmit = handleTenantSubmit;

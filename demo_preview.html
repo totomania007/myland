@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_44"></script>
+  <script src="js/engine.js?v=20260814_45"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -752,9 +752,14 @@
           <div class="youestates-card p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-stone-200 pb-3">
               <h3 class="font-extrabold text-sm text-[#383838]">รายละเอียดทรัพย์สิน & ที่อยู่</h3>
-              <button type="button" onclick="openEditPropertyDetailModal()" class="px-2.5 py-1 bg-[#383838] hover:bg-black text-white rounded-lg font-bold text-xs shadow-sm flex items-center gap-1">
-                <span>✏️ แก้ไขสเปก & ที่อยู่</span>
-              </button>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="openEditPropertyDetailModal()" class="px-2.5 py-1 bg-[#383838] hover:bg-black text-white rounded-lg font-bold text-xs shadow-sm flex items-center gap-1">
+                  <span>✏️ แก้ไขสเปก</span>
+                </button>
+                <button type="button" onclick="window.deleteProperty()" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg font-bold text-xs shadow-sm flex items-center gap-1">
+                  <span>🗑️ ลบทรัพย์สิน</span>
+                </button>
+              </div>
             </div>
 
             <!-- OCCUPANCY STATUS CARD -->
@@ -1327,7 +1332,14 @@
           <div id="pde-furniture-rows-container" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
         </div>
 
-        <button type="submit" class="w-full youestates-btn-coral font-bold py-2.5 rounded-lg text-white text-xs mt-2 shadow-sm">💾 บันทึกสเปก & ที่อยู่ทรัพย์สิน</button>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="toggleModal('modal-edit-property-detail'); window.deleteProperty();" class="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold rounded-lg text-xs transition-colors flex items-center justify-center gap-1">
+            <span>🗑️ ลบทรัพย์สินนี้</span>
+          </button>
+          <button type="submit" class="flex-1 youestates-btn-coral font-bold py-2.5 rounded-lg text-white text-xs shadow-sm flex items-center justify-center gap-1">
+            <span>💾 บันทึกสเปก & ที่อยู่</span>
+          </button>
+        </div>
       </form>
     </div>
   </div>
