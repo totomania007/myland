@@ -129,11 +129,9 @@
   function loadStoredData(key, defaultVal) {
     try {
       const raw = localStorage.getItem(key);
-      if (!raw) return defaultVal;
+      if (raw === null) return defaultVal;
       const parsed = JSON.parse(raw);
-      if (Array.isArray(defaultVal) && (!Array.isArray(parsed) || parsed.length === 0)) return defaultVal;
-      if (typeof defaultVal === 'object' && !Array.isArray(defaultVal) && Object.keys(parsed || {}).length === 0) return defaultVal;
-      return parsed;
+      return parsed !== null && parsed !== undefined ? parsed : defaultVal;
     } catch (e) {
       return defaultVal;
     }
@@ -154,16 +152,16 @@
   };
 
   function saveStateToLocalStorage() {
-    if (state.propertiesState && state.propertiesState.length > 0) {
+    if (state.propertiesState !== undefined) {
       localStorage.setItem('property_os_properties', JSON.stringify(state.propertiesState));
     }
-    if (state.lessorProfiles && Object.keys(state.lessorProfiles).length > 0) {
+    if (state.lessorProfiles !== undefined) {
       localStorage.setItem('property_os_lessors', JSON.stringify(state.lessorProfiles));
     }
-    if (state.adminAccountsState && state.adminAccountsState.length > 0) {
+    if (state.adminAccountsState !== undefined) {
       localStorage.setItem('property_os_admins', JSON.stringify(state.adminAccountsState));
     }
-    if (state.tenantDatabase && Object.keys(state.tenantDatabase).length > 0) {
+    if (state.tenantDatabase !== undefined) {
       localStorage.setItem('property_os_tenants', JSON.stringify(state.tenantDatabase));
     }
     if (state.currentPropertyId) {
@@ -384,6 +382,22 @@
           dbLessors.forEach(l => { if (l.id) freshLessors[l.id] = l; });
           state.lessorProfiles = freshLessors;
           localStorage.setItem('property_os_lessors', JSON.stringify(freshLessors));
+        }
+      }
+    } catch (e) {}
+
+    try {
+      const resT = await fetch('/api/tenants');
+      if (resT.ok) {
+        const dbTenants = await resT.json();
+        if (Array.isArray(dbTenants)) {
+          const freshTenants = {};
+          dbTenants.forEach(t => { if (t.id) freshTenants[t.id] = t; });
+          if (dbTenants.length > 0 || localStorage.getItem('property_os_tenants_synced')) {
+            state.tenantDatabase = freshTenants;
+            localStorage.setItem('property_os_tenants', JSON.stringify(freshTenants));
+            localStorage.setItem('property_os_tenants_synced', 'true');
+          }
         }
       }
     } catch (e) {}
@@ -1418,12 +1432,13 @@
     calculateLeaseEndDate();
   }
 
-  function deleteRegisteredTenant(tKey) {
+  async function deleteRegisteredTenant(tKey) {
     const t = state.tenantDatabase[tKey];
     if (!t) return;
     if (!confirm(`คุณต้องการลบข้อมูลผู้เช่า "${t.fullName}" ออกจากระบบใช่หรือไม่?`)) return;
 
     delete state.tenantDatabase[tKey];
+    localStorage.setItem('property_os_tenants_synced', 'true');
     saveStateToLocalStorage();
     renderRegisteredTenantsList();
     renderTenantPropertyDropdown();
@@ -1431,6 +1446,12 @@
     renderContractView();
     renderAdminData();
     alert(`✅ ลบข้อมูลผู้เช่า "${t.fullName}" เรียบร้อยแล้ว!`);
+
+    try {
+      await fetch(`/api/tenants?id=${encodeURIComponent(tKey)}`, {
+        method: 'DELETE'
+      });
+    } catch (e) {}
   }
 
   function editRegisteredTenant(tKey) {
@@ -1472,7 +1493,7 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function handleTenantSubmit(e) {
+  async function handleTenantSubmit(e) {
     if (e && e.preventDefault) e.preventDefault();
     const fullName = (document.getElementById('t-fullname')?.value || document.getElementById('tenant-fullname')?.value || '').trim();
     if (!fullName) {
@@ -1513,6 +1534,7 @@
     };
 
     state.tenantDatabase[key] = tenantData;
+    localStorage.setItem('property_os_tenants_synced', 'true');
     saveStateToLocalStorage();
 
     if (document.getElementById('editing-tenant-key')) document.getElementById('editing-tenant-key').value = '';
@@ -1532,6 +1554,14 @@
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
+
+    try {
+      await fetch('/api/tenants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tenantData)
+      });
+    } catch (err) {}
   }
   const handleTenantRegisterTabSubmit = handleTenantSubmit;
 
