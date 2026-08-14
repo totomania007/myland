@@ -38,6 +38,12 @@
         { name: 'เตียงนอน 6 ฟุต พร้อมฟูก (6ft Bed & Mattress)', img: CONFIG.PLACEHOLDER_SVG },
         { name: 'ตู้เสื้อผ้า Built-in', img: CONFIG.PLACEHOLDER_SVG }
       ],
+      gallery: [
+        { id: 'g-silk-1', type: 'image', title: 'ห้องนั่งเล่น Silk Condo', category: 'interior', url: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&auto=format&fit=crop&q=80', caption: 'ห้องนั่งเล่นโปร่งสบาย แสงธรรมชาติเข้าถึง' },
+        { id: 'g-silk-2', type: 'image', title: 'ห้องนอน Master Bedroom', category: 'interior', url: 'https://images.unsplash.com/photo-1540518614846-7ede433c4550?w=1200&auto=format&fit=crop&q=80', caption: 'เตียง 6 ฟุต พร้อมที่นอนเกรดพรีเมียม' },
+        { id: 'g-silk-3', type: 'image', title: 'สระว่ายน้ำโครงการ', category: 'exterior', url: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=1200&auto=format&fit=crop&q=80', caption: 'สระว่ายน้ำระบบเกลือพร้อมฟิตเนส' },
+        { id: 'g-silk-4', type: 'video', title: 'วิดีโอพาชมห้องจริง (Video Tour)', category: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ', caption: 'คลิปพาชมห้องแบบละเอียดทุกมุมมอง' }
+      ],
       rateSchedule: [
         { startMonth: 1, endMonth: 36, rate: 4.5, label: 'โปรโมชั่น Retention ปีที่ 1-3' },
         { startMonth: 37, endMonth: 360, rate: 6.0, label: 'อัตราดอกเบี้ยลอยตัว (MRR-0.5%)' }
@@ -62,6 +68,12 @@
       inventoryList: [
         { name: 'เครื่องปรับอากาศ Inverter 2 เครื่อง', img: CONFIG.PLACEHOLDER_SVG },
         { name: 'ชุดครัว Built-in พร้อมเตาไฟฟ้า', img: CONFIG.PLACEHOLDER_SVG }
+      ],
+      gallery: [
+        { id: 'g-atr-1', type: 'image', title: 'หน้าบ้านทาวน์โฮม The Atrium', category: 'exterior', url: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&auto=format&fit=crop&q=80', caption: 'หน้าบ้านกว้าง จอดรถได้ 2 คัน' },
+        { id: 'g-atr-2', type: 'image', title: 'ห้องรับแขก & โซนรับประทานอาหาร', category: 'interior', url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80', caption: 'เฟอร์นิเจอร์ตกแต่งครบชุด พร้อมเข้าอยู่' },
+        { id: 'g-atr-3', type: 'image', title: 'สวนพักผ่อนส่วนกลาง', category: 'highlight', url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&auto=format&fit=crop&q=80', caption: 'สวนสีเขียวและสนามเด็กเล่นร่มรื่น' },
+        { id: 'g-atr-4', type: 'video', title: 'วิดีโอรีวิวบ้าน The Atrium', category: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ', caption: 'พาทัวร์ดูบรรยากาศจริงในหมู่บ้าน' }
       ],
       rateSchedule: [
         { startMonth: 1, endMonth: 36, rate: 4.5, label: 'โปรโมชั่น Retention ปีที่ 1-3' },
@@ -479,6 +491,360 @@
     if (document.getElementById('pd-lessor-detail')) document.getElementById('pd-lessor-detail').innerText = `บัตรประชาชน: ${lessor.idCard || '-'}`;
     if (document.getElementById('pd-lessor-address-detail')) document.getElementById('pd-lessor-address-detail').innerText = `ที่อยู่: ${lessor.address || '-'}`;
     if (document.getElementById('pd-lessor-card-img') && lessor.imageUrl) document.getElementById('pd-lessor-card-img').src = lessor.imageUrl;
+
+    // 6. Render Photo & Video Gallery
+    renderPropertyGallery();
+  }
+
+  // 6. GALLERY & MOBILE-FIRST MEDIA ENGINE
+  let currentGalleryFilter = 'all';
+  let currentLightboxIndex = 0;
+  let activeGalleryItems = [];
+
+  function compressImageFile(file, maxWidth = 1200, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          let dataUrl = canvas.toDataURL('image/webp', quality);
+          if (!dataUrl || !dataUrl.startsWith('data:image/webp')) {
+            dataUrl = canvas.toDataURL('image/jpeg', quality);
+          }
+          resolve(dataUrl);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  }
+
+  function parseVideoEmbedUrl(url) {
+    if (!url) return null;
+    url = url.trim();
+    const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
+    if (ytMatch && ytMatch[1]) {
+      return `https://www.youtube.com/embed/${ytMatch[1]}`;
+    }
+    return url;
+  }
+
+  function renderPropertyGallery(filterCategory) {
+    if (filterCategory) currentGalleryFilter = filterCategory;
+    const prop = getCurrentProperty();
+    const grid = document.getElementById('property-gallery-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    if (!prop) {
+      grid.innerHTML = `<div class="col-span-full text-center py-6 text-stone-400 text-xs font-bold">กรุณาเลือกทรัพย์สิน</div>`;
+      return;
+    }
+
+    if (!prop.gallery || prop.gallery.length === 0) {
+      prop.gallery = [
+        { id: `g-${Date.now()}-1`, type: 'image', title: 'ห้องนั่งเล่น Living Room', category: 'interior', url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&auto=format&fit=crop&q=80', caption: 'ห้องนั่งเล่นกว้างขวาง ตกแต่งพร้อมอยู่' },
+        { id: `g-${Date.now()}-2`, type: 'image', title: 'ห้องนอน Master Bedroom', category: 'interior', url: 'https://images.unsplash.com/photo-1540518614846-7ede433c4550?w=1200&auto=format&fit=crop&q=80', caption: 'เตียง 6 ฟุต พร้อมวิวทิศตะวันออก' },
+        { id: `g-${Date.now()}-3`, type: 'image', title: 'สระว่ายน้ำโครงการ', category: 'exterior', url: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=1200&auto=format&fit=crop&q=80', caption: 'สระว่ายน้ำระบบเกลือ ชั้นดาดฟ้า' }
+      ];
+    }
+
+    // Promo Card Sync
+    if (document.getElementById('pd-promo-title')) document.getElementById('pd-promo-title').innerText = prop.name || 'อสังหาริมทรัพย์';
+    if (document.getElementById('pd-promo-location')) document.getElementById('pd-promo-location').innerText = prop.address || '-';
+    if (document.getElementById('pd-promo-price')) document.getElementById('pd-promo-price').innerText = `฿${(prop.rent || 0).toLocaleString()} /เดือน`;
+    if (document.getElementById('pd-promo-deposit')) document.getElementById('pd-promo-deposit').innerText = `฿${(prop.deposit || 0).toLocaleString()}`;
+    if (document.getElementById('pd-promo-cover-img') && prop.gallery[0]) {
+      document.getElementById('pd-promo-cover-img').src = prop.gallery[0].url || CONFIG.PLACEHOLDER_SVG;
+    }
+
+    // Filter Items
+    let items = prop.gallery;
+    if (currentGalleryFilter && currentGalleryFilter !== 'all') {
+      items = items.filter(it => it.category === currentGalleryFilter || (currentGalleryFilter === 'video' && it.type === 'video'));
+    }
+    activeGalleryItems = items;
+
+    if (items.length === 0) {
+      grid.innerHTML = `
+        <div class="col-span-full text-center py-8 text-stone-400 bg-stone-50 rounded-2xl border border-dashed border-stone-200 p-6 space-y-2">
+          <div class="text-2xl">📸</div>
+          <div class="text-xs font-bold text-stone-600">ยังไม่มีรูปภาพหรือวิดีโอในหมวดหมู่นี้</div>
+          <p class="text-[11px] text-stone-400">กดปุ่ม "+ อัปโหลดรูปภาพ" หรือ "แทรกลิงก์" ด้านบนเพื่อเพิ่มสื่อ</p>
+        </div>
+      `;
+      return;
+    }
+
+    items.forEach((item) => {
+      const isVideo = item.type === 'video';
+      const categoryBadges = {
+        exterior: '🏠 ภายนอก',
+        interior: '🛋️ ภายใน',
+        highlight: '✨ จุดเด่น',
+        video: '🎬 วิดีโอ'
+      };
+      const catLabel = categoryBadges[item.category] || '📸 รูปภาพ';
+
+      grid.innerHTML += `
+        <div class="group relative bg-white border border-stone-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div class="relative w-full aspect-[4/3] bg-stone-100 overflow-hidden cursor-pointer" onclick="openGalleryLightbox('${item.id}')">
+            ${isVideo ? `
+              <div class="w-full h-full bg-slate-950 flex flex-col items-center justify-center text-white relative">
+                <span class="text-3xl filter drop-shadow-md">▶️</span>
+                <span class="text-[10px] font-bold text-rose-400 mt-1 uppercase">Video Tour</span>
+              </div>
+            ` : `
+              <img src="${item.url || CONFIG.PLACEHOLDER_SVG}" alt="${item.title || 'Property Photo'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            `}
+            <span class="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-sm text-white font-bold text-[9px]">
+              ${catLabel}
+            </span>
+          </div>
+
+          <div class="p-2.5 space-y-1 bg-white">
+            <h4 class="font-bold text-xs text-stone-800 truncate" title="${item.title || '-'}">${item.title || 'ภาพอสังหาฯ'}</h4>
+            <p class="text-[10px] text-stone-400 truncate">${item.caption || '-'}</p>
+            <div class="flex items-center justify-between pt-1 border-t border-stone-100">
+              <button type="button" onclick="openGalleryLightbox('${item.id}')" class="text-[10px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+                <span>👁️ ดู</span>
+              </button>
+              <button type="button" onclick="deleteGalleryItem('${item.id}')" class="text-[10px] font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1">
+                <span>🗑️ ลบ</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  function filterGalleryPhotos(category) {
+    currentGalleryFilter = category;
+    ['all', 'exterior', 'interior', 'highlight', 'video'].forEach(c => {
+      const btn = document.getElementById(`gfilter-${c}`);
+      if (btn) {
+        if (c === category) {
+          btn.className = 'px-3 py-1.5 rounded-lg bg-[#383838] text-white whitespace-nowrap font-bold text-xs';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 whitespace-nowrap font-bold text-xs';
+        }
+      }
+    });
+    renderPropertyGallery(category);
+  }
+
+  async function uploadPropertyGalleryImage(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const prop = getCurrentProperty();
+    if (!prop) {
+      alert('กรุณาเลือกทรัพย์สินก่อนครับ');
+      return;
+    }
+
+    try {
+      const compressedDataUrl = await compressImageFile(file, 1200, 0.8);
+      const title = prompt('กรุณาใส่ชื่อรูปภาพ (เช่น ห้องนั่งเล่น, วิวระเบียง, ห้องน้ำ):', file.name.replace(/\.[^/.]+$/, "")) || 'รูปภาพทรัพย์สิน';
+      const category = prompt('กรุณาเลือกหมวดหมู่ (พิมพ์ 1=ภายนอก, 2=ภายใน, 3=จุดเด่น):', '2') === '1' ? 'exterior' : 'interior';
+
+      if (!prop.gallery) prop.gallery = [];
+      const newItem = {
+        id: `g-${Date.now()}`,
+        type: 'image',
+        title,
+        category,
+        url: compressedDataUrl,
+        caption: 'อัปโหลดพร้อมบีบอัดความละเอียดสูง'
+      };
+
+      prop.gallery.unshift(newItem);
+      saveStateToLocalStorage();
+      renderPropertyGallery();
+      alert(`✅ บันทึกรูปภาพ "${title}" ลงในคลังภาพเรียบร้อยแล้ว (บีบอัดขนาดไฟล์เล็ก โหลดเร็วบนมือถือ)!`);
+
+      try {
+        await fetch('/api/properties', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(prop)
+        });
+      } catch (err) {}
+    } catch (e) {
+      alert('เกิดข้อผิดพลาดในการบีบอัดรูปภาพ: ' + e.message);
+    }
+  }
+
+  function openAddMediaLinkModal() {
+    toggleModal('modal-add-media-link');
+  }
+
+  async function handleAddMediaLinkSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const prop = getCurrentProperty();
+    if (!prop) {
+      alert('กรุณาเลือกทรัพย์สินก่อนครับ');
+      return;
+    }
+
+    const type = document.getElementById('gml-type')?.value || 'image';
+    let url = document.getElementById('gml-url')?.value.trim();
+    const title = document.getElementById('gml-title')?.value.trim() || 'สื่ออสังหาริมทรัพย์';
+    const category = document.getElementById('gml-category')?.value || (type === 'video' ? 'video' : 'interior');
+    const caption = document.getElementById('gml-caption')?.value.trim() || '';
+
+    if (!url) {
+      alert('กรุณากรอกลิงก์ URL');
+      return;
+    }
+
+    if (type === 'video') {
+      url = parseVideoEmbedUrl(url);
+    }
+
+    if (!prop.gallery) prop.gallery = [];
+    const newItem = {
+      id: `g-${Date.now()}`,
+      type,
+      title,
+      category,
+      url,
+      caption
+    };
+
+    prop.gallery.unshift(newItem);
+    saveStateToLocalStorage();
+    renderPropertyGallery();
+    toggleModal('modal-add-media-link');
+    alert(`✅ บันทึกลิงก์ "${title}" ลงในคลังสื่อเรียบร้อยแล้ว!`);
+
+    if (document.getElementById('gml-url')) document.getElementById('gml-url').value = '';
+    if (document.getElementById('gml-title')) document.getElementById('gml-title').value = '';
+    if (document.getElementById('gml-caption')) document.getElementById('gml-caption').value = '';
+
+    try {
+      await fetch('/api/properties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(prop)
+      });
+    } catch (err) {}
+  }
+
+  async function deleteGalleryItem(itemId) {
+    const prop = getCurrentProperty();
+    if (!prop || !prop.gallery) return;
+
+    const item = prop.gallery.find(it => String(it.id) === String(itemId));
+    if (!item) return;
+
+    if (!confirm(`คุณต้องการลบสื่อ "${item.title || 'รายการนี้'}" ออกจากคลังใช่หรือไม่?`)) return;
+
+    prop.gallery = prop.gallery.filter(it => String(it.id) !== String(itemId));
+    saveStateToLocalStorage();
+    renderPropertyGallery();
+    alert(`✅ ลบสื่อเรียบร้อยแล้ว!`);
+
+    try {
+      await fetch('/api/properties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(prop)
+      });
+    } catch (err) {}
+  }
+
+  function openGalleryLightbox(itemId) {
+    const prop = getCurrentProperty();
+    if (!prop || !prop.gallery) return;
+    const idx = prop.gallery.findIndex(it => String(it.id) === String(itemId));
+    if (idx < 0) return;
+
+    currentLightboxIndex = idx;
+    displayLightboxContent(prop.gallery[idx]);
+    const modal = document.getElementById('modal-gallery-lightbox');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function openPromoCoverLightbox() {
+    const prop = getCurrentProperty();
+    if (!prop || !prop.gallery || prop.gallery.length === 0) return;
+    openGalleryLightbox(prop.gallery[0].id);
+  }
+
+  function displayLightboxContent(item) {
+    if (!item) return;
+    if (document.getElementById('lightbox-title')) document.getElementById('lightbox-title').innerText = item.title || 'คลังสื่ออสังหาฯ';
+    if (document.getElementById('lightbox-caption')) document.getElementById('lightbox-caption').innerText = item.caption || '';
+    if (document.getElementById('lightbox-badge')) {
+      document.getElementById('lightbox-badge').innerText = item.type === 'video' ? '🎬 วิดีโอรีวิว' : (item.category === 'exterior' ? '🏠 ภายนอก' : '🛋️ ภายใน');
+    }
+
+    const container = document.getElementById('lightbox-media-container');
+    if (!container) return;
+
+    if (item.type === 'video') {
+      const isEmbed = item.url && (item.url.includes('youtube.com') || item.url.includes('youtu.be'));
+      if (isEmbed) {
+        container.innerHTML = `
+          <div class="w-full aspect-video rounded-xl overflow-hidden shadow-2xl bg-black">
+            <iframe src="${item.url}" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <video src="${item.url}" controls autoplay class="max-h-[60vh] max-w-full rounded-xl shadow-2xl"></video>
+        `;
+      }
+    } else {
+      container.innerHTML = `
+        <img src="${item.url || CONFIG.PLACEHOLDER_SVG}" alt="${item.title || 'Preview'}" class="max-h-[60vh] max-w-full object-contain rounded-xl shadow-2xl">
+      `;
+    }
+  }
+
+  function prevLightboxMedia() {
+    const prop = getCurrentProperty();
+    if (!prop || !prop.gallery || prop.gallery.length === 0) return;
+    currentLightboxIndex = (currentLightboxIndex - 1 + prop.gallery.length) % prop.gallery.length;
+    displayLightboxContent(prop.gallery[currentLightboxIndex]);
+  }
+
+  function nextLightboxMedia() {
+    const prop = getCurrentProperty();
+    if (!prop || !prop.gallery || prop.gallery.length === 0) return;
+    currentLightboxIndex = (currentLightboxIndex + 1) % prop.gallery.length;
+    displayLightboxContent(prop.gallery[currentLightboxIndex]);
+  }
+
+  function copyPropertyPromoLink() {
+    const prop = getCurrentProperty();
+    if (!prop) return;
+    const text = `🏡 ให้เช่า: ${prop.name || 'อสังหาริมทรัพย์'}\n💰 ค่าเช่า: ฿${(prop.rent || 0).toLocaleString()} บาท/เดือน (เงินประกัน ฿${(prop.deposit || 0).toLocaleString()})\n📍 ที่ตั้ง: ${prop.address || '-'}\n📐 ขนาด: ${prop.size || '35 ตร.ม.'}\n✨ ดูภาพถ่ายและวิดีโอห้องจริงได้ที่: ${window.location.origin}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('📲 คัดลอกข้อความโปรโมทพร้อมลิงก์ส่งลูกค้าเรียบร้อยแล้ว!');
+      }).catch(() => {
+        alert(text);
+      });
+    } else {
+      alert(text);
+    }
   }
 
   // 7. AMORTIZATION MODAL & LIVE COMPUTATION
@@ -1428,6 +1794,18 @@
   window.openQuickMeterModal = openQuickMeterModal;
   window.handleQuickMeterSubmit = handleQuickMeterSubmit;
   window.handleAddPropertySubmit = handleAddPropertySubmit;
+  window.compressImageFile = compressImageFile;
+  window.renderPropertyGallery = renderPropertyGallery;
+  window.filterGalleryPhotos = filterGalleryPhotos;
+  window.uploadPropertyGalleryImage = uploadPropertyGalleryImage;
+  window.openAddMediaLinkModal = openAddMediaLinkModal;
+  window.handleAddMediaLinkSubmit = handleAddMediaLinkSubmit;
+  window.deleteGalleryItem = deleteGalleryItem;
+  window.openGalleryLightbox = openGalleryLightbox;
+  window.openPromoCoverLightbox = openPromoCoverLightbox;
+  window.prevLightboxMedia = prevLightboxMedia;
+  window.nextLightboxMedia = nextLightboxMedia;
+  window.copyPropertyPromoLink = copyPropertyPromoLink;
 
   // 12. AUTO-START & LIFECYCLE LISTENERS
   syncFromCloudflareD1(true);

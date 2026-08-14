@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_38"></script>
+  <script src="js/engine.js?v=20260814_39"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -783,33 +783,39 @@
         <!-- SUBVIEW: PHOTO GALLERY & PROMOTION SHOWCASE CARD -->
         <div id="subview-gallery" class="hidden space-y-6">
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- LEFT 2 COLUMNS: INTERACTIVE PHOTO GALLERY ALBUMS -->
-            <div class="lg:col-span-2 youestates-card p-6 space-y-5">
+            <!-- LEFT 2 COLUMNS: INTERACTIVE PHOTO & VIDEO GALLERY ALBUMS -->
+            <div class="lg:col-span-2 youestates-card p-4 md:p-6 space-y-5">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-200 pb-3">
                 <div>
-                  <h3 class="font-extrabold text-base text-[#383838]">📸 คลังรูปถ่ายอสังหาริมทรัพย์ (Property Photo Gallery)</h3>
-                  <p class="text-xs text-stone-500 font-medium">รูปถ่ายตัวบ้าน/อาคาร ภายในห้อง และจุดเด่นสำหรับส่งโปรโมทให้ลูกค้า</p>
+                  <h3 class="font-extrabold text-base text-[#383838]">📸 คลังรูปถ่าย & วิดีโอรีวิว (Property Photo & Video Gallery)</h3>
+                  <p class="text-xs text-stone-500 font-medium mt-0.5">บีบอัดภาพความละเอียดสูงขนาดเล็ก รองรับมือถือทุกรุ่น พร้อมเล่นคลิปวิดีโอ</p>
                 </div>
-                <label id="gallery-upload-btn-label" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5 w-fit hidden">
-                  <span>☁️ อัปโหลดรูปภาพใหม่</span>
-                  <input type="file" id="galleryUploadInput" accept="image/*" class="hidden" onchange="uploadPropertyGalleryImage(event)">
-                </label>
+                <div class="flex flex-wrap items-center gap-2" id="gallery-action-buttons">
+                  <label class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5">
+                    <span>☁️ อัปโหลดรูปภาพ</span>
+                    <input type="file" id="galleryUploadInput" accept="image/*" class="hidden" onchange="uploadPropertyGalleryImage(event)">
+                  </label>
+                  <button type="button" onclick="openAddMediaLinkModal()" class="px-3.5 py-2 bg-[#383838] hover:bg-black text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5">
+                    <span>🔗 แทรกลิงก์ / วิดีโอ</span>
+                  </button>
+                </div>
               </div>
 
-              <!-- GALLERY FILTER BUTTONS -->
-              <div class="flex items-center gap-2 text-xs font-bold overflow-x-auto pb-1">
-                <button type="button" onclick="filterGalleryPhotos('all')" id="gfilter-all" class="px-3.5 py-1.5 rounded-lg bg-[#383838] text-white">ทั้งหมด (All)</button>
-                <button type="button" onclick="filterGalleryPhotos('exterior')" id="gfilter-exterior" class="px-3.5 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300">🏠 ภายนอก/อาคาร</button>
-                <button type="button" onclick="filterGalleryPhotos('interior')" id="gfilter-interior" class="px-3.5 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300">🛋️ ภายใน/เฟอร์ฯ</button>
-                <button type="button" onclick="filterGalleryPhotos('highlight')" id="gfilter-highlight" class="px-3.5 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300">✨ จุดเด่น/วิว</button>
+              <!-- GALLERY FILTER BUTTONS (Touch scrollable) -->
+              <div class="flex items-center gap-1.5 text-xs font-bold overflow-x-auto pb-1 select-none">
+                <button type="button" onclick="filterGalleryPhotos('all')" id="gfilter-all" class="px-3 py-1.5 rounded-lg bg-[#383838] text-white whitespace-nowrap">ทั้งหมด (All)</button>
+                <button type="button" onclick="filterGalleryPhotos('exterior')" id="gfilter-exterior" class="px-3 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 whitespace-nowrap">🏠 ภายนอก</button>
+                <button type="button" onclick="filterGalleryPhotos('interior')" id="gfilter-interior" class="px-3 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 whitespace-nowrap">🛋️ ภายในห้อง</button>
+                <button type="button" onclick="filterGalleryPhotos('highlight')" id="gfilter-highlight" class="px-3 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 whitespace-nowrap">✨ วิว / จุดเด่น</button>
+                <button type="button" onclick="filterGalleryPhotos('video')" id="gfilter-video" class="px-3 py-1.5 rounded-lg bg-rose-100 text-rose-800 hover:bg-rose-200 whitespace-nowrap">🎬 วิดีโอ (Video Tour)</button>
               </div>
 
               <!-- GALLERY GRID CONTAINER -->
-              <div id="property-gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+              <div id="property-gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4"></div>
             </div>
 
             <!-- RIGHT 1 COLUMN: SHAREABLE PROMOTIONAL SHOWCASE CARD FOR CLIENTS -->
-            <div class="youestates-card p-6 space-y-4 border-2 border-emerald-500/40 bg-stone-900 text-white relative overflow-hidden">
+            <div class="youestates-card p-5 md:p-6 space-y-4 border-2 border-emerald-500/40 bg-stone-900 text-white relative overflow-hidden">
               <div class="flex justify-between items-center border-b border-stone-800 pb-3">
                 <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">🌟 PROMO CARD FOR CLIENTS</span>
                 <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded">พร้อมส่งลูกค้า</span>
@@ -817,7 +823,7 @@
 
               <!-- PROMO CARD PREVIEW CONTAINER -->
               <div id="pd-promo-card-preview" class="space-y-3 bg-stone-950 p-4 rounded-2xl border border-stone-800 shadow-xl">
-                <div class="relative w-full h-44 rounded-xl overflow-hidden bg-stone-800 border border-slate-800">
+                <div class="relative w-full h-44 rounded-xl overflow-hidden bg-stone-800 border border-slate-800 cursor-pointer" onclick="openPromoCoverLightbox()">
                   <img id="pd-promo-cover-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%231e293b'><rect width='400' height='250'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-size='16'>ภาพปกอสังหาฯ</text></svg>" class="w-full h-full object-cover" alt="Cover Image">
                   <span class="absolute top-2 right-2 px-2.5 py-1 bg-emerald-600 text-white font-black text-xs rounded-lg shadow">
                     ให้เช่า
@@ -847,7 +853,7 @@
 
               <!-- PROMO ACTIONS -->
               <div class="space-y-2 pt-2">
-                <button type="button" onclick="copyPropertyPromoLink()" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2">
+                <button type="button" onclick="copyPropertyPromoLink()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2">
                   <span>📲 คัดลอกลิงก์การ์ดโปรโมทส่งลูกค้า</span>
                 </button>
                 <button type="button" onclick="window.print()" class="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-2">
@@ -1377,6 +1383,76 @@
         <button onclick="toggleModal('modal-media-preview')" class="text-stone-400 font-bold">✕</button>
       </div>
       <img id="media-preview-img" src="" alt="Preview" class="max-h-[60vh] mx-auto rounded-lg object-contain">
+    </div>
+  </div>
+
+  <!-- MODAL: ADD MEDIA LINK / VIDEO URL -->
+  <div id="modal-add-media-link" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="youestates-card p-6 max-w-md w-full space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-stone-200 pb-2">
+        <h3 class="font-bold text-sm text-[#383838]">🔗 แทรกลิงก์รูปภาพ หรือ วิดีโอ URL</h3>
+        <button type="button" onclick="toggleModal('modal-add-media-link')" class="text-stone-400 font-bold hover:text-stone-600">✕</button>
+      </div>
+      <form onsubmit="handleAddMediaLinkSubmit(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">ประเภทสื่อ (Media Type)</label>
+          <select id="gml-type" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2.5 font-bold text-stone-800">
+            <option value="image">🖼️ รูปภาพ (Image Link / Cloudinary / Web)</option>
+            <option value="video">🎬 วิดีโอ (YouTube URL / MP4 Link / Video Tour)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">ลิงก์ URL รูปภาพหรือวิดีโอ</label>
+          <input type="url" id="gml-url" required placeholder="เช่น https://www.youtube.com/watch?v=... หรือ https://.../photo.jpg" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-medium text-stone-800 outline-none focus:border-emerald-500">
+          <p class="text-[10px] text-stone-400 mt-1">รองรับลิงก์ YouTube ทั่วไป, Shorts, ลิงก์รูปภาพเว็บตรง หรือ Cloudinary</p>
+        </div>
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">ชื่อรูป/วิดีโอ</label>
+          <input type="text" id="gml-title" required placeholder="เช่น มุมระเบียงชมวิวสระว่ายน้ำ, วิดีโอพาชมห้องจริง" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2.5 font-medium text-stone-800">
+        </div>
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">หมวดหมู่</label>
+          <select id="gml-category" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2.5 font-bold text-stone-800">
+            <option value="exterior">🏠 ภายนอก / อาคาร / สระว่ายน้ำ</option>
+            <option value="interior">🛋️ ภายใน / ห้องนอน / ห้องนั่งเล่น</option>
+            <option value="highlight">✨ จุดเด่น / เฟอร์นิเจอร์ / วิว</option>
+            <option value="video">🎬 วิดีโอรีวิว / Video Tour</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">คำบรรยายสั้นๆ (Caption)</label>
+          <input type="text" id="gml-caption" placeholder="เช่น ทิศตะวันออก ลมเย็น ไม่โดนแดดบ่าย" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2.5 font-medium text-stone-800">
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="toggleModal('modal-add-media-link')" class="flex-1 py-2.5 bg-stone-200 text-stone-700 font-bold rounded-lg text-xs hover:bg-stone-300">ยกเลิก</button>
+          <button type="submit" class="flex-1 py-2.5 youestates-btn-emerald text-white font-bold rounded-lg text-xs shadow-sm">💾 บันทึกลงคลังภาพ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: INTERACTIVE FULLSCREEN LIGHTBOX -->
+  <div id="modal-gallery-lightbox" class="fixed inset-0 bg-stone-950/90 backdrop-blur-md z-50 flex items-center justify-center p-3 md:p-6 hidden">
+    <div class="bg-stone-900 border border-stone-700 rounded-2xl max-w-3xl w-full overflow-hidden shadow-2xl space-y-3 flex flex-col max-h-[95vh]">
+      <div class="flex justify-between items-center p-4 border-b border-stone-800 text-white">
+        <div>
+          <h3 class="font-extrabold text-sm md:text-base text-white" id="lightbox-title">คลังสื่ออสังหาริมทรัพย์</h3>
+          <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded" id="lightbox-badge">หมวดหมู่</span>
+        </div>
+        <button type="button" onclick="toggleModal('modal-gallery-lightbox')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-300 hover:text-white flex items-center justify-center font-bold text-sm">✕</button>
+      </div>
+
+      <div class="p-2 md:p-4 flex-1 flex items-center justify-center overflow-hidden min-h-[220px] max-h-[65vh]" id="lightbox-media-container">
+        <!-- Media (Image or Video) will be injected dynamically -->
+      </div>
+
+      <div class="p-4 border-t border-stone-800 text-xs text-stone-300 flex flex-col sm:flex-row justify-between items-center gap-2 bg-stone-950/50">
+        <p id="lightbox-caption" class="text-stone-300 font-medium text-center sm:text-left"></p>
+        <div class="flex items-center gap-2">
+          <button type="button" id="lightbox-prev-btn" onclick="prevLightboxMedia()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-white rounded-lg font-bold text-xs">◀ ก่อนหน้า</button>
+          <button type="button" id="lightbox-next-btn" onclick="nextLightboxMedia()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-white rounded-lg font-bold text-xs">ถัดไป ▶</button>
+        </div>
+      </div>
     </div>
   </div>
 
