@@ -17,14 +17,57 @@ const MIME_TYPES = {
 const DB_FILE = path.join(__dirname, 'db_properties.json');
 const LESSORS_DB_FILE = path.join(__dirname, 'db_lessors.json');
 
-let localDbProperties = [];
+const DEFAULT_PROPERTY = {
+  id: 'prop-1',
+  name: 'แอสเพน คอนโด ลาซาล (Aspen Condo)',
+  houseNo: '101/12',
+  address: 'ถนนลาซาล แขวงบางนาใต้ เขตบางนา กรุงเทพมหานคร 10260',
+  lessorKey: 'husband',
+  principal: 3500000,
+  installment: 17500,
+  rent: 12000,
+  deposit: 24000,
+  startDate: '2024-01-01',
+  rate: 3.5,
+  type: 'คอนโดมีเนียม',
+  size: '35 ตร.ม.',
+  meterElec: '12345',
+  meterWater: '67890',
+  inventoryList: [
+    { name: 'เครื่องปรับอากาศ (Air Conditioner)', img: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%23e2ded8'><rect width='400' height='250'/></svg>" },
+    { name: 'เตียงนอน 6 ฟุต พร้อมฟูก (6ft Bed & Mattress)', img: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%23e2ded8'><rect width='400' height='250'/></svg>" },
+    { name: 'ตู้เสื้อผ้า Built-in (Built-in Wardrobe)', img: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%23e2ded8'><rect width='400' height='250'/></svg>" }
+  ],
+  rateSchedule: [
+    { startMonth: 1, endMonth: 36, rate: 3.5, label: 'โปรโมชั่น Retention ปีที่ 1-3' },
+    { startMonth: 37, endMonth: 360, rate: 5.5, label: 'อัตราดอกเบี้ยลอยตัว (MRR)' }
+  ]
+};
+
+const DEFAULT_LESSOR = {
+  id: 'husband',
+  name: 'นายสมคิด สุขสมบัติ',
+  idCard: '1-1004-00123-45-6',
+  age: 45,
+  phone: '089-123-4567',
+  address: '123/45 ถนนสุขุมวิท 101 แขวงบางนา เขตบางนา กรุงเทพมหานคร',
+  imageUrl: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%23e2ded8'><rect width='400' height='250'/></svg>"
+};
+
+let localDbProperties = [DEFAULT_PROPERTY];
 if (fs.existsSync(DB_FILE)) {
-  try { localDbProperties = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch (e) { localDbProperties = []; }
+  try {
+    const parsed = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    if (Array.isArray(parsed) && parsed.length > 0) localDbProperties = parsed;
+  } catch (e) {}
 }
 
-let localDbLessors = [];
+let localDbLessors = [DEFAULT_LESSOR];
 if (fs.existsSync(LESSORS_DB_FILE)) {
-  try { localDbLessors = JSON.parse(fs.readFileSync(LESSORS_DB_FILE, 'utf8')); } catch (e) { localDbLessors = []; }
+  try {
+    const parsedL = JSON.parse(fs.readFileSync(LESSORS_DB_FILE, 'utf8'));
+    if (Array.isArray(parsedL) && parsedL.length > 0) localDbLessors = parsedL;
+  } catch (e) {}
 }
 
 function saveLocalDb() {

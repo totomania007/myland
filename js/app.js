@@ -3,7 +3,7 @@
  * 2026 Modular Architecture Integration
  */
 
-import { CONFIG, state, saveStateToLocalStorage } from './config.js';
+import { CONFIG, state, saveStateToLocalStorage, DEFAULT_PROPERTY, DEFAULT_LESSOR, DEFAULT_TENANT } from './config.js';
 import { applyRolePermissions, checkTabAccess, checkSubTabAccess, verifyAdminPinSubmit, loginAsRole, renderAdminAccountsList, handleAddAdminSubmit, deleteAdminAccount, getCurrentRole, setCurrentRole } from './modules/auth.js';
 import { renderAdminData, renderRegisteredLessorsList, getCurrentProperty, calculateMortgage, getRateForMonth, handleAddPropertySubmit, handleLessorRegisterTabSubmit, editRegisteredLessor, deleteRegisteredLessor, uploadToCloudinaryAndPreview, addFurnitureEditRow, handleEditPropertyDetailSubmit } from './modules/landlord.js';
 import { calculateLeaseEndDate, initTenantFormDates, handleTenantSubmit, confirmTenantLoginDirect, renderRegisteredTenantsList, editRegisteredTenant, deleteRegisteredTenant } from './modules/tenant.js';
@@ -516,7 +516,32 @@ window.renderTenantPropertyDropdown = renderTenantPropertyDropdown;
 
 // INITIALIZATION PIPELINE
 async function initApp() {
-  state.propertiesState = JSON.parse(localStorage.getItem('property_os_properties') || '[]');
+  if (!state.propertiesState || state.propertiesState.length === 0) {
+    try {
+      const stored = JSON.parse(localStorage.getItem('property_os_properties') || '[]');
+      state.propertiesState = (Array.isArray(stored) && stored.length > 0) ? stored : [DEFAULT_PROPERTY];
+    } catch(e) {
+      state.propertiesState = [DEFAULT_PROPERTY];
+    }
+  }
+
+  if (!state.lessorProfiles || Object.keys(state.lessorProfiles).length === 0) {
+    try {
+      const storedL = JSON.parse(localStorage.getItem('property_os_lessors') || '{}');
+      state.lessorProfiles = (storedL && Object.keys(storedL).length > 0) ? storedL : { 'husband': DEFAULT_LESSOR };
+    } catch(e) {
+      state.lessorProfiles = { 'husband': DEFAULT_LESSOR };
+    }
+  }
+
+  if (!state.tenantDatabase || Object.keys(state.tenantDatabase).length === 0) {
+    try {
+      const storedT = JSON.parse(localStorage.getItem('property_os_tenants') || '{}');
+      state.tenantDatabase = (storedT && Object.keys(storedT).length > 0) ? storedT : { 'tenant-1': DEFAULT_TENANT };
+    } catch(e) {
+      state.tenantDatabase = { 'tenant-1': DEFAULT_TENANT };
+    }
+  }
 
   try {
     const res = await fetch('/api/properties');
@@ -544,11 +569,12 @@ async function initApp() {
         dbLessors.forEach(l => {
           if (l.id) state.lessorProfiles[l.id] = l;
         });
+        saveStateToLocalStorage();
       }
     }
   } catch (e) {}
 
-  state.currentPropertyId = state.propertiesState.length > 0 ? state.propertiesState[0].id : '';
+  state.currentPropertyId = state.propertiesState.length > 0 ? state.propertiesState[0].id : DEFAULT_PROPERTY.id;
   
   const savedRole = getCurrentRole();
   setCurrentRole(savedRole);
