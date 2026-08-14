@@ -1574,11 +1574,21 @@
         btn.classList.remove('active');
         btn.classList.add('inactive');
       }
+      const mBtn = document.getElementById(`mnav-${t}`);
+      if (mBtn) {
+        mBtn.className = 'flex-1 flex flex-col items-center gap-0.5 text-[10px] font-bold text-stone-400 hover:text-white py-1';
+      }
     });
+
     const activeBtn = document.getElementById(`tab-${tab}`);
     if (activeBtn) {
       activeBtn.classList.remove('inactive');
       activeBtn.classList.add('active');
+    }
+
+    const activeMBtn = document.getElementById(`mnav-${tab}`);
+    if (activeMBtn) {
+      activeMBtn.className = 'flex-1 flex flex-col items-center gap-0.5 text-[10px] font-black text-emerald-400 py-1 scale-105 transition-all';
     }
 
     renderAllViews();
@@ -1590,14 +1600,14 @@
       if (view) view.classList.add('hidden');
       const btn = document.getElementById(`subtab-${s}`);
       if (btn) {
-        btn.className = 'px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap';
+        btn.className = 'px-3 py-2.5 bg-white md:bg-stone-200 text-stone-700 hover:bg-stone-100 md:hover:bg-stone-300 rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-sm md:shadow-none transition-all';
       }
     });
     const activeView = document.getElementById(`subview-${sub}`);
     if (activeView) activeView.classList.remove('hidden');
     const activeBtn = document.getElementById(`subtab-${sub}`);
     if (activeBtn) {
-      activeBtn.className = 'px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap';
+      activeBtn.className = 'px-3 py-2.5 bg-[#383838] text-white rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-md md:shadow-none transition-all';
     }
   }
 

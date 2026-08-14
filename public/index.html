@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_40"></script>
+  <script src="js/engine.js?v=20260814_41"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -214,7 +214,7 @@
     }
   </style>
 </head>
-<body class="min-h-screen p-2 md:p-6 flex flex-col justify-between">
+<body class="min-h-screen p-2 pb-20 md:p-6 flex flex-col justify-between">
 
   <!-- ROLE SWITCHER LOGIN MODAL -->
   <div id="login-overlay" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -337,40 +337,44 @@
   <!-- MAIN APPLICATION WINDOW -->
   <div class="max-w-7xl w-full mx-auto youestates-window rounded-2xl overflow-hidden flex flex-col min-h-[92vh]">
 
-    <header class="no-print border-b border-stone-300 px-6 py-4 bg-white flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
-      <div class="flex items-center gap-3">
-        <div class="flex items-baseline">
-          <span class="text-2xl font-black text-[#e05646] tracking-tight">You</span>
-          <span class="text-2xl font-black text-[#383838] tracking-tight">Estates</span>
+    <header class="no-print border-b border-stone-300 px-4 md:px-6 py-3 md:py-4 bg-white flex items-center justify-between gap-2 select-none">
+      <div class="flex items-center gap-2 md:gap-3">
+        <div class="flex items-baseline cursor-pointer" onclick="switchTab('landing')">
+          <span class="text-xl md:text-2xl font-black text-[#e05646] tracking-tight">You</span>
+          <span class="text-xl md:text-2xl font-black text-[#383838] tracking-tight">Estates</span>
         </div>
-        <span class="text-xs text-stone-400 font-bold border-l border-stone-300 pl-3 py-0.5" id="header-role-title">ผู้เช่า (Tenant Portal Mode)</span>
+        <span class="text-[11px] md:text-xs text-stone-500 font-bold border-l border-stone-300 pl-2.5 py-0.5" id="header-role-title">ผู้ให้เช่า (Landlord)</span>
       </div>
 
-      <div class="flex items-center gap-4">
-        <div class="text-xs text-right hidden md:block">
+      <div class="flex items-center gap-2">
+        <div class="text-xs text-right hidden lg:block">
           <span class="text-stone-400 font-bold uppercase tracking-wider text-[10px] block">CLOUDFLARE D1</span>
-          <strong id="d1-live-badge" class="text-emerald-600 font-black text-sm">● D1 Auto-Sync</strong>
+          <strong id="d1-live-badge" class="text-emerald-600 font-black text-xs">● D1 Auto-Sync</strong>
         </div>
-        <div class="text-xs text-right hidden md:block">
-          <span class="text-stone-400 font-bold uppercase tracking-wider text-[10px] block">CLOUDINARY STORAGE</span>
-          <strong class="text-emerald-600 font-black text-sm">● ogdfbbpw (Active)</strong>
-        </div>
-        <button type="button" onclick="syncFromCloudflareD1(false)" class="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-lg text-xs font-bold transition-all shadow-sm">
+        <button type="button" onclick="syncFromCloudflareD1(false)" class="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-lg text-xs font-bold transition-all shadow-sm">
           <span>🔄</span>
           <span class="hidden sm:inline">ซิงค์ D1</span>
         </button>
-        <div class="flex items-center gap-2 bg-[#eae8e3] px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-800">
-          <span id="user-badge-role" class="px-2 py-0.5 rounded bg-[#383838] text-white font-bold text-[10px]">👤 ผู้เช่า</span>
-          <span id="user-badge-name" class="font-bold text-[#383838]">ผู้เช่า / ผู้ใช้บริการ</span>
+
+        <!-- MOBILE HAMBURGER MENU BUTTON -->
+        <button type="button" onclick="toggleModal('modal-mobile-menu')" class="md:hidden flex items-center gap-1.5 px-3 py-1.5 bg-[#383838] hover:bg-black text-white rounded-lg text-xs font-bold shadow-sm active:scale-95 transition-all">
+          <span>☰</span>
+          <span>เมนู</span>
+        </button>
+
+        <!-- DESKTOP USER BADGE -->
+        <div class="hidden md:flex items-center gap-2 bg-[#eae8e3] px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-800">
+          <span id="user-badge-role" class="px-2 py-0.5 rounded bg-[#383838] text-white font-bold text-[10px]">🔑 ผู้ให้เช่า</span>
+          <span id="user-badge-name" class="font-bold text-[#383838]">ผู้ให้เช่า / เจ้าของพอร์ต</span>
           <button id="user-badge-action-btn" onclick="openLoginOverlay()" class="ml-2 text-stone-500 hover:text-[#e05646] text-[11px] font-bold underline">
-            🔑 เข้าสู่ระบบผู้ให้เช่า
+            🔑 สลับโหมด
           </button>
         </div>
       </div>
     </header>
 
-    <!-- NAVIGATION BAR -->
-    <nav class="no-print bg-[#383838] px-4 py-2.5 shadow-inner" id="main-nav-bar">
+    <!-- NAVIGATION BAR (DESKTOP) -->
+    <nav class="no-print bg-[#383838] px-4 py-2.5 shadow-inner hidden md:block" id="main-nav-bar">
       <div class="flex items-center justify-center sm:justify-start gap-2 overflow-x-auto">
         <button onclick="switchTab('landing')" id="tab-landing" class="youestates-tab active whitespace-nowrap">
           🌐 หน้าแรก (Landing)
@@ -728,18 +732,19 @@
           </div>
         </div>
 
-        <div class="flex border-b-2 border-stone-300 gap-2 text-xs font-bold select-none overflow-x-auto">
-          <button onclick="switchSubTab('specs')" id="subtab-specs" class="px-4 py-2.5 bg-[#383838] text-white rounded-t-lg font-bold whitespace-nowrap">
-            🏡 ข้อมูลสเปก & เฟอร์นิเจอร์
+        <!-- SUB-NAVIGATION: 2x2 GRID ON MOBILE, HORIZONTAL TABS ON DESKTOP (ZERO HORIZONTAL SCROLLING ON PHONE) -->
+        <div class="grid grid-cols-2 md:flex md:border-b-2 md:border-stone-300 gap-1.5 md:gap-2 text-xs font-bold select-none p-1.5 bg-stone-200 md:bg-transparent rounded-2xl md:rounded-none mb-2">
+          <button onclick="switchSubTab('specs')" id="subtab-specs" class="px-3 py-2.5 bg-[#383838] text-white rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-md md:shadow-none transition-all">
+            <span>🏡 1. สเปก & ที่อยู่</span>
           </button>
-          <button onclick="switchSubTab('gallery')" id="subtab-gallery" class="px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap">
-            📸 คลังภาพ & การ์ดโปรโมท (Gallery & Promo)
+          <button onclick="switchSubTab('gallery')" id="subtab-gallery" class="px-3 py-2.5 bg-white md:bg-stone-200 text-stone-700 hover:bg-stone-100 md:hover:bg-stone-300 rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-sm md:shadow-none transition-all">
+            <span>📸 2. คลังรูป & วิดีโอ</span>
           </button>
-          <button onclick="switchSubTab('loan')" id="subtab-loan" class="px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap">
-            🏦 สัญญาเงินกู้ & Retention
+          <button onclick="switchSubTab('loan')" id="subtab-loan" class="px-3 py-2.5 bg-white md:bg-stone-200 text-stone-700 hover:bg-stone-100 md:hover:bg-stone-300 rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-sm md:shadow-none transition-all">
+            <span>🏦 3. เงินกู้ & ดอกเบี้ย</span>
           </button>
-          <button onclick="switchSubTab('lessor')" id="subtab-lessor" class="px-4 py-2.5 bg-stone-200 text-stone-700 hover:bg-stone-300 rounded-t-lg font-bold whitespace-nowrap">
-            👤 ผู้ทำสัญญา & คลังเอกสาร
+          <button onclick="switchSubTab('lessor')" id="subtab-lessor" class="px-3 py-2.5 bg-white md:bg-stone-200 text-stone-700 hover:bg-stone-100 md:hover:bg-stone-300 rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-sm md:shadow-none transition-all">
+            <span>👤 4. ผู้ให้เช่า & เอกสาร</span>
           </button>
         </div>
 
@@ -1462,44 +1467,141 @@
   </div>
 
 
-  <!-- MOBILE BOTTOM NAVIGATION BAR (2026 Mobile-First SaaS) -->
-  <div class="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-slate-900/90 backdrop-blur-xl border-t border-slate-800/80 px-4 py-2.5 flex justify-around items-center text-slate-300 no-print shadow-2xl">
-    <button onclick="switchTab('landing')" class="flex flex-col items-center gap-1 text-[11px] font-semibold hover:text-white transition-colors">
-      <span class="text-lg">🌐</span>
+  <!-- MODAL: MOBILE ALL-IN-ONE MENU DRAWER -->
+  <div id="modal-mobile-menu" class="fixed inset-0 bg-stone-950/80 backdrop-blur-md z-50 flex justify-end hidden">
+    <div class="bg-stone-900 border-l border-stone-800 text-white w-5/6 max-w-sm h-full flex flex-col justify-between p-5 overflow-y-auto shadow-2xl">
+      <div class="space-y-5">
+        <div class="flex justify-between items-center border-b border-stone-800 pb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-xl font-black text-[#e05646]">You</span>
+            <span class="text-xl font-black text-white">Estates</span>
+          </div>
+          <button type="button" onclick="toggleModal('modal-mobile-menu')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-300 hover:text-white flex items-center justify-center font-bold text-sm">✕</button>
+        </div>
+
+        <!-- USER BADGE IN DRAWER -->
+        <div class="p-3.5 bg-stone-800/80 rounded-xl border border-stone-700 flex items-center justify-between">
+          <div>
+            <div class="text-[10px] text-stone-400 uppercase font-bold">สถานะระบบ</div>
+            <div class="text-xs font-black text-emerald-400" id="drawer-user-role">🔑 ผู้ให้เช่า (Landlord)</div>
+          </div>
+          <button onclick="toggleModal('modal-mobile-menu'); openLoginOverlay();" class="px-2.5 py-1 bg-stone-700 hover:bg-stone-600 rounded text-[11px] font-bold text-stone-200">
+            สลับโหมด
+          </button>
+        </div>
+
+        <!-- NAVIGATION LINKS IN DRAWER -->
+        <div class="space-y-1.5 text-xs">
+          <div class="text-[10px] text-stone-400 uppercase font-bold px-2 pt-2">📊 เมนูหลัก (Main Features)</div>
+          
+          <button onclick="toggleModal('modal-mobile-menu'); switchTab('landing')" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
+            <span class="text-base">🌐</span>
+            <span>หน้าแรก (Landing Page)</span>
+          </button>
+
+          <button onclick="toggleModal('modal-mobile-menu'); switchTab('admin')" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
+            <span class="text-base">📊</span>
+            <span>สรุปภาพรวมพอร์ต (Dashboard)</span>
+          </button>
+
+          <button onclick="toggleModal('modal-mobile-menu'); switchTab('property-detail')" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
+            <span class="text-base">🏡</span>
+            <span>สเปกอสังหาฯ & สินเชื่อ</span>
+          </button>
+
+          <button onclick="toggleModal('modal-mobile-menu'); switchTab('property-detail'); switchSubTab('gallery');" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
+            <span class="text-base">📸</span>
+            <span>คลังรูปถ่าย & วิดีโอรีวิว</span>
+          </button>
+
+          <button onclick="toggleModal('modal-mobile-menu'); switchTab('tenant')" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
+            <span class="text-base">👤</span>
+            <span>ลงทะเบียนผู้เช่า</span>
+          </button>
+
+          <button onclick="toggleModal('modal-mobile-menu'); switchTab('register-lessor')" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
+            <span class="text-base">🔑</span>
+            <span>ลงทะเบียนผู้ให้เช่า</span>
+          </button>
+
+          <button onclick="toggleModal('modal-mobile-menu'); switchTab('contract')" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
+            <span class="text-base">📄</span>
+            <span>หนังสือสัญญาเช่า A4</span>
+          </button>
+
+          <div class="text-[10px] text-stone-400 uppercase font-bold px-2 pt-3">⚙️ เครื่องมือ & ระบบ (Tools)</div>
+
+          <button onclick="toggleModal('modal-mobile-menu'); openAmortizationModal();" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 text-emerald-400 transition-colors">
+            <span class="text-base">🏦</span>
+            <span>ตารางผ่อน & คำนวณ Retention</span>
+          </button>
+
+          <button onclick="toggleModal('modal-mobile-menu'); toggleModal('modal-add-property');" class="w-full p-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 text-left font-bold flex items-center gap-3 border border-emerald-500/30 transition-colors">
+            <span class="text-base">🏡</span>
+            <span>+ เพิ่มทรัพย์สินใหม่</span>
+          </button>
+
+          <button onclick="toggleModal('modal-mobile-menu'); toggleModal('modal-manage-admins');" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 text-stone-300 transition-colors">
+            <span class="text-base">👥</span>
+            <span>จัดการแอดมิน & PIN</span>
+          </button>
+
+          <button onclick="toggleModal('modal-mobile-menu'); syncFromCloudflareD1(false);" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 text-cyan-300 transition-colors">
+            <span class="text-base">🔄</span>
+            <span>ซิงค์ข้อมูล Cloudflare D1</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-stone-800 text-[10px] text-stone-500 text-center">
+        YouEstates Property OS © 2026<br>
+        Mobile Native Responsive Edition
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE BOTTOM NAVIGATION BAR (No horizontal scrolling, 5 essential targets + drawer) -->
+  <div class="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-stone-900/95 backdrop-blur-xl border-t border-stone-800 px-2 py-1.5 flex justify-around items-center text-stone-300 no-print shadow-2xl safe-area-bottom">
+    <button onclick="switchTab('landing')" id="mnav-landing" class="flex-1 flex flex-col items-center gap-0.5 text-[10px] font-bold text-stone-400 hover:text-white py-1">
+      <span class="text-base">🌐</span>
       <span>หน้าแรก</span>
     </button>
-    <button id="mobile-nav-admin" onclick="switchTab('admin')" class="flex flex-col items-center gap-1 text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 transition-colors hidden">
-      <span class="text-lg">📊</span>
+    <button onclick="switchTab('admin')" id="mnav-admin" class="flex-1 flex flex-col items-center gap-0.5 text-[10px] font-bold text-stone-400 hover:text-white py-1">
+      <span class="text-base">📊</span>
       <span>ภาพรวม</span>
     </button>
-    <button onclick="switchTab('property-detail')" class="flex flex-col items-center gap-1 text-[11px] font-semibold hover:text-white transition-colors">
-      <span class="text-lg">🏡</span>
+    <button onclick="switchTab('property-detail')" id="mnav-property-detail" class="flex-1 flex flex-col items-center gap-0.5 text-[10px] font-bold text-stone-400 hover:text-white py-1">
+      <span class="text-base">🏡</span>
       <span>ทรัพย์สิน</span>
     </button>
-    <button onclick="switchTab('tenant')" class="flex flex-col items-center gap-1 text-[11px] font-semibold hover:text-white transition-colors">
-      <span class="text-lg">👤</span>
+    <button onclick="switchTab('tenant')" id="mnav-tenant" class="flex-1 flex flex-col items-center gap-0.5 text-[10px] font-bold text-stone-400 hover:text-white py-1">
+      <span class="text-base">👤</span>
       <span>ผู้เช่า</span>
     </button>
-    <button id="mobile-nav-contract" onclick="switchTab('contract')" class="flex flex-col items-center gap-1 text-[11px] font-semibold hover:text-white transition-colors hidden">
-      <span class="text-lg">📄</span>
+    <button onclick="switchTab('contract')" id="mnav-contract" class="flex-1 flex flex-col items-center gap-0.5 text-[10px] font-bold text-stone-400 hover:text-white py-1">
+      <span class="text-base">📄</span>
       <span>สัญญา A4</span>
+    </button>
+    <button onclick="toggleModal('modal-mobile-menu')" class="flex-1 flex flex-col items-center gap-0.5 text-[10px] font-bold text-amber-400 hover:text-amber-300 py-1">
+      <span class="text-base">☰</span>
+      <span>เมนูอื่น</span>
     </button>
   </div>
 
   <!-- FLOATING ACTION BUTTON (FAB) FOR QUICK ACTIONS -->
-  <div class="fixed bottom-20 right-5 md:bottom-8 md:right-8 z-40 no-print group">
+  <div class="fixed bottom-16 right-4 md:bottom-8 md:right-8 z-40 no-print group">
     <div id="fab-menu" class="hidden mb-3 flex flex-col gap-2.5 items-end transition-all duration-300">
-      <button id="fab-menu-add-prop" onclick="toggleModal('modal-add-property')" class="bg-slate-900 text-white border border-slate-700 px-4 py-2.5 rounded-full text-xs font-bold shadow-xl hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap hidden">
+      <button id="fab-menu-add-prop" onclick="toggleModal('modal-add-property')" class="bg-slate-900 text-white border border-slate-700 px-4 py-2.5 rounded-full text-xs font-bold shadow-xl hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap">
         <span>🏡</span> <span>+ เพิ่มทรัพย์สินใหม่</span>
       </button>
-      <button id="fab-menu-contract" onclick="switchTab('contract')" class="bg-slate-900 text-white border border-slate-700 px-4 py-2.5 rounded-full text-xs font-bold shadow-xl hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap hidden">
+      <button id="fab-menu-contract" onclick="switchTab('contract')" class="bg-slate-900 text-white border border-slate-700 px-4 py-2.5 rounded-full text-xs font-bold shadow-xl hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap">
         <span>📄</span> <span>สร้างสัญญาเช่า A4</span>
       </button>
       <button onclick="window.print()" class="bg-slate-900 text-white border border-slate-700 px-4 py-2.5 rounded-full text-xs font-bold shadow-xl hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap">
         <span>🖨️</span> <span>พิมพ์เอกสาร PDF</span>
       </button>
     </div>
-    <button onclick="document.getElementById('fab-menu').classList.toggle('hidden')" class="fab-btn w-14 h-14 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-2xl rounded-full flex items-center justify-center shadow-2xl border border-emerald-300">
+    <button onclick="document.getElementById('fab-menu').classList.toggle('hidden')" class="fab-btn w-12 h-12 md:w-14 md:h-14 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xl md:text-2xl rounded-full flex items-center justify-center shadow-2xl border border-emerald-300">
       ⚡
     </button>
   </div>
