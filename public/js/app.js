@@ -3,7 +3,7 @@
  * 2026 Modular Architecture Integration
  */
 
-import { CONFIG, state, saveStateToLocalStorage, DEFAULT_PROPERTY, DEFAULT_LESSOR, DEFAULT_TENANT } from './config.js';
+import { CONFIG, state, saveStateToLocalStorage, DEFAULT_PROPERTIES, DEFAULT_LESSORS, DEFAULT_TENANTS } from './config.js';
 import { applyRolePermissions, checkTabAccess, checkSubTabAccess, verifyAdminPinSubmit, loginAsRole, renderAdminAccountsList, handleAddAdminSubmit, deleteAdminAccount, getCurrentRole, setCurrentRole } from './modules/auth.js';
 import { renderAdminData, renderRegisteredLessorsList, getCurrentProperty, calculateMortgage, getRateForMonth, handleAddPropertySubmit, handleLessorRegisterTabSubmit, editRegisteredLessor, deleteRegisteredLessor, uploadToCloudinaryAndPreview, addFurnitureEditRow, handleEditPropertyDetailSubmit } from './modules/landlord.js';
 import { calculateLeaseEndDate, initTenantFormDates, handleTenantSubmit, confirmTenantLoginDirect, renderRegisteredTenantsList, editRegisteredTenant, deleteRegisteredTenant } from './modules/tenant.js';
@@ -519,27 +519,27 @@ async function initApp() {
   if (!state.propertiesState || state.propertiesState.length === 0) {
     try {
       const stored = JSON.parse(localStorage.getItem('property_os_properties') || '[]');
-      state.propertiesState = (Array.isArray(stored) && stored.length > 0) ? stored : [DEFAULT_PROPERTY];
+      state.propertiesState = (Array.isArray(stored) && stored.length > 0) ? stored : DEFAULT_PROPERTIES;
     } catch(e) {
-      state.propertiesState = [DEFAULT_PROPERTY];
+      state.propertiesState = DEFAULT_PROPERTIES;
     }
   }
 
   if (!state.lessorProfiles || Object.keys(state.lessorProfiles).length === 0) {
     try {
       const storedL = JSON.parse(localStorage.getItem('property_os_lessors') || '{}');
-      state.lessorProfiles = (storedL && Object.keys(storedL).length > 0) ? storedL : { 'husband': DEFAULT_LESSOR };
+      state.lessorProfiles = (storedL && Object.keys(storedL).length > 0) ? storedL : DEFAULT_LESSORS;
     } catch(e) {
-      state.lessorProfiles = { 'husband': DEFAULT_LESSOR };
+      state.lessorProfiles = DEFAULT_LESSORS;
     }
   }
 
   if (!state.tenantDatabase || Object.keys(state.tenantDatabase).length === 0) {
     try {
       const storedT = JSON.parse(localStorage.getItem('property_os_tenants') || '{}');
-      state.tenantDatabase = (storedT && Object.keys(storedT).length > 0) ? storedT : { 'tenant-1': DEFAULT_TENANT };
+      state.tenantDatabase = (storedT && Object.keys(storedT).length > 0) ? storedT : DEFAULT_TENANTS;
     } catch(e) {
-      state.tenantDatabase = { 'tenant-1': DEFAULT_TENANT };
+      state.tenantDatabase = DEFAULT_TENANTS;
     }
   }
 
@@ -574,7 +574,7 @@ async function initApp() {
     }
   } catch (e) {}
 
-  state.currentPropertyId = state.propertiesState.length > 0 ? state.propertiesState[0].id : DEFAULT_PROPERTY.id;
+  state.currentPropertyId = state.propertiesState.length > 0 ? state.propertiesState[0].id : DEFAULT_PROPERTIES[0].id;
   
   const savedRole = getCurrentRole();
   setCurrentRole(savedRole);

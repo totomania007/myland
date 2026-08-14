@@ -1,0 +1,20 @@
+[
+  {
+    "id": "lessor-1786648676672",
+    "name": "นางสาว ลัดดาวัลย์ รุ่งเรือง",
+    "idCard": "3100501989670",
+    "age": 44,
+    "phone": "0616281777",
+    "address": "200/125 หมู่บ้าน ดิเอเทรียม เพิ่มสิน ซ.เพิ่มสิน 20 แยก 5 ถนนเพิ่มสิน แขวงคลองถนน เขตสายไหม กรุงเทพฯ 10220",
+    "imageUrl": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%23e2ded8'><rect width='400' height='250'/></svg>"
+  },
+  {
+    "id": "lessor-1786649277545",
+    "name": "นายสุรชัย อุดมมั่น",
+    "idCard": "4101200062631",
+    "age": 52,
+    "phone": "0858456378",
+    "address": "202/60 ซอยลาดพร้าว 80 แยก 14 แขวงวังทองหลาง เขตวังทองหลาง กรุงเทพฯ",
+    "imageUrl": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%23e2ded8'><rect width='400' height='250'/></svg>"
+  }
+]

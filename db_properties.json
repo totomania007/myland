@@ -1,0 +1,84 @@
+[
+  {
+    "id": "prop-1786625500492",
+    "name": "Silk Condominium",
+    "lessorKey": "lessor-1786648676672",
+    "type": "อสังหาริมทรัพย์เพื่อการเช่า",
+    "address": "Silk Condo ถ.พหลโยธิน แขวงอนุสาวรีย์ เขตบางเขน กรุงเทพฯ 10220",
+    "houseNo": "229/183",
+    "size": "35 ตารางเมตร",
+    "rent": 9000,
+    "deposit": 18000,
+    "principal": 1281000,
+    "installment": 9900,
+    "rate": 4.5,
+    "startDate": "2026-08-13",
+    "meterElec": "",
+    "meterWater": "",
+    "inventoryList": [
+      {
+        "name": "เครื่องปรับอากาศ (Air Conditioner)",
+        "img": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%23e2ded8'><rect width='400' height='250'/></svg>"
+      },
+      {
+        "name": "เตียงนอน 6 ฟุต พร้อมฟูก (6ft Bed & Mattress)",
+        "img": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%23e2ded8'><rect width='400' height='250'/></svg>"
+      }
+    ],
+    "rateSchedule": [
+      {
+        "startMonth": 1,
+        "endMonth": 36,
+        "rate": 4.5,
+        "label": "โปรโมชั่น Retention ปีที่ 1-3"
+      },
+      {
+        "startMonth": 37,
+        "endMonth": 360,
+        "rate": 5.5,
+        "label": "อัตราดอกเบี้ยลอยตัว (MRR)"
+      }
+    ]
+  },
+  {
+    "id": "prop-1785743955428",
+    "name": "the atrium",
+    "lessorKey": "lessor-1786649277545",
+    "type": "อสังหาริมทรัพย์เพื่อการเช่า",
+    "address": "หมู่บ้าน ดิเอเทรียม เพิ่มสิน ซ.เพิ่มสิน 20 แยก 5 ถนนเพิ่มสิน แขวงคลองถนน เขตสายไหม กรุงเทพฯ 10220",
+    "houseNo": "200/88",
+    "size": "18 ตารางวา",
+    "rent": 16500,
+    "deposit": 33000,
+    "principal": 3800000,
+    "installment": 16500,
+    "rate": 4.5,
+    "startDate": "2026-08-01",
+    "meterElec": "",
+    "meterWater": "",
+    "inventoryList": [
+      {
+        "name": "เครื่องปรับอากาศ (Air Conditioner)",
+        "img": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%23e2ded8'><rect width='400' height='250'/></svg>"
+      },
+      {
+        "name": "ชุดครัว Built-in พร้อมซิงค์ล้างจาน",
+        "img": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%23e2ded8'><rect width='400' height='250'/></svg>"
+      }
+    ],
+    "rateSchedule": [
+      {
+        "startMonth": 1,
+        "endMonth": 36,
+        "rate": 4.5,
+        "label": "โปรโมชั่น Retention ปีที่ 1-3"
+      },
+      {
+        "startMonth": 37,
+        "endMonth": 360,
+        "rate": 5.5,
+        "label": "อัตราดอกเบี้ยลอยตัว (MRR)"
+      }
+    ]
+  }
+]
