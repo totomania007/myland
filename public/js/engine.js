@@ -504,6 +504,14 @@
     toggleModal('modal-amortization-table');
   }
 
+  let amoDebounceTimer = null;
+  function debouncedRenderAmortizationTable() {
+    if (amoDebounceTimer) clearTimeout(amoDebounceTimer);
+    amoDebounceTimer = setTimeout(() => {
+      renderAmortizationTable();
+    }, 60);
+  }
+
   function renderRatePeriodEditors(schedule) {
     const container = document.getElementById('rate-periods-editor-container');
     if (!container) return;
@@ -518,11 +526,12 @@
     ];
 
     list.forEach((item, idx) => {
-      addRatePeriodRow(item.startMonth, item.endMonth, item.rate, item.label, idx);
+      addRatePeriodRow(item.startMonth, item.endMonth, item.rate, item.label, idx, false);
     });
+    renderAmortizationTable();
   }
 
-  function addRatePeriodRow(start = 1, end = 36, rate = 4.5, label = 'ช่วง Retention', idx = Date.now()) {
+  function addRatePeriodRow(start = 1, end = 36, rate = 4.5, label = 'ช่วง Retention', idx = Date.now(), shouldRender = true) {
     const container = document.getElementById('rate-periods-editor-container');
     if (!container) return;
     const rowId = `rate-row-${idx}-${Date.now()}`;
@@ -532,24 +541,26 @@
     row.innerHTML = `
       <div class="col-span-3 flex items-center gap-1">
         <span class="text-stone-400 font-bold">งวด</span>
-        <input type="number" oninput="renderAmortizationTable()" class="rp-start w-12 bg-stone-100 border border-stone-300 rounded p-1 text-center font-bold" value="${start}">
+        <input type="number" oninput="window.debouncedRenderAmortizationTable()" class="rp-start w-12 bg-stone-100 border border-stone-300 rounded p-1 text-center font-bold" value="${start}">
         <span class="text-stone-400">-</span>
-        <input type="number" oninput="renderAmortizationTable()" class="rp-end w-12 bg-stone-100 border border-stone-300 rounded p-1 text-center font-bold" value="${end}">
+        <input type="number" oninput="window.debouncedRenderAmortizationTable()" class="rp-end w-12 bg-stone-100 border border-stone-300 rounded p-1 text-center font-bold" value="${end}">
       </div>
       <div class="col-span-3 flex items-center gap-1">
         <span class="text-stone-400 font-bold">ดอกเบี้ย</span>
-        <input type="number" step="0.1" oninput="renderAmortizationTable()" class="rp-rate w-16 bg-stone-100 border border-stone-300 rounded p-1 text-right font-black text-[#e05646]" value="${rate}">
+        <input type="number" step="0.1" oninput="window.debouncedRenderAmortizationTable()" class="rp-rate w-16 bg-stone-100 border border-stone-300 rounded p-1 text-right font-black text-[#e05646]" value="${rate}">
         <span class="text-stone-500 font-bold">%</span>
       </div>
       <div class="col-span-5">
         <input type="text" class="rp-label w-full bg-stone-100 border border-stone-300 rounded p-1 font-medium" value="${label}" placeholder="รายละเอียดช่วง Retention...">
       </div>
       <div class="col-span-1 text-right">
-        <button type="button" onclick="document.getElementById('${rowId}').remove(); renderAmortizationTable();" class="text-rose-500 font-bold px-1.5 py-0.5 hover:bg-rose-50 rounded">✕</button>
+        <button type="button" onclick="document.getElementById('${rowId}').remove(); window.debouncedRenderAmortizationTable();" class="text-rose-500 font-bold px-1.5 py-0.5 hover:bg-rose-50 rounded">✕</button>
       </div>
     `;
     container.appendChild(row);
-    renderAmortizationTable();
+    if (shouldRender) {
+      debouncedRenderAmortizationTable();
+    }
   }
 
   function renderAmortizationTable() {
@@ -560,7 +571,6 @@
 
     const rowsContainer = document.getElementById('amortization-table-body');
     if (!rowsContainer) return;
-    rowsContainer.innerHTML = '';
 
     const periodRows = document.querySelectorAll('#rate-periods-editor-container > div');
     const rateSchedule = [];
@@ -576,6 +586,7 @@
     let totalPaidPrinc = 0;
     let totalPaidInt = 0;
     const startDate = new Date(startDateStr);
+    const rowsHtml = [];
 
     for (let m = 1; m <= 360; m++) {
       if (balance <= 0) break;
@@ -603,7 +614,7 @@
       curDate.setMonth(curDate.getMonth() + m - 1);
       const dateTxt = isNaN(curDate.getTime()) ? `งวดที่ ${m}` : curDate.toLocaleDateString('th-TH', { month: 'short', year: '2-digit' });
 
-      rowsContainer.innerHTML += `
+      rowsHtml.push(`
         <tr class="border-b border-stone-200 hover:bg-stone-50 text-xs">
           <td class="p-2 text-center font-bold text-stone-700">${m}</td>
           <td class="p-2 text-center font-medium text-stone-600">${dateTxt}</td>
@@ -613,8 +624,10 @@
           <td class="p-2 text-right font-black text-stone-900">฿${Math.round(balance).toLocaleString()}</td>
           <td class="p-2 text-center"><span class="px-1.5 py-0.5 bg-stone-100 text-stone-600 rounded text-[10px] font-bold">งวดที่ ${m}</span></td>
         </tr>
-      `;
+      `);
     }
+
+    rowsContainer.innerHTML = rowsHtml.join('');
 
     if (document.getElementById('amo-sum-balance')) document.getElementById('amo-sum-balance').innerText = `฿${Math.round(balance).toLocaleString()}`;
     if (document.getElementById('amo-sum-paid-princ')) document.getElementById('amo-sum-paid-princ').innerText = `฿${Math.round(totalPaidPrinc).toLocaleString()}`;
@@ -983,6 +996,7 @@
   window.renderRatePeriodEditors = renderRatePeriodEditors;
   window.addRatePeriodRow = addRatePeriodRow;
   window.renderAmortizationTable = renderAmortizationTable;
+  window.debouncedRenderAmortizationTable = debouncedRenderAmortizationTable;
   window.applyAmortizationEdit = applyAmortizationEdit;
   window.renderRegisteredLessorsList = renderRegisteredLessorsList;
   window.renderRegisteredTenantsList = renderRegisteredTenantsList;

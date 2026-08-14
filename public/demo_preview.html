@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_30"></script>
+  <script src="js/engine.js?v=20260814_31"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -1141,9 +1141,9 @@
 
       <div class="bg-stone-100 p-4 rounded-xl space-y-3 text-xs">
         <div class="grid grid-cols-3 gap-3">
-          <div><label class="block text-stone-600 font-bold mb-1">ยอดกู้เริ่มต้น (บาท)</label><input type="number" id="amo-principal" value="0" oninput="renderAmortizationTable()" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-bold text-[#383838]"></div>
-          <div><label class="block text-stone-600 font-bold mb-1">ค่างวด/เดือน (บาท)</label><input type="number" id="amo-installment" value="0" oninput="renderAmortizationTable()" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-bold text-[#e05646]"></div>
-          <div><label class="block text-stone-600 font-bold mb-1">เริ่มผ่อนสัญญา</label><input type="date" id="amo-startdate" value="" oninput="renderAmortizationTable()" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-bold text-[#383838]"></div>
+          <div><label class="block text-stone-600 font-bold mb-1">ยอดกู้เริ่มต้น (บาท)</label><input type="number" id="amo-principal" value="0" oninput="window.debouncedRenderAmortizationTable()" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-bold text-[#383838]"></div>
+          <div><label class="block text-stone-600 font-bold mb-1">ค่างวด/เดือน (บาท)</label><input type="number" id="amo-installment" value="0" oninput="window.debouncedRenderAmortizationTable()" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-bold text-[#e05646]"></div>
+          <div><label class="block text-stone-600 font-bold mb-1">เริ่มผ่อนสัญญา</label><input type="date" id="amo-startdate" value="" oninput="window.debouncedRenderAmortizationTable()" class="w-full bg-white border border-stone-300 rounded-lg p-2.5 font-bold text-[#383838]"></div>
         </div>
 
         <div class="pt-2 border-t border-stone-300">
