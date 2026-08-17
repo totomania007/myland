@@ -1958,7 +1958,7 @@
       if (badgeName) badgeName.innerText = 'ผู้ดูแลพอร์ต';
       if (roleTitle) roleTitle.innerText = 'ผู้ให้เช่า (Landlord Mode)';
       if (drawerRole) drawerRole.innerText = '🔑 ผู้ให้เช่า (Landlord)';
-      if (tabPropertyBtn) tabPropertyBtn.innerText = '🏡 รายละเอียดทรัพย์ (สำหรับผู้เช่า)';
+      if (tabPropertyBtn) tabPropertyBtn.innerHTML = '<span>🏡</span> <span class="tab-label">สเปกทรัพย์สิน</span>';
       if (pdHeaderBadge) pdHeaderBadge.innerText = 'ข้อมูลอสังหาฯ เพื่อการตัดสินใจเช่า';
 
       ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group'].forEach(id => {
@@ -1973,7 +1973,7 @@
       if (badgeName) badgeName.innerText = 'ผู้เช่า / สนใจเช่า';
       if (roleTitle) roleTitle.innerText = 'ผู้เช่า (Tenant Portal)';
       if (drawerRole) drawerRole.innerText = '👤 ผู้เช่า (Tenant)';
-      if (tabPropertyBtn) tabPropertyBtn.innerText = '🏡 รายละเอียดทรัพย์สินเพื่อเช่า';
+      if (tabPropertyBtn) tabPropertyBtn.innerHTML = '<span>🏡</span> <span class="tab-label">สเปกทรัพย์สิน</span>';
       if (pdHeaderBadge) pdHeaderBadge.innerText = 'ข้อมูลอสังหาฯ เพื่อการตัดสินใจเช่า';
 
       ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group'].forEach(id => {

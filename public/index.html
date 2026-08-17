@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_46"></script>
+  <script src="js/engine.js?v=20260814_47"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -116,28 +116,47 @@
     }
 
     .youestates-tab {
-      padding: 10px 20px;
+      padding: 7px 8px;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 12px;
+      line-height: 1.2;
       transition: all 0.2s ease;
-      letter-spacing: 0.25px;
-      border-radius: 0.875rem;
+      letter-spacing: 0.1px;
+      border-radius: 0.625rem;
       font-family: 'Prompt', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      width: 100%;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    @media (min-width: 1024px) {
+      .youestates-tab {
+        padding: 8px 12px;
+        font-size: 13px;
+        gap: 6px;
+      }
     }
 
     .youestates-tab.active {
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       color: #ffffff;
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35);
     }
 
     .youestates-tab.inactive {
-      background: rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
     }
 
     .youestates-tab.inactive:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.18);
       color: #ffffff;
     }
 
@@ -373,29 +392,29 @@
       </div>
     </header>
 
-    <!-- NAVIGATION BAR (DESKTOP) -->
-    <nav class="no-print bg-[#383838] px-4 py-2.5 shadow-inner hidden md:block" id="main-nav-bar">
-      <div class="flex items-center justify-center sm:justify-start gap-2 overflow-x-auto">
-        <button onclick="switchTab('landing')" id="tab-landing" class="youestates-tab active whitespace-nowrap">
-          🌐 หน้าแรก
+    <!-- NAVIGATION BAR (SINGLE COMPACT BAR, ZERO SCROLLBAR, 100% FIT) -->
+    <nav class="no-print bg-[#242933] border-b border-stone-700 px-2 sm:px-3 py-1.5 shadow-inner hidden md:block" id="main-nav-bar">
+      <div class="w-full grid grid-cols-7 gap-1.5">
+        <button onclick="switchTab('landing')" id="tab-landing" class="youestates-tab active">
+          <span>🌐</span> <span class="tab-label">หน้าแรก</span>
         </button>
-        <button onclick="switchTab('admin')" id="tab-admin" class="youestates-tab inactive whitespace-nowrap">
-          📊 สรุปภาพรวมพอร์ต
+        <button onclick="switchTab('admin')" id="tab-admin" class="youestates-tab inactive">
+          <span>📊</span> <span class="tab-label">ภาพรวมพอร์ต</span>
         </button>
-        <button onclick="switchTab('property-detail')" id="tab-property-detail" class="youestates-tab inactive whitespace-nowrap">
-          🏡 รายละเอียดทรัพย์ (สำหรับผู้เช่า)
+        <button onclick="switchTab('property-detail')" id="tab-property-detail" class="youestates-tab inactive">
+          <span>🏡</span> <span class="tab-label">สเปกทรัพย์สิน</span>
         </button>
-        <button onclick="switchTab('loan-management')" id="tab-loan-management" class="youestates-tab inactive whitespace-nowrap">
-          🏦 สินเชื่อ & ดอกเบี้ย (สำหรับผู้ให้เช่า 🔒)
+        <button onclick="switchTab('loan-management')" id="tab-loan-management" class="youestates-tab inactive">
+          <span>🏦</span> <span class="tab-label">สินเชื่อ & ดอกเบี้ย</span>
         </button>
-        <button onclick="switchTab('register-lessor')" id="tab-register-lessor" class="youestates-tab inactive whitespace-nowrap">
-          🔑 ลงทะเบียนผู้ให้เช่า
+        <button onclick="switchTab('register-lessor')" id="tab-register-lessor" class="youestates-tab inactive">
+          <span>🔑</span> <span class="tab-label">ผู้ให้เช่า</span>
         </button>
-        <button onclick="switchTab('tenant')" id="tab-tenant" class="youestates-tab inactive whitespace-nowrap">
-          👤 ลงทะเบียนผู้เช่า
+        <button onclick="switchTab('tenant')" id="tab-tenant" class="youestates-tab inactive">
+          <span>👤</span> <span class="tab-label">ผู้เช่า</span>
         </button>
-        <button onclick="switchTab('contract')" id="tab-contract" class="youestates-tab inactive whitespace-nowrap">
-          📄 หนังสือสัญญาเช่า A4
+        <button onclick="switchTab('contract')" id="tab-contract" class="youestates-tab inactive">
+          <span>📄</span> <span class="tab-label">สัญญาเช่า A4</span>
         </button>
       </div>
     </nav>
@@ -735,19 +754,19 @@
           </div>
         </div>
 
-        <!-- SUB-NAVIGATION: ZERO HORIZONTAL SCROLLING -->
-        <div class="grid grid-cols-2 md:flex md:border-b-2 md:border-stone-300 gap-1.5 md:gap-2 text-xs font-bold select-none p-1.5 bg-stone-200 md:bg-transparent rounded-2xl md:rounded-none mb-2">
-          <button onclick="switchSubTab('specs')" id="subtab-specs" class="px-3 py-2.5 bg-[#383838] text-white rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-md md:shadow-none transition-all">
-            <span>🏡 1. สเปก & ข้อมูลห้อง</span>
+        <!-- SUB-NAVIGATION: 4 COLUMNS FULL FIT, ZERO SCROLLBAR -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 md:gap-2 text-xs font-bold select-none p-1.5 bg-stone-200 rounded-2xl mb-2">
+          <button onclick="switchSubTab('specs')" id="subtab-specs" class="px-2 py-2.5 bg-[#383838] text-white rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-md transition-all">
+            <span>🏡 1. ข้อมูลห้อง</span>
           </button>
-          <button onclick="switchSubTab('gallery')" id="subtab-gallery" class="px-3 py-2.5 bg-white md:bg-stone-200 text-stone-700 hover:bg-stone-100 md:hover:bg-stone-300 rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-sm md:shadow-none transition-all">
-            <span>📸 2. คลังรูป & วิดีโอ</span>
+          <button onclick="switchSubTab('gallery')" id="subtab-gallery" class="px-2 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-sm transition-all">
+            <span>📸 2. รูป & วิดีโอ</span>
           </button>
-          <button onclick="switchSubTab('furniture')" id="subtab-furniture" class="px-3 py-2.5 bg-white md:bg-stone-200 text-stone-700 hover:bg-stone-100 md:hover:bg-stone-300 rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-sm md:shadow-none transition-all">
+          <button onclick="switchSubTab('furniture')" id="subtab-furniture" class="px-2 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-sm transition-all">
             <span>🛋️ 3. เฟอร์นิเจอร์</span>
           </button>
-          <button onclick="switchSubTab('lessor')" id="subtab-lessor" class="px-3 py-2.5 bg-white md:bg-stone-200 text-stone-700 hover:bg-stone-100 md:hover:bg-stone-300 rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-sm md:shadow-none transition-all">
-            <span>👤 4. ติดต่อผู้ให้เช่า</span>
+          <button onclick="switchSubTab('lessor')" id="subtab-lessor" class="px-2 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-sm transition-all">
+            <span>👤 4. ผู้ให้เช่า</span>
           </button>
         </div>
 
@@ -861,13 +880,13 @@
                 </div>
               </div>
 
-              <!-- GALLERY FILTER BUTTONS -->
-              <div class="flex items-center gap-1.5 text-xs font-bold overflow-x-auto pb-1 select-none">
-                <button type="button" onclick="filterGalleryPhotos('all')" id="gfilter-all" class="px-3 py-1.5 rounded-lg bg-[#383838] text-white whitespace-nowrap">ทั้งหมด (All)</button>
-                <button type="button" onclick="filterGalleryPhotos('exterior')" id="gfilter-exterior" class="px-3 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 whitespace-nowrap">🏠 ภายนอก</button>
-                <button type="button" onclick="filterGalleryPhotos('interior')" id="gfilter-interior" class="px-3 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 whitespace-nowrap">🛋️ ภายในห้อง</button>
-                <button type="button" onclick="filterGalleryPhotos('highlight')" id="gfilter-highlight" class="px-3 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 whitespace-nowrap">✨ วิว / จุดเด่น</button>
-                <button type="button" onclick="filterGalleryPhotos('video')" id="gfilter-video" class="px-3 py-1.5 rounded-lg bg-rose-100 text-rose-800 hover:bg-rose-200 whitespace-nowrap">🎬 วิดีโอรีวิว</button>
+              <!-- GALLERY FILTER BUTTONS (GRID LAYOUT, NO SCROLLBAR) -->
+              <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5 text-xs font-bold select-none">
+                <button type="button" onclick="filterGalleryPhotos('all')" id="gfilter-all" class="px-2 py-2 rounded-lg bg-[#383838] text-white text-center">ทั้งหมด (All)</button>
+                <button type="button" onclick="filterGalleryPhotos('exterior')" id="gfilter-exterior" class="px-2 py-2 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 text-center">🏠 ภายนอก</button>
+                <button type="button" onclick="filterGalleryPhotos('interior')" id="gfilter-interior" class="px-2 py-2 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 text-center">🛋️ ภายใน</button>
+                <button type="button" onclick="filterGalleryPhotos('highlight')" id="gfilter-highlight" class="px-2 py-2 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 text-center">✨ ไฮไลท์</button>
+                <button type="button" onclick="filterGalleryPhotos('video')" id="gfilter-video" class="px-2 py-2 rounded-lg bg-rose-100 text-rose-800 hover:bg-rose-200 text-center col-span-2 sm:col-span-1">🎬 วิดีโอรีวิว</button>
               </div>
 
               <div id="property-gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4"></div>
