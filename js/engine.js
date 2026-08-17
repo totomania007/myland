@@ -2381,7 +2381,9 @@
     } else {
       setCurrentRole('tenant');
       switchTab('landing');
-      alert('👤 คุณอยู่ในโหมดผู้เช่า / บุคคลทั่วไป สามารถดูรายละเอียดทรัพย์สิน สเปกห้อง คำนวณสัญญา และลงทะเบียนได้ครับ');
+      window.scrollTo(0, 0);
+      if (document.documentElement) document.documentElement.scrollTop = 0;
+      if (document.body) document.body.scrollTop = 0;
     }
   }
 
@@ -2418,7 +2420,13 @@
 
       applyRolePermissions();
       switchTab('admin');
-      alert(`✅ รหัส PIN ถูกต้อง! ยินดีต้อนรับ คุณ "${matchedAdmin.name}" เข้าสู่ระบบผู้ให้เช่า`);
+
+      // Instant scroll reset
+      window.scrollTo(0, 0);
+      if (document.documentElement) document.documentElement.scrollTop = 0;
+      if (document.body) document.body.scrollTop = 0;
+      const mainEl = document.querySelector('main');
+      if (mainEl) mainEl.scrollTop = 0;
     } else {
       alert('❌ รหัส PIN ไม่ถูกต้อง! ไม่อนุญาตให้บุคคลทั่วไปเข้าสู่โหมดผู้ให้เช่า (Default PIN: 1234)');
       if (input) {
