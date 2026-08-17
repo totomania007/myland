@@ -2050,7 +2050,148 @@
     }
   }
 
-  // 10. MODAL & TAB CONTROLLERS
+  function downloadContractDocx() {
+    const prop = getCurrentProperty();
+    if (!prop) {
+      alert('กรุณาเลือกทรัพย์สินก่อนครับ');
+      return;
+    }
+
+    const lessor = state.lessorProfiles[prop.lessorKey] || Object.values(state.lessorProfiles)[0] || { name: 'ผู้ให้เช่า', idCard: '-', address: '-', age: '-' };
+    const tenant = Object.values(state.tenantDatabase)[0] || { fullName: 'ผู้เช่า', idCard: '-', address: '-', age: '-', startDate: prop.startDate || '2026-08-13', duration: '1' };
+    const dates = calculateLeaseDates(tenant.startDate || prop.startDate || '2026-08-13', tenant.duration || 1);
+    const rentVal = prop.rent || tenant.rent || 0;
+    const depositVal = prop.deposit || tenant.deposit || 0;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>หนังสือสัญญาเช่าบ้าน</title>
+        <style>
+          @page {
+            size: 21.0cm 29.7cm;
+            margin: 2.0cm 2.0cm 2.0cm 2.5cm;
+            mso-header-margin: 36.0pt;
+            mso-footer-margin: 36.0pt;
+            mso-paper-source: 0;
+          }
+          body {
+            font-family: 'TH Sarabun PSK', 'TH Sarabun New', 'Cordia New', sans-serif;
+            font-size: 16.0pt;
+            line-height: 1.15;
+            color: #000000;
+          }
+          p {
+            margin-top: 0;
+            margin-bottom: 6.0pt;
+            text-align: justify;
+            text-indent: 2.5cm;
+          }
+          .title {
+            text-align: center;
+            font-size: 20.0pt;
+            font-weight: bold;
+            margin-bottom: 12.0pt;
+            text-indent: 0;
+          }
+          .header-right {
+            text-align: right;
+            margin-bottom: 12.0pt;
+            text-indent: 0;
+          }
+          .no-indent {
+            text-indent: 0;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10.0pt;
+            margin-bottom: 10.0pt;
+          }
+          table, th, td {
+            border: 1px solid black;
+            font-size: 14.0pt;
+            padding: 4.0pt;
+          }
+          th {
+            background-color: #f2f2f2;
+            text-align: center;
+          }
+          .sig-table td {
+            border: none;
+            padding-top: 20.0pt;
+            text-align: center;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="title">หนังสือสัญญาเช่าบ้าน</div>
+        <div class="header-right">
+          ทำที่ ${prop.address || prop.name || 'กรุงเทพมหานคร'}<br>
+          ${dates.startThai || '-'}
+        </div>
+
+        <p>สัญญานี้ทำขึ้นระหว่าง <b>${lessor.name || '-'}</b> อายุ ${lessor.age || '-'} ปี อยู่บ้านเลขที่ ${lessor.address || '-'} เลขประจำตัวประชาชน ${lessor.idCard || '-'} ซึ่งต่อไปในสัญญานี้จะเรียกว่า <b>“ผู้ให้เช่า”</b> ฝ่ายหนึ่ง</p>
+        <p>กับ <b>${tenant.fullName || '-'}</b> อายุ ${tenant.age || '-'} ปี อยู่บ้านเลขที่ ${tenant.address || '-'} เลขประจำตัวประชาชน ${tenant.idCard || '-'} ซึ่งต่อไปในสัญญานี้จะเรียกว่า <b>“ผู้เช่า”</b> อีกฝ่ายหนึ่ง</p>
+
+        <p class="no-indent" style="text-align: center; font-weight: bold; margin-top: 10pt; margin-bottom: 10pt;">คู่สัญญาทั้งสองฝ่ายได้ตกลงทำสัญญากันไว้มีข้อความดังต่อไปนี้</p>
+
+        <p><b>ข้อ ๑</b> ผู้ให้เช่าตกลงให้เช่าและผู้เช่าตกลงรับเช่าบ้านเลขที่ <b>${prop.houseNo || '-'}</b> รายละเอียดที่ตั้ง ${prop.name || ''} ${prop.address || ''} ซึ่งต่อไปในสัญญานี้จะเรียกว่า <b>“ทรัพย์สินที่เช่า”</b> มีกำหนดระยะเวลาเช่า <b>${tenant.duration || 1} ปี</b> เพื่อใช้เป็นที่พักอาศัย นับตั้งแต่วันที่ <b>${dates.startThai || '-'}</b> ถึงวันที่ <b>${dates.endThai || '-'}</b> และผู้เช่ายอมเสียค่าเช่าให้เดือนละ <b>${rentVal.toLocaleString()} บาท (${thaiBahtText(rentVal)})</b> มีกำหนดชำระเงินค่าเช่าทุกวันที่ ๕ ของทุกเดือน</p>
+
+        <p><b>ข้อ ๒</b> ในวันทำสัญญานี้ ผู้เช่าได้มอบเงินประกันการปฏิบัติตามสัญญาเช่าจำนวน <b>${depositVal.toLocaleString()} บาท (${thaiBahtText(depositVal)})</b> ให้แก่ผู้ให้เช่าเรียบร้อยแล้ว โดยผู้ให้เช่าจะคืนเงินประกันนี้ให้เมื่อสิ้นสุดสัญญาและผู้เช่าส่งมอบทรัพย์สินคืนในสภาพเรียบร้อย</p>
+
+        <p><b>ข้อ ๓</b> ผู้เช่าสัญญาว่าจะชำระค่าน้ำ ค่าไฟฟ้า ค่าภาษีโรงเรือน/ที่ดิน และค่าบำรุงรักษาตามปกติ ไม่นำทรัพย์สินไปให้เช่าช่วง และไม่กระทำการใดอันผิดกฎหมายหรือสร้างความเดือดร้อนรำคาญ</p>
+
+        <p><b>ข้อ ๔</b> ผู้ให้เช่าสัญญาว่าจะออกใบรับเงินค่าเช่าให้แก่ผู้เช่าทุกคราว และดูแลรักษาโครงสร้างอาคารตามหน้าที่ผู้ให้เช่า</p>
+
+        <p><b>ข้อ ๕</b> หากผู้เช่าผิดนัดชำระค่าเช่าหรือผิดสัญญาข้อหนึ่งข้อใด ผู้ให้เช่ามีสิทธิบอกเลิกสัญญาเช่าได้ทันที</p>
+
+        <p><b>ข้อ ๖</b> เมื่อสัญญาเช่าสิ้นสุดลง ไม่ว่าด้วยเหตุใด ผู้ให้เช่ามีสิทธิกลับเข้าครอบครองทรัพย์สินและขนย้ายทรัพย์สินของผู้เช่าออกได้</p>
+
+        <p><b>ข้อ ๗</b> ในวันทำสัญญานี้ ผู้เช่าได้ตรวจตราทรัพย์สินที่เช่าและรายการอุปกรณ์เฟอร์นิเจอร์แล้ว เห็นว่ามีสภาพเรียบร้อยสมบูรณ์ทุกประการ</p>
+
+        <p class="no-indent" style="margin-top: 15pt;">สัญญานี้ทำขึ้นเป็นสองฉบับมีข้อความถูกต้องตรงกัน คู่สัญญาได้อ่านและเข้าใจข้อความโดยละเอียดแล้ว จึงได้ลงลายมือชื่อไว้เป็นหลักฐานต่อหน้าพยาน</p>
+
+        <table class="sig-table">
+          <tr>
+            <td style="width: 50%;">
+              ลงชื่อ ............................................................ ผู้ให้เช่า<br>
+              ( <b>${lessor.name || 'ผู้ให้เช่า'}</b> )
+            </td>
+            <td style="width: 50%;">
+              ลงชื่อ ............................................................ ผู้เช่า<br>
+              ( <b>${tenant.fullName || 'ผู้เช่า'}</b> )
+            </td>
+          </tr>
+          <tr>
+            <td>
+              ลงชื่อ ............................................................ พยาน<br>
+              ( ............................................................ )
+            </td>
+            <td>
+              ลงชื่อ ............................................................ พยาน<br>
+              ( ............................................................ )
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + htmlContent], {
+      type: 'application/msword;charset=utf-8'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `หนังสือสัญญาเช่า_${(prop.name || 'บ้าน').replace(/\\s+/g, '_')}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
   function toggleModal(id) {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('hidden');
@@ -2458,6 +2599,7 @@
   window.pdfZoomIn = pdfZoomIn;
   window.pdfZoomOut = pdfZoomOut;
   window.pdfRotate = pdfRotate;
+  window.downloadContractDocx = downloadContractDocx;
   window.copyPropertyPromoLink = copyPropertyPromoLink;
 
   // 12. AUTO-START & LIFECYCLE LISTENERS

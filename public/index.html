@@ -6,10 +6,26 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_49"></script>
+  <script src="js/engine.js?v=20260814_50"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-thsarabunnew@1.0.0/css/thsarabunnew.css">
   <style>
+    @font-face {
+      font-family: 'THSarabunNew';
+      src: url('https://cdn.jsdelivr.net/npm/font-thsarabunnew@1.0.0/fonts/thsarabunnew-webfont.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'THSarabunNew';
+      src: url('https://cdn.jsdelivr.net/npm/font-thsarabunnew@1.0.0/fonts/thsarabunnew_bold-webfont.woff2') format('woff2');
+      font-weight: bold;
+      font-style: normal;
+      font-display: swap;
+    }
+
     :root {
       --color-emerald: #10b981;
       --color-emerald-dark: #059669;
@@ -20,6 +36,7 @@
       --color-slate-card: #0f172a;
       --color-bg-linen: #f4f3f0;
       --font-ui: 'IBM Plex Sans Thai', 'Prompt', sans-serif;
+      --font-contract: 'THSarabunNew', 'TH Sarabun New', 'TH Sarabun PSK', 'Sarabun', serif;
     }
 
     body {
@@ -246,34 +263,45 @@
     .a4-sheet {
       width: 210mm;
       min-height: 297mm;
-      padding: 20mm 20mm 20mm 25mm;
+      padding: 2.5cm 2.0cm 2.0cm 2.5cm;
       background: #ffffff;
       color: #000000;
-      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4), 0 1px 4px rgba(0, 0, 0, 0.2);
-      font-family: 'Sarabun', 'TH Sarabun PSK', sans-serif !important;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45), 0 0 1px rgba(0, 0, 0, 0.3);
+      font-family: 'THSarabunNew', 'TH Sarabun New', 'TH Sarabun PSK', 'Sarabun', serif !important;
       font-size: 16pt !important;
-      line-height: 1.45 !important;
+      line-height: 1.22 !important;
       box-sizing: border-box;
       position: relative;
-      border-radius: 2px;
+      border-radius: 1px;
     }
 
     .sarabun-contract {
-      font-family: 'Sarabun', 'TH Sarabun PSK', sans-serif !important;
+      font-family: 'THSarabunNew', 'TH Sarabun New', 'TH Sarabun PSK', 'Sarabun', serif !important;
       font-size: 16pt !important;
-      line-height: 1.45 !important;
+      line-height: 1.22 !important;
       color: #000000 !important;
     }
 
     .sarabun-contract p {
-      margin-bottom: 0.35em;
+      margin-bottom: 0.3em;
       text-align: justify;
-      text-indent: 2.5em;
-      line-height: 1.45;
+      text-justify: inter-cluster;
+      text-indent: 2.5cm;
+      line-height: 1.22;
     }
 
     .sarabun-contract p.no-indent {
       text-indent: 0 !important;
+    }
+
+    .c-blank-field {
+      border-bottom: 1px dotted #000000;
+      font-weight: 700;
+      padding: 0 4px;
+      display: inline-block;
+      min-width: 40px;
+      text-align: center;
+      color: #000000;
     }
 
     .stamp-original {
@@ -1492,10 +1520,13 @@
               <button type="button" onclick="pdfZoomIn()" class="pdfjs-btn text-base font-bold px-2 py-0.5" title="ขยายขนาด (+)">+</button>
             </div>
 
-            <!-- RIGHT TOOLS (ROTATE, FULLSCREEN, DOWNLOAD, PRINT) -->
+            <!-- RIGHT TOOLS (ROTATE, DOWNLOAD LIBREOFFICE DOC, PRINT) -->
             <div class="flex items-center gap-1.5">
               <button type="button" onclick="pdfRotate()" class="pdfjs-btn hidden sm:inline-flex" title="หมุนเอกสาร 90 องศา">
                 <span>🔄 หมุน</span>
+              </button>
+              <button type="button" onclick="downloadContractDocx()" class="pdfjs-btn bg-stone-700 hover:bg-stone-600 text-white font-bold px-3 py-1.5 rounded-lg shadow-sm border border-stone-600" title="ดาวน์โหลดไฟล์เพื่อเปิดแก้ไขและพิมพ์ใน LibreOffice Writer / MS Word">
+                <span>📥 ไฟล์ LibreOffice (.doc)</span>
               </button>
               <button type="button" onclick="window.print()" class="pdfjs-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-lg shadow-md border-0" title="สั่งพิมพ์เอกสาร A4 หรือบันทึกเป็น PDF">
                 <span>🖨️ สั่งพิมพ์ A4 / PDF</span>
