@@ -139,7 +139,7 @@
 
   // 3. UNIFIED GLOBAL STATE
   const state = {
-    currentRole: 'landlord',
+    currentRole: localStorage.getItem('property_os_active_role') || 'tenant',
     currentPropertyId: localStorage.getItem('property_os_current_prop_id') || DEFAULT_PROPERTIES[0].id,
     currentTenantId: 'tenant-1',
     currentGalleryFilter: 'all',
@@ -147,7 +147,7 @@
     lessorProfiles: loadStoredData('property_os_lessors', DEFAULT_LESSORS),
     tenantDatabase: loadStoredData('property_os_tenants', DEFAULT_TENANTS),
     adminAccountsState: loadStoredData('property_os_admins', [
-      { id: 'admin-1', name: 'ผู้ดูแลพอร์ตหลัก', pin: CONFIG.DEFAULT_PIN, role: 'Super Admin' }
+      { id: 'admin-1', name: 'ผู้ดูแลพอร์ตหลัก', pin: '1234', role: 'Super Admin' }
     ])
   };
 
@@ -425,9 +425,11 @@
     renderLoanManagementView();
     renderRegisteredLessorsList();
     renderRegisteredTenantsList();
+    renderAdminAccountsList();
     renderLessorSelectOptions();
     renderTenantPropertyDropdown();
     renderContractView();
+    applyRolePermissions();
   }
 
   function renderAdminData() {
@@ -1876,6 +1878,95 @@
     } catch(err) {}
   }
 
+  // 8.5 ADMIN ACCOUNTS & PIN SECURITY MANAGEMENT
+  function renderAdminAccountsList() {
+    const listContainer = document.getElementById('admin-accounts-list-container');
+    const cardContainer = document.getElementById('admin-accounts-card-list');
+
+    const renderItemHtml = (admin, canDelete) => `
+      <div class="p-3 bg-stone-50 border border-stone-200 rounded-xl flex items-center justify-between gap-2 shadow-sm">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white font-black flex items-center justify-center text-xs">
+            🔑
+          </div>
+          <div>
+            <div class="font-bold text-xs text-[#383838]">${admin.name}</div>
+            <div class="text-[10px] text-stone-500 font-mono">รหัส PIN: •••• (${admin.pin}) • ${admin.role || 'Admin'}</div>
+          </div>
+        </div>
+        ${canDelete ? `
+          <button type="button" onclick="deleteAdminAccount('${admin.id}')" class="px-2.5 py-1 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg text-[11px] font-bold transition-colors" title="ลบแอดมิน">
+            🗑️ ลบ
+          </button>
+        ` : `
+          <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold">แอดมินหลัก</span>
+        `}
+      </div>
+    `;
+
+    if (listContainer) {
+      if (!state.adminAccountsState || state.adminAccountsState.length === 0) {
+        listContainer.innerHTML = '<div class="text-xs text-stone-400 p-2">ไม่มีรายชื่อแอดมินในระบบ</div>';
+      } else {
+        listContainer.innerHTML = state.adminAccountsState.map(a => renderItemHtml(a, state.adminAccountsState.length > 1)).join('');
+      }
+    }
+
+    if (cardContainer) {
+      if (!state.adminAccountsState || state.adminAccountsState.length === 0) {
+        cardContainer.innerHTML = '<div class="text-xs text-stone-400 p-2">ไม่มีรายชื่อแอดมินในระบบ</div>';
+      } else {
+        cardContainer.innerHTML = state.adminAccountsState.map(a => renderItemHtml(a, state.adminAccountsState.length > 1)).join('');
+      }
+    }
+  }
+
+  function handleAddAdminSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const nameInput = document.getElementById('new-admin-name');
+    const pinInput = document.getElementById('new-admin-pin');
+    const name = (nameInput?.value || '').trim();
+    const pin = (pinInput?.value || '').trim();
+
+    if (!name || !pin) {
+      alert('⚠️ กรุณากรอกชื่อแอดมินและกำหนดรหัสผ่าน PIN');
+      return;
+    }
+
+    const newAdmin = {
+      id: 'admin-' + Date.now(),
+      name,
+      pin,
+      role: 'ผู้ดูแลพอร์ต (Admin)'
+    };
+
+    if (!state.adminAccountsState) state.adminAccountsState = [];
+    state.adminAccountsState.push(newAdmin);
+    saveStateToLocalStorage();
+    renderAdminAccountsList();
+
+    if (nameInput) nameInput.value = '';
+    if (pinInput) pinInput.value = '';
+
+    alert(`✅ เพิ่มแอดมิน "${name}" พร้อมรหัส PIN: ${pin} เรียบร้อยแล้ว!`);
+  }
+
+  function deleteAdminAccount(id) {
+    if (!state.adminAccountsState || state.adminAccountsState.length <= 1) {
+      alert('⚠️ ไม่สามารถลบแอดมินคนสุดท้ายได้ เพื่อป้องกันการถูกล็อกออกจากระบบ');
+      return;
+    }
+    const admin = state.adminAccountsState.find(a => a.id === id);
+    if (!admin) return;
+
+    if (!confirm(`คุณต้องการลบแอดมิน "${admin.name}" ออกจากระบบใช่หรือไม่?`)) return;
+
+    state.adminAccountsState = state.adminAccountsState.filter(a => a.id !== id);
+    saveStateToLocalStorage();
+    renderAdminAccountsList();
+    alert(`✅ ลบแอดมิน "${admin.name}" เรียบร้อยแล้ว`);
+  }
+
   // 9. LEASE CONTRACT & PDF.JS REALISTIC VIEWER ENGINE
   let pdfCurrentPage = 1;
   let pdfCurrentZoom = 1.0;
@@ -2272,34 +2363,69 @@
     if (overlay) overlay.classList.remove('hidden');
   }
 
+  function openAdminPinModal() {
+    const modal = document.getElementById('modal-admin-pin');
+    if (modal) modal.classList.remove('hidden');
+    const input = document.getElementById('admin-pin-input');
+    if (input) {
+      input.value = '';
+      setTimeout(() => input.focus(), 150);
+    }
+  }
+
   function loginAsRole(role) {
     const overlay = document.getElementById('login-overlay');
     if (overlay) overlay.classList.add('hidden');
     if (role === 'landlord') {
-      verifyAdminPinSubmit();
+      openAdminPinModal();
     } else {
       setCurrentRole('tenant');
-      switchTab('tenant');
+      switchTab('landing');
+      alert('👤 คุณอยู่ในโหมดผู้เช่า / บุคคลทั่วไป สามารถดูรายละเอียดทรัพย์สิน สเปกห้อง คำนวณสัญญา และลงทะเบียนได้ครับ');
     }
   }
 
   function setCurrentRole(role) {
     state.currentRole = role;
+    localStorage.setItem('property_os_active_role', role);
     applyRolePermissions();
   }
 
   function verifyAdminPinSubmit() {
-    state.currentRole = 'landlord';
-    const badgeName = document.getElementById('user-badge-name');
-    if (badgeName) badgeName.innerText = 'ผู้ดูแลพอร์ต';
-    
-    const pinModal = document.getElementById('modal-admin-pin');
-    if (pinModal) pinModal.classList.add('hidden');
-    const overlay = document.getElementById('login-overlay');
-    if (overlay) overlay.classList.add('hidden');
+    const input = document.getElementById('admin-pin-input');
+    const enteredPin = (input?.value || '').trim();
 
-    applyRolePermissions();
-    switchTab('admin');
+    if (!enteredPin) {
+      alert('⚠️ กรุณากรอกรหัสผ่าน PIN 4 หลัก');
+      return;
+    }
+
+    const matchedAdmin = (state.adminAccountsState || []).find(a => String(a.pin) === String(enteredPin)) ||
+      (enteredPin === '1234' || enteredPin === CONFIG.DEFAULT_PIN ? { id: 'admin-1', name: 'ผู้ดูแลพอร์ตหลัก', pin: enteredPin, role: 'Super Admin' } : null);
+
+    if (matchedAdmin) {
+      state.currentRole = 'landlord';
+      state.activeAdmin = matchedAdmin;
+      localStorage.setItem('property_os_active_role', 'landlord');
+
+      const badgeName = document.getElementById('user-badge-name');
+      if (badgeName) badgeName.innerText = matchedAdmin.name;
+
+      const pinModal = document.getElementById('modal-admin-pin');
+      if (pinModal) pinModal.classList.add('hidden');
+      const overlay = document.getElementById('login-overlay');
+      if (overlay) overlay.classList.add('hidden');
+
+      applyRolePermissions();
+      switchTab('admin');
+      alert(`✅ รหัส PIN ถูกต้อง! ยินดีต้อนรับ คุณ "${matchedAdmin.name}" เข้าสู่ระบบผู้ให้เช่า`);
+    } else {
+      alert('❌ รหัส PIN ไม่ถูกต้อง! ไม่อนุญาตให้บุคคลทั่วไปเข้าสู่โหมดผู้ให้เช่า (Default PIN: 1234)');
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+    }
   }
 
   function applyRolePermissions() {
@@ -2316,7 +2442,7 @@
         badgeRole.innerText = '🔑 ผู้ให้เช่า';
         badgeRole.className = 'px-2 py-0.5 rounded bg-[#e05646] text-white font-bold text-[10px]';
       }
-      if (badgeName) badgeName.innerText = 'ผู้ดูแลพอร์ต';
+      if (badgeName) badgeName.innerText = state.activeAdmin?.name || 'ผู้ดูแลพอร์ต';
       if (roleTitle) roleTitle.innerText = 'ผู้ให้เช่า (Landlord Mode)';
       if (drawerRole) drawerRole.innerText = '🔑 ผู้ให้เช่า (Landlord)';
       const tabTenantBtn = document.getElementById('tab-tenant');
@@ -2331,7 +2457,7 @@
         badgeRole.innerText = '👤 ผู้เช่า';
         badgeRole.className = 'px-2 py-0.5 rounded bg-emerald-600 text-white font-bold text-[10px]';
       }
-      if (badgeName) badgeName.innerText = 'ผู้เช่า / สนใจเช่า';
+      if (badgeName) badgeName.innerText = 'ผู้เช่า / บุคคลทั่วไป';
       if (roleTitle) roleTitle.innerText = 'ผู้เช่า (Tenant Portal)';
       if (drawerRole) drawerRole.innerText = '👤 ผู้เช่า (Tenant)';
       if (tabPropertyBtn) tabPropertyBtn.innerHTML = '<span>🏡</span> <span class="tab-label">สเปกทรัพย์สิน</span>';
@@ -2353,6 +2479,13 @@
   }
 
   function switchTab(tab) {
+    // If attempting to access landlord-only tabs without authorization, prompt for PIN
+    const landlordOnlyTabs = ['admin', 'loan-management', 'register-lessor'];
+    if (landlordOnlyTabs.includes(tab) && state.currentRole !== 'landlord') {
+      openAdminPinModal();
+      return;
+    }
+
     let targetTab = tab;
     // If tenant role clicks tenant tab, route to tenant-dashboard
     if (tab === 'tenant' && state.currentRole === 'tenant') {
@@ -2706,7 +2839,11 @@
   window.openLoginOverlay = openLoginOverlay;
   window.loginAsRole = loginAsRole;
   window.setCurrentRole = setCurrentRole;
+  window.openAdminPinModal = openAdminPinModal;
   window.verifyAdminPinSubmit = verifyAdminPinSubmit;
+  window.renderAdminAccountsList = renderAdminAccountsList;
+  window.handleAddAdminSubmit = handleAddAdminSubmit;
+  window.deleteAdminAccount = deleteAdminAccount;
   window.applyRolePermissions = applyRolePermissions;
   window.switchTab = switchTab;
   window.switchSubTab = switchSubTab;
