@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_53"></script>
+  <script src="js/engine.js?v=20260814_54"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1621,38 +1621,39 @@
                 <!-- PAGE 1: MAIN CONTRACT BODY -->
                 <div id="a4-sheet-page-1" class="a4-sheet sarabun-contract flex flex-col justify-between">
                   <div>
-                    <!-- ORIGINAL BADGE -->
-                    <div class="flex justify-between items-start mb-2">
-                      <span class="text-[12pt] text-stone-500 font-medium">สัญญาเช่าอาคารเพื่ออยู่อาศัย</span>
-                      <div class="stamp-original">ต้นฉบับ</div>
+                    <!-- ORIGINAL STAMP & DOC TYPE -->
+                    <div class="flex justify-between items-center mb-3">
+                      <span class="text-[12pt] text-stone-500 font-medium">สัญญาเช่าที่พักอาศัยมาตรฐาน</span>
+                      <div class="stamp-original">ฉบับคู่ฉบับ / ต้นฉบับ</div>
                     </div>
                     
-                    <div class="text-center font-bold text-[22pt] mb-3 tracking-normal">หนังสือสัญญาเช่าบ้าน</div>
+                    <div class="text-center font-bold text-[22pt] mb-3 tracking-tight">หนังสือสัญญาเช่าบ้านและที่พักอาศัย</div>
                     
-                    <div class="text-right mb-4 text-[16pt] leading-normal">
-                      ทำที่ <span id="c-place-1" class="font-bold border-b border-dotted border-black pb-0.5 px-2">-</span><br>
-                      วันที่ <span id="c-date-1" class="font-bold border-b border-dotted border-black pb-0.5 px-2">-</span>
+                    <div class="text-right mb-4 text-[16pt] leading-relaxed">
+                      ทำที่ <span id="c-place-1" class="font-bold border-b border-dotted border-black pb-0.5 px-3 min-w-[180px] inline-block text-center">-</span><br>
+                      วันที่ <span id="c-date-1" class="font-bold border-b border-dotted border-black pb-0.5 px-3 min-w-[180px] inline-block text-center">-</span>
                     </div>
 
-                    <div class="space-y-2 text-[16pt] leading-normal">
-                      <p>สัญญานี้ทำขึ้นระหว่าง <strong><span id="c-lessor-name-1">ผู้ให้เช่า</span></strong> อายุ <span id="c-lessor-age-1">-</span> ปี อยู่บ้านเลขที่ <span id="c-lessor-address-1">-</span> เลขประจำตัวประชาชน <span id="c-lessor-idcard-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ผู้ให้เช่า”</strong> ฝ่ายหนึ่ง</p>
-                      <p>กับ <strong><span id="c-lessee-name-1">ผู้เช่า</span></strong> อายุ <span id="c-lessee-age-1">-</span> ปี อยู่บ้านเลขที่ <span id="c-lessee-address-1">-</span> เลขประจำตัวประชาชน <span id="c-lessee-idcard-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ผู้เช่า”</strong> อีกฝ่ายหนึ่ง</p>
+                    <div class="space-y-2.5 text-[16pt] leading-relaxed">
+                      <p>สัญญานี้ทำขึ้นระหว่าง <strong><span id="c-lessor-name-1" class="border-b border-dotted border-black px-1.5 font-bold">-</span></strong> อายุ <span id="c-lessor-age-1" class="border-b border-dotted border-black px-1.5 font-bold">-</span> ปี อยู่บ้านเลขที่ <span id="c-lessor-address-1" class="border-b border-dotted border-black px-1.5 font-bold">-</span> ถือบัตรประจำตัวประชาชนเลขที่ <span id="c-lessor-idcard-1" class="border-b border-dotted border-black px-1.5 font-bold">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ผู้ให้เช่า”</strong> ฝ่ายหนึ่ง</p>
+                      
+                      <p>กับ <strong><span id="c-lessee-name-1" class="border-b border-dotted border-black px-1.5 font-bold">-</span></strong> อายุ <span id="c-lessee-age-1" class="border-b border-dotted border-black px-1.5 font-bold">-</span> ปี อยู่บ้านเลขที่ <span id="c-lessee-address-1" class="border-b border-dotted border-black px-1.5 font-bold">-</span> ถือบัตรประจำตัวประชาชนเลขที่ <span id="c-lessee-idcard-1" class="border-b border-dotted border-black px-1.5 font-bold">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ผู้เช่า”</strong> อีกฝ่ายหนึ่ง</p>
 
-                      <p class="font-bold pt-1 no-indent text-center">คู่สัญญาทั้งสองฝ่ายได้ตกลงทำสัญญากันไว้มีข้อความดังต่อไปนี้</p>
+                      <p class="font-bold pt-1.5 no-indent text-center">คู่สัญญาทั้งสองฝ่ายได้ตกลงทำสัญญากันไว้ มีข้อความดังต่อไปนี้</p>
 
-                      <p><strong>ข้อ 1</strong> ผู้ให้เช่าตกลงให้เช่าและผู้เช่าตกลงรับเช่าบ้านเลขที่ <strong><span id="c-house-no-1">-</span></strong> รายละเอียดที่ตั้ง <span id="c-full-address-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ทรัพย์สินที่เช่า”</strong> มีกำหนดระยะเวลาเช่า <strong><span id="c-duration-1">1 ปี</span></strong> เพื่อใช้เป็นที่พักอาศัย นับตั้งแต่วันที่ <strong><span id="c-start-date-1">-</span></strong> ถึงวันที่ <strong><span id="c-end-date-1">-</span></strong> และผู้เช่ายอมเสียค่าเช่าให้เดือนละ <strong><span id="c-rent-1">0</span> บาท (<span id="c-rent-text-1">ศูนย์บาทถ้วน</span>)</strong> มีกำหนดชำระเงินค่าเช่าทุกวันที่ <strong>5</strong> ของทุกเดือน</p>
+                      <p><strong>ข้อ 1. ทรัพย์สินและระยะเวลาการเช่า:</strong> ผู้ให้เช่าตกลงให้เช่าและผู้เช่าตกลงรับเช่าบ้านเลขที่ <strong><span id="c-house-no-1" class="border-b border-dotted border-black px-1 font-bold">-</span></strong> รายละเอียดที่ตั้ง <span id="c-full-address-1" class="border-b border-dotted border-black px-1 font-bold">-</span> เพื่อใช้เป็นที่พักอาศัยเท่านั้น มีกำหนดระยะเวลาเช่า <strong><span id="c-duration-1" class="border-b border-dotted border-black px-1 font-bold">1 ปี</span></strong> นับตั้งแต่วันที่ <strong><span id="c-start-date-1" class="border-b border-dotted border-black px-1 font-bold">-</span></strong> ถึงวันที่ <strong><span id="c-end-date-1" class="border-b border-dotted border-black px-1 font-bold">-</span></strong></p>
                       
-                      <p><strong>ข้อ 2</strong> ในวันทำสัญญานี้ ผู้เช่าได้มอบเงินประกันการปฏิบัติตามสัญญาเช่าจำนวน <strong><span id="c-deposit-1">0</span> บาท (<span id="c-deposit-text-1">ศูนย์บาทถ้วน</span>)</strong> ให้แก่ผู้ให้เช่าเรียบร้อยแล้ว โดยผู้ให้เช่าจะคืนเงินประกันนี้ให้เมื่อสิ้นสุดสัญญาและผู้เช่าส่งมอบทรัพย์สินคืนในสภาพเรียบร้อย</p>
+                      <p><strong>ข้อ 2. อัตราค่าเช่าและการชำระ:</strong> ผู้เช่าตกลงชำระค่าเช่าให้แก่ผู้ให้เช่าในอัตราเดือนละ <strong><span id="c-rent-1" class="border-b border-dotted border-black px-1 font-bold">0</span> บาท (<span id="c-rent-text-1" class="border-b border-dotted border-black px-1 font-bold">ศูนย์บาทถ้วน</span>)</strong> โดยกำหนดชำระเงินค่าเช่าล่วงหน้าภายในวันที่ <strong>5</strong> ของทุกเดือน</p>
 
-                      <p><strong>ข้อ 3</strong> ผู้เช่าสัญญาว่าจะชำระค่าน้ำ ค่าไฟฟ้า ค่าภาษีโรงเรือน/ที่ดิน และค่าบำรุงรักษาตามปกติ ไม่นำทรัพย์สินไปให้เช่าช่วง และไม่กระทำการใดอันผิดกฎหมายหรือสร้างความเดือดร้อนรำคาญ</p>
+                      <p><strong>ข้อ 3. เงินประกันการปฏิบัติตามสัญญา:</strong> ในวันทำสัญญานี้ ผู้เช่าได้มอบเงินประกันจำนวน <strong><span id="c-deposit-1" class="border-b border-dotted border-black px-1 font-bold">0</span> บาท (<span id="c-deposit-text-1" class="border-b border-dotted border-black px-1 font-bold">ศูนย์บาทถ้วน</span>)</strong> ให้แก่ผู้ให้เช่าเรียบร้อยแล้ว โดยผู้ให้เช่าจะคืนเงินประกันนี้ให้เมื่อสิ้นสุดสัญญาและผู้เช่าส่งมอบทรัพย์สินคืนในสภาพเรียบร้อย</p>
+
+                      <p><strong>ข้อ 4. ค่าสาธารณูปโภคและการบำรุงรักษา:</strong> ผู้เช่าเป็นผู้รับผิดชอบค่าน้ำประปา ค่าไฟฟ้า ค่าภาษี และค่าบำรุงรักษาทั่วไป ผู้เช่าสัญญาว่าจะดูแลรักษาทรัพย์สินที่เช่าเสมือนวิญญูชนพึงรักษาทรัพย์สินของตนเอง</p>
                       
-                      <p><strong>ข้อ 4</strong> ผู้ให้เช่าสัญญาว่าจะออกใบรับเงินค่าเช่าให้แก่ผู้เช่าทุกคราว และดูแลรักษาโครงสร้างอาคารตามหน้าที่ผู้ให้เช่า</p>
+                      <p><strong>ข้อ 5. ข้อห้ามการเช่าช่วงและการกระทำผิดกฎหมาย:</strong> ผู้เช่าจะไม่นำทรัพย์สินที่เช่าไปให้ผู้อื่นเช่าช่วง ไม่ดัดแปลงต่อเติมอาคารโดยไม่ได้รับอนุญาต และไม่กระทำการใดอันผิดกฎหมายหรือสร้างความเดือดร้อนรำคาญ</p>
                       
-                      <p><strong>ข้อ 5</strong> หากผู้เช่าผิดนัดชำระค่าเช่าหรือผิดสัญญาข้อหนึ่งข้อใด ผู้ให้เช่ามีสิทธิบอกเลิกสัญญาเช่าได้ทันที</p>
+                      <p><strong>ข้อ 6. การบอกเลิกสัญญา:</strong> หากผู้เช่าผิดนัดชำระค่าเช่าหรือผิดสัญญาข้อหนึ่งข้อใด ผู้ให้เช่ามีสิทธิบอกเลิกสัญญาเช่าและริบเงินประกันได้ทันที</p>
                       
-                      <p><strong>ข้อ 6</strong> เมื่อสัญญาเช่าสิ้นสุดลง ไม่ว่าด้วยเหตุใด ผู้ให้เช่ามีสิทธิกลับเข้าครอบครองทรัพย์สินและขนย้ายทรัพย์สินของผู้เช่าออกได้</p>
-                      
-                      <p><strong>ข้อ 7</strong> ในวันทำสัญญานี้ ผู้เช่าได้ตรวจตราทรัพย์สินที่เช่าและรายการอุปกรณ์เฟอร์นิเจอร์ตามเอกสารแนบท้าย 1 แล้ว เห็นว่ามีสภาพเรียบร้อยสมบูรณ์ทุกประการ</p>
+                      <p><strong>ข้อ 7. การตรวจรับทรัพย์สิน:</strong> ในวันทำสัญญานี้ ผู้เช่าได้ตรวจตราทรัพย์สินที่เช่าและรายการอุปกรณ์เฟอร์นิเจอร์ตามเอกสารแนบท้าย 1 แล้ว เห็นว่ามีสภาพเรียบร้อยสมบูรณ์ทุกประการ</p>
                     </div>
                   </div>
 
@@ -1668,23 +1669,23 @@
                   <div class="space-y-4">
                     <!-- HEADER FOR PAGE 2 -->
                     <div class="flex justify-between items-center border-b border-black pb-2">
-                      <div class="font-bold text-[16pt]">หนังสือสัญญาเช่าบ้าน (เอกสารแนบท้าย & ลายมือชื่อ)</div>
+                      <div class="font-bold text-[16pt]">หนังสือสัญญาเช่าบ้าน (เอกสารแนบท้าย & ลายมือชื่อคู่สัญญา)</div>
                       <div class="stamp-original">เอกสารแนบท้าย</div>
                     </div>
 
                     <!-- ATTACHMENT 1: INVENTORY TABLE -->
                     <div class="text-[14pt]">
-                      <div class="font-bold mb-1 text-black">
+                      <div class="font-bold mb-1.5 text-black">
                         เอกสารแนบท้าย 1: รายการเฟอร์นิเจอร์และอุปกรณ์ส่งมอบ ณ วันทำสัญญา
                       </div>
                       <table class="w-full border-collapse border border-black text-[12.5pt]">
                         <thead>
                           <tr class="bg-stone-100 border-b border-black font-bold">
-                            <th class="border border-black p-1 text-center w-10">ลำดับ</th>
-                            <th class="border border-black p-1 text-left">รายการ</th>
-                            <th class="border border-black p-1 text-center w-16">จำนวน</th>
-                            <th class="border border-black p-1 text-center w-20">สภาพ</th>
-                            <th class="border border-black p-1 text-center w-24">ภาพถ่าย</th>
+                            <th class="border border-black p-1.5 text-center w-12">ลำดับ</th>
+                            <th class="border border-black p-1.5 text-left">รายการอุปกรณ์ / เฟอร์นิเจอร์</th>
+                            <th class="border border-black p-1.5 text-center w-20">จำนวน</th>
+                            <th class="border border-black p-1.5 text-center w-24">สภาพ</th>
+                            <th class="border border-black p-1.5 text-center w-28">ภาพถ่าย</th>
                           </tr>
                         </thead>
                         <tbody id="c-inventory-table-body"></tbody>
@@ -1692,7 +1693,7 @@
                     </div>
 
                     <!-- ATTACHMENT 2 & 3: ID CARD PHOTOCOPIES -->
-                    <div class="grid grid-cols-2 gap-4 text-[13pt] pt-2">
+                    <div class="grid grid-cols-2 gap-4 text-[13pt] pt-1">
                       <div>
                         <div class="flex justify-between items-center mb-1">
                           <span class="font-bold text-black">เอกสารแนบท้าย 2: สำเนาบัตรประชาชนผู้เช่า</span>
@@ -1714,12 +1715,12 @@
                     </div>
 
                     <!-- SIGNATURE SECTION -->
-                    <div class="pt-4 border-t-2 border-black space-y-6 text-center text-[15pt]">
+                    <div class="pt-4 border-t-2 border-black space-y-4 text-center text-[15pt]">
                       <div class="text-left font-bold text-[14pt]">
-                        สัญญานี้ทำขึ้นเป็นสองฉบับมีข้อความถูกต้องตรงกัน คู่สัญญาได้อ่านและเข้าใจข้อความโดยละเอียดแล้ว จึงได้ลงลายมือชื่อไว้เป็นหลักฐานต่อหน้าพยาน
+                        สัญญานี้ทำขึ้นเป็นสองฉบับมีข้อความถูกต้องตรงกัน คู่สัญญาได้อ่านและเข้าใจข้อความโดยละเอียดตลอดแล้ว จึงได้ลงลายมือชื่อไว้เป็นสำคัญต่อหน้าพยาน
                       </div>
 
-                      <div class="grid grid-cols-2 gap-8 pt-2">
+                      <div class="grid grid-cols-2 gap-x-10 gap-y-4 pt-2">
                         <div class="space-y-1">
                           <div>ลงชื่อ ............................................................ ผู้ให้เช่า</div>
                           <div class="font-bold">( <span id="sig-lessor-1">ผู้ให้เช่า</span> )</div>
@@ -1728,9 +1729,6 @@
                           <div>ลงชื่อ ............................................................ ผู้เช่า</div>
                           <div class="font-bold">( <span id="sig-lessee-1">ผู้เช่า</span> )</div>
                         </div>
-                      </div>
-
-                      <div class="grid grid-cols-2 gap-8 pt-2 text-[14pt] text-stone-800">
                         <div class="space-y-1">
                           <div>ลงชื่อ ............................................................ พยาน</div>
                           <div>( ............................................................ )</div>
