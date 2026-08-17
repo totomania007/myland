@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_62"></script>
+  <script src="js/engine.js?v=20260814_63"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -452,7 +452,7 @@
     }
   </style>
 </head>
-<body class="min-h-screen p-2 pb-20 md:p-6 flex flex-col justify-between">
+<body class="min-h-screen p-2 pb-20 md:p-4 flex flex-col justify-start bg-[#f4f3f0]">
 
   <!-- ROLE SWITCHER LOGIN MODAL -->
   <div id="login-overlay" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -639,10 +639,10 @@
     </nav>
 
     <!-- MAIN VIEWPORT CONTENT -->
-    <main class="flex-1 p-4 md:p-8 bg-[#f4f3f0] overflow-y-auto">
+    <main class="flex-1 p-3.5 sm:p-5 md:p-6 bg-[#f4f3f0] overflow-y-auto">
 
       <!-- 2026 LANDING PAGE VIEW -->
-      <div id="view-landing" class="space-y-10">
+      <div id="view-landing" class="space-y-8 max-w-6xl mx-auto">
         <!-- HERO BANNER SECTION -->
         <div class="relative rounded-3xl bg-[#090d16] text-white p-8 md:p-14 overflow-hidden border border-slate-800 shadow-2xl">
           <!-- Ambient Glow Blobs -->
@@ -884,8 +884,8 @@
       </div>
 
       <!-- VIEW 1: ADMIN DASHBOARD -->
-      <div id="view-admin" class="space-y-6 max-w-6xl mx-auto">
-        <div class="youestates-card bg-[#383838] text-white p-6 md:p-8 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-md">
+      <div id="view-admin" class="hidden space-y-5 max-w-6xl mx-auto">
+        <div class="youestates-card bg-[#383838] text-white p-5 md:p-7 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-md">
           <div>
             <span class="px-3 py-1 bg-[#e05646] text-white font-bold text-xs rounded-sm uppercase tracking-wider">
               PORTFOLIO MANAGEMENT

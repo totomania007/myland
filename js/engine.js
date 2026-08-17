@@ -2391,10 +2391,12 @@
       activeMBtn.className = 'flex-1 flex flex-col items-center gap-0.5 text-[10px] font-black text-emerald-400 py-1 scale-105 transition-all';
     }
 
-    // Scroll back to top smoothly
+    // Scroll back to top immediately on all containers
     const mainEl = document.querySelector('main');
     if (mainEl) mainEl.scrollTop = 0;
     window.scrollTo(0, 0);
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
 
     renderAllViews();
   }
