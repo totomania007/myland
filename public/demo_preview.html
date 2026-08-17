@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_45"></script>
+  <script src="js/engine.js?v=20260814_46"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -377,13 +377,16 @@
     <nav class="no-print bg-[#383838] px-4 py-2.5 shadow-inner hidden md:block" id="main-nav-bar">
       <div class="flex items-center justify-center sm:justify-start gap-2 overflow-x-auto">
         <button onclick="switchTab('landing')" id="tab-landing" class="youestates-tab active whitespace-nowrap">
-          🌐 หน้าแรก (Landing)
+          🌐 หน้าแรก
         </button>
         <button onclick="switchTab('admin')" id="tab-admin" class="youestates-tab inactive whitespace-nowrap">
           📊 สรุปภาพรวมพอร์ต
         </button>
         <button onclick="switchTab('property-detail')" id="tab-property-detail" class="youestates-tab inactive whitespace-nowrap">
-          🏡 รายละเอียดทรัพย์สิน & สินเชื่อ
+          🏡 รายละเอียดทรัพย์ (สำหรับผู้เช่า)
+        </button>
+        <button onclick="switchTab('loan-management')" id="tab-loan-management" class="youestates-tab inactive whitespace-nowrap">
+          🏦 สินเชื่อ & ดอกเบี้ย (สำหรับผู้ให้เช่า 🔒)
         </button>
         <button onclick="switchTab('register-lessor')" id="tab-register-lessor" class="youestates-tab inactive whitespace-nowrap">
           🔑 ลงทะเบียนผู้ให้เช่า
@@ -700,7 +703,7 @@
         </div>
       </div>
 
-      <!-- VIEW 2: PROPERTY DETAILS & RETENTION -->
+      <!-- VIEW 2: PROPERTY DETAILS (FOR TENANT DECISION & SHOWCASE) -->
       <div id="view-property-detail" class="hidden space-y-6 max-w-6xl mx-auto">
         <div class="youestates-card overflow-hidden">
           <div class="youestates-card-header flex justify-between items-center">
@@ -709,7 +712,7 @@
               <select id="pd-property-selector" onchange="window.handleDetailPropertySwitch(this.value)" class="bg-[#e05646] text-white font-bold text-xs rounded px-3 py-1 outline-none cursor-pointer">
               </select>
             </div>
-            <span class="text-xs text-stone-300 font-normal" id="pd-header-badge">สเปก & เงินกู้</span>
+            <span class="text-xs text-stone-300 font-normal" id="pd-header-badge">ข้อมูลอสังหาฯ เพื่อการตัดสินใจเช่า</span>
           </div>
 
           <div class="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -725,34 +728,35 @@
               <button onclick="openEditPropertyDetailModal()" class="flex-1 md:flex-none px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs rounded-lg border border-stone-300">
                 ✏️ แก้ไขสเปก
               </button>
-              <button onclick="openAmortizationModal()" class="flex-1 md:flex-none px-4 py-2.5 youestates-btn-charcoal text-white font-bold text-xs rounded-lg shadow-sm">
-                📊 ตารางผ่อน & Retention
+              <button onclick="switchTab('loan-management')" class="flex-1 md:flex-none px-4 py-2.5 youestates-btn-charcoal text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1">
+                <span>🏦 ดูสินเชื่อ & ดอกเบี้ย ➔</span>
               </button>
             </div>
           </div>
         </div>
 
-        <!-- SUB-NAVIGATION: 2x2 GRID ON MOBILE, HORIZONTAL TABS ON DESKTOP (ZERO HORIZONTAL SCROLLING ON PHONE) -->
+        <!-- SUB-NAVIGATION: ZERO HORIZONTAL SCROLLING -->
         <div class="grid grid-cols-2 md:flex md:border-b-2 md:border-stone-300 gap-1.5 md:gap-2 text-xs font-bold select-none p-1.5 bg-stone-200 md:bg-transparent rounded-2xl md:rounded-none mb-2">
           <button onclick="switchSubTab('specs')" id="subtab-specs" class="px-3 py-2.5 bg-[#383838] text-white rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-md md:shadow-none transition-all">
-            <span>🏡 1. สเปก & ที่อยู่</span>
+            <span>🏡 1. สเปก & ข้อมูลห้อง</span>
           </button>
           <button onclick="switchSubTab('gallery')" id="subtab-gallery" class="px-3 py-2.5 bg-white md:bg-stone-200 text-stone-700 hover:bg-stone-100 md:hover:bg-stone-300 rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-sm md:shadow-none transition-all">
             <span>📸 2. คลังรูป & วิดีโอ</span>
           </button>
-          <button onclick="switchSubTab('loan')" id="subtab-loan" class="px-3 py-2.5 bg-white md:bg-stone-200 text-stone-700 hover:bg-stone-100 md:hover:bg-stone-300 rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-sm md:shadow-none transition-all">
-            <span>🏦 3. เงินกู้ & ดอกเบี้ย</span>
+          <button onclick="switchSubTab('furniture')" id="subtab-furniture" class="px-3 py-2.5 bg-white md:bg-stone-200 text-stone-700 hover:bg-stone-100 md:hover:bg-stone-300 rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-sm md:shadow-none transition-all">
+            <span>🛋️ 3. เฟอร์นิเจอร์</span>
           </button>
           <button onclick="switchSubTab('lessor')" id="subtab-lessor" class="px-3 py-2.5 bg-white md:bg-stone-200 text-stone-700 hover:bg-stone-100 md:hover:bg-stone-300 rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-sm md:shadow-none transition-all">
-            <span>👤 4. ผู้ให้เช่า & เอกสาร</span>
+            <span>👤 4. ติดต่อผู้ให้เช่า</span>
           </button>
         </div>
 
+        <!-- SUBVIEW 1: SPECS & OCCUPANCY FOR TENANTS -->
         <div id="subview-specs" class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="youestates-card p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-stone-200 pb-3">
-              <h3 class="font-extrabold text-sm text-[#383838]">รายละเอียดทรัพย์สิน & ที่อยู่</h3>
-              <div class="flex items-center gap-1.5">
+              <h3 class="font-extrabold text-sm text-[#383838]">รายละเอียดทรัพย์สิน & เงื่อนไขการเช่า</h3>
+              <div class="flex items-center gap-1.5" id="specs-edit-buttons-group">
                 <button type="button" onclick="openEditPropertyDetailModal()" class="px-2.5 py-1 bg-[#383838] hover:bg-black text-white rounded-lg font-bold text-xs shadow-sm flex items-center gap-1">
                   <span>✏️ แก้ไขสเปก</span>
                 </button>
@@ -767,8 +771,8 @@
               <span id="pd-occ-icon" class="text-xl">🟢</span>
               <div class="flex-1 space-y-0.5">
                 <div class="flex justify-between items-center">
-                  <span class="font-black text-xs" id="pd-occ-title">สถานะ: มีผู้เช่า</span>
-                  <span class="px-2 py-0.5 rounded text-[10px] font-bold" id="pd-occ-badge">เหลืออีก 7 เดือน</span>
+                  <span class="font-black text-xs" id="pd-occ-title">สถานะ: พร้อมปล่อยเช่า</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold" id="pd-occ-badge">พร้อมทำสัญญา</span>
                 </div>
                 <div id="pd-occ-desc" class="text-[11px] leading-relaxed mt-0.5"></div>
               </div>
@@ -776,47 +780,75 @@
 
             <div class="space-y-3 text-xs">
               <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">ประเภททรัพย์สิน:</span> <strong class="text-stone-800 font-bold" id="pd-type">-</strong></div>
-              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">บ้านเลขที่:</span> <strong class="text-[#e05646] font-black" id="pd-houseno">-</strong></div>
-              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">รายละเอียดที่อยู่อสังหาฯ:</span> <strong class="text-stone-800 font-bold text-right" id="pd-full-address">-</strong></div>
-              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">ขนาดพื้นที่:</span> <strong class="text-stone-800 font-bold" id="pd-size">-</strong></div>
-              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">อัตราค่าเช่า/เดือน:</span> <strong class="text-stone-900 font-black" id="pd-rent">฿0 บาท</strong></div>
+              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">บ้านเลขที่ / เลขที่ห้อง:</span> <strong class="text-[#e05646] font-black" id="pd-houseno">-</strong></div>
+              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">ทำเล & ที่อยู่อสังหาฯ:</span> <strong class="text-stone-800 font-bold text-right" id="pd-full-address">-</strong></div>
+              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">ขนาดพื้นที่ใช้สอย:</span> <strong class="text-stone-800 font-bold" id="pd-size">-</strong></div>
+              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">อัตราค่าเช่า / เดือน:</span> <strong class="text-emerald-700 font-black text-sm" id="pd-rent">฿0 บาท</strong></div>
+              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">เงินประกันสัญญาเช่า:</span> <strong class="text-stone-900 font-bold" id="pd-deposit">฿0 บาท</strong></div>
               <div class="flex justify-between py-1.5 border-b border-stone-100 items-center">
-                <span class="text-stone-400 font-medium">⚡ มิเตอร์ไฟฟ้าเริ่มต้น:</span> 
+                <span class="text-stone-400 font-medium">⚡ เลขมิเตอร์ไฟฟ้าเริ่มต้น:</span> 
                 <div class="flex items-center gap-2">
                   <strong class="text-stone-800 font-bold" id="pd-meter-elec">-</strong>
-                  <button type="button" onclick="openQuickMeterModal()" class="px-2 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded border border-amber-300 font-bold text-[10px] shadow-sm">✏️ แก้ไขเลขมิเตอร์</button>
+                  <button type="button" onclick="openQuickMeterModal()" class="px-2 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded border border-amber-300 font-bold text-[10px] shadow-sm">✏️ แก้ไข</button>
                 </div>
               </div>
               <div class="flex justify-between py-1.5 items-center">
-                <span class="text-stone-400 font-medium">💧 มิเตอร์น้ำเริ่มต้น:</span> 
+                <span class="text-stone-400 font-medium">💧 เลขมิเตอร์น้ำเริ่มต้น:</span> 
                 <div class="flex items-center gap-2">
                   <strong class="text-stone-800 font-bold" id="pd-meter-water">-</strong>
-                  <button type="button" onclick="openQuickMeterModal()" class="px-2 py-0.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 rounded border border-cyan-300 font-bold text-[10px] shadow-sm">✏️ แก้ไขเลขมิเตอร์</button>
+                  <button type="button" onclick="openQuickMeterModal()" class="px-2 py-0.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 rounded border border-cyan-300 font-bold text-[10px] shadow-sm">✏️ แก้ไข</button>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="youestates-card p-6 space-y-4">
-            <div class="flex justify-between items-center border-b border-stone-200 pb-3">
-              <h3 class="font-extrabold text-sm text-[#383838]">รายการเฟอร์นิเจอร์แนบท้ายสัญญา & รูปถ่าย</h3>
-              <button type="button" onclick="openEditPropertyDetailModal()" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-[#e05646] border border-rose-200 rounded-lg font-bold text-xs shadow-sm flex items-center gap-1">
-                <span>🛋️ แก้ไขเฟอร์นิเจอร์</span>
+          <div class="youestates-card p-6 space-y-4 flex flex-col justify-between">
+            <div class="space-y-4">
+              <div class="flex justify-between items-center border-b border-stone-200 pb-3">
+                <h3 class="font-extrabold text-sm text-[#383838]">ขั้นตอนสำหรับผู้สนใจเช่า (Tenant Guide)</h3>
+                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">Easy Booking</span>
+              </div>
+              <div class="space-y-3 text-xs text-stone-600">
+                <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-start gap-2.5">
+                  <span class="text-base">📸</span>
+                  <div>
+                    <strong class="text-stone-800 block">1. สำรวจภาพถ่าย & วิดีโอรีวิว</strong>
+                    <span class="text-stone-500 text-[11px]">ชมรูปภาพจริงทุกมุมและคลิปวิดีโอเพื่อความมั่นใจก่อนตัดสินใจ</span>
+                  </div>
+                </div>
+                <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-start gap-2.5">
+                  <span class="text-base">🛋️</span>
+                  <div>
+                    <strong class="text-stone-800 block">2. ตรวจสอบเฟอร์นิเจอร์ & อุปกรณ์</strong>
+                    <span class="text-stone-500 text-[11px]">รายการเครื่องใช้ไฟฟ้าและเฟอร์นิเจอร์ตกแต่งครบชุดพร้อมเข้าอยู่</span>
+                  </div>
+                </div>
+                <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-start gap-2.5">
+                  <span class="text-base">📑</span>
+                  <div>
+                    <strong class="text-stone-800 block">3. ทำสัญญาเช่ามาตรฐาน A4</strong>
+                    <span class="text-stone-500 text-[11px]">ลงทะเบียนผู้เช่าและออกหนังสือสัญญาเช่ามาตรฐานถูกต้องตามกฎหมาย</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-stone-200 space-y-2">
+              <button onclick="switchTab('tenant')" class="w-full py-3 youestates-btn-coral text-white font-black text-xs rounded-xl shadow-md flex items-center justify-center gap-2">
+                <span>📝 ลงทะเบียนทำสัญญาเช่าห้องนี้ทันที ➔</span>
               </button>
             </div>
-            <div class="space-y-3 text-xs" id="pd-inventory-container"></div>
           </div>
         </div>
 
-        <!-- SUBVIEW: PHOTO GALLERY & PROMOTION SHOWCASE CARD -->
+        <!-- SUBVIEW 2: PHOTO & VIDEO GALLERY -->
         <div id="subview-gallery" class="hidden space-y-6">
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- LEFT 2 COLUMNS: INTERACTIVE PHOTO & VIDEO GALLERY ALBUMS -->
             <div class="lg:col-span-2 youestates-card p-4 md:p-6 space-y-5">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-200 pb-3">
                 <div>
-                  <h3 class="font-extrabold text-base text-[#383838]">📸 คลังรูปถ่าย & วิดีโอรีวิว (Property Photo & Video Gallery)</h3>
-                  <p class="text-xs text-stone-500 font-medium mt-0.5">บีบอัดภาพความละเอียดสูงขนาดเล็ก รองรับมือถือทุกรุ่น พร้อมเล่นคลิปวิดีโอ</p>
+                  <h3 class="font-extrabold text-base text-[#383838]">📸 คลังรูปถ่าย & วิดีโอรีวิว (Property Gallery)</h3>
+                  <p class="text-xs text-stone-500 font-medium mt-0.5">ภาพถ่ายและวิดีโอรีวิวความละเอียดสูงสำหรับผู้เช่าชมบรรยากาศจริง</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2" id="gallery-action-buttons">
                   <label class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5">
@@ -829,27 +861,25 @@
                 </div>
               </div>
 
-              <!-- GALLERY FILTER BUTTONS (Touch scrollable) -->
+              <!-- GALLERY FILTER BUTTONS -->
               <div class="flex items-center gap-1.5 text-xs font-bold overflow-x-auto pb-1 select-none">
                 <button type="button" onclick="filterGalleryPhotos('all')" id="gfilter-all" class="px-3 py-1.5 rounded-lg bg-[#383838] text-white whitespace-nowrap">ทั้งหมด (All)</button>
                 <button type="button" onclick="filterGalleryPhotos('exterior')" id="gfilter-exterior" class="px-3 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 whitespace-nowrap">🏠 ภายนอก</button>
                 <button type="button" onclick="filterGalleryPhotos('interior')" id="gfilter-interior" class="px-3 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 whitespace-nowrap">🛋️ ภายในห้อง</button>
                 <button type="button" onclick="filterGalleryPhotos('highlight')" id="gfilter-highlight" class="px-3 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 whitespace-nowrap">✨ วิว / จุดเด่น</button>
-                <button type="button" onclick="filterGalleryPhotos('video')" id="gfilter-video" class="px-3 py-1.5 rounded-lg bg-rose-100 text-rose-800 hover:bg-rose-200 whitespace-nowrap">🎬 วิดีโอ (Video Tour)</button>
+                <button type="button" onclick="filterGalleryPhotos('video')" id="gfilter-video" class="px-3 py-1.5 rounded-lg bg-rose-100 text-rose-800 hover:bg-rose-200 whitespace-nowrap">🎬 วิดีโอรีวิว</button>
               </div>
 
-              <!-- GALLERY GRID CONTAINER -->
               <div id="property-gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4"></div>
             </div>
 
-            <!-- RIGHT 1 COLUMN: SHAREABLE PROMOTIONAL SHOWCASE CARD FOR CLIENTS -->
+            <!-- PROMOTIONAL SHOWCASE CARD -->
             <div class="youestates-card p-5 md:p-6 space-y-4 border-2 border-emerald-500/40 bg-stone-900 text-white relative overflow-hidden">
               <div class="flex justify-between items-center border-b border-stone-800 pb-3">
                 <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">🌟 PROMO CARD FOR CLIENTS</span>
-                <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded">พร้อมส่งลูกค้า</span>
+                <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded">พร้อมแชร์</span>
               </div>
 
-              <!-- PROMO CARD PREVIEW CONTAINER -->
               <div id="pd-promo-card-preview" class="space-y-3 bg-stone-950 p-4 rounded-2xl border border-stone-800 shadow-xl">
                 <div class="relative w-full h-44 rounded-xl overflow-hidden bg-stone-800 border border-slate-800 cursor-pointer" onclick="openPromoCoverLightbox()">
                   <img id="pd-promo-cover-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' fill='%231e293b'><rect width='400' height='250'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-size='16'>ภาพปกอสังหาฯ</text></svg>" class="w-full h-full object-cover" alt="Cover Image">
@@ -879,10 +909,9 @@
                 </div>
               </div>
 
-              <!-- PROMO ACTIONS -->
               <div class="space-y-2 pt-2">
                 <button type="button" onclick="copyPropertyPromoLink()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2">
-                  <span>📲 คัดลอกลิงก์การ์ดโปรโมทส่งลูกค้า</span>
+                  <span>📲 คัดลอกลิงก์การ์ดส่งผู้เช่า</span>
                 </button>
                 <button type="button" onclick="window.print()" class="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-2">
                   <span>🖨️ พิมพ์ / ดาวน์โหลดการ์ด PDF</span>
@@ -892,71 +921,143 @@
           </div>
         </div>
 
-        <div id="subview-loan" class="hidden space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="youestates-card p-5 bg-stone-900 text-white">
-              <span class="text-xs text-stone-300 font-bold uppercase tracking-wider block">ยอดหนี้คงเหลือปัจจุบัน</span>
-              <div class="text-2xl font-black text-white mt-1" id="pd-balance-display">฿0</div>
-              <div class="text-[11px] text-stone-300 mt-2 font-medium" id="pd-balance-progress">-</div>
-            </div>
-
-            <div class="youestates-card p-5">
-              <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">ยอดเงินกู้เริ่มต้น</span>
-              <div class="text-xl font-bold text-[#383838] mt-1" id="pd-principal-display">฿0</div>
-              <div class="text-[11px] text-stone-500 mt-2">วงเงินกู้ตั้งต้น</div>
-            </div>
-
-            <div class="youestates-card p-5">
-              <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">ค่างวดผ่อนชำระ/เดือน</span>
-              <div class="text-xl font-bold text-[#e05646] mt-1" id="pd-installment-display">฿0</div>
-              <div class="text-[11px] text-stone-500 mt-2">กำหนดชำระรายเดือน</div>
-            </div>
-          </div>
-
+        <!-- SUBVIEW 3: FURNITURE & INVENTORY FOR TENANTS -->
+        <div id="subview-furniture" class="hidden space-y-6">
           <div class="youestates-card p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-stone-200 pb-3">
-              <h3 class="font-extrabold text-sm text-[#383838]">ประวัติอัตราดอกเบี้ย & กำหนดการ Retention ตามช่วงปี</h3>
-              <button onclick="openAmortizationModal()" class="text-xs text-[#e05646] font-bold hover:underline">
-                ⚙️ ปรับแต่งช่วงปี / เพิ่ม Retention
+              <div>
+                <h3 class="font-extrabold text-sm text-[#383838]">🛋️ รายการเฟอร์นิเจอร์ & สิ่งอำนวยความสะดวกในห้องพัก</h3>
+                <p class="text-xs text-stone-500 mt-0.5 font-medium">รายการทรัพย์สินที่ผู้เช่าจะได้รับพร้อมห้องพักตามสัญญาเช่า</p>
+              </div>
+              <button type="button" onclick="openEditPropertyDetailModal()" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-[#e05646] border border-rose-200 rounded-lg font-bold text-xs shadow-sm flex items-center gap-1">
+                <span>🛋️ แก้ไขเฟอร์นิเจอร์</span>
               </button>
             </div>
-            <div class="space-y-2" id="pd-rate-schedule-summary"></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs" id="pd-inventory-container"></div>
           </div>
         </div>
 
-        <div id="subview-lessor" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="youestates-card p-6 space-y-4">
+        <!-- SUBVIEW 4: LESSOR CONTACT INFO -->
+        <div id="subview-lessor" class="hidden space-y-6">
+          <div class="youestates-card p-6 space-y-4 max-w-xl mx-auto">
             <div class="flex justify-between items-center border-b border-stone-200 pb-3">
-              <h3 class="font-extrabold text-sm text-[#383838]">ข้อมูลผู้ทำสัญญา (Designated Lessor)</h3>
-              <button onclick="switchTab('register-lessor')" class="text-xs text-[#e05646] font-bold hover:underline">🔑 ลงทะเบียนแก้ไขผู้ให้เช่า</button>
+              <h3 class="font-extrabold text-sm text-[#383838]">👤 ข้อมูลผู้ให้เช่า & ติดต่อสอบถาม (Landlord Contact)</h3>
+              <span class="px-2.5 py-0.5 rounded bg-stone-100 text-stone-600 font-bold text-[10px]">Verified Landlord</span>
             </div>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 p-3 bg-stone-50 rounded-xl border border-stone-200">
               <div class="w-14 h-14 rounded-xl bg-[#383838] text-white flex items-center justify-center text-xl font-black">L</div>
               <div>
                 <h4 class="font-extrabold text-base text-[#383838]" id="pd-lessor-display">ผู้ให้เช่า</h4>
-                <p class="text-xs text-stone-500 mt-0.5" id="pd-lessor-detail">บัตรประชาชน: -</p>
-                <p class="text-xs text-stone-500 font-medium" id="pd-lessor-address-detail">ที่อยู่: -</p>
+                <p class="text-xs text-stone-600 font-semibold mt-0.5" id="pd-lessor-phone-detail">📞 เบอร์โทรศัพท์ติดต่อ: -</p>
+                <p class="text-xs text-stone-500 font-medium" id="pd-lessor-address-detail">📍 ที่อยู่: -</p>
               </div>
             </div>
-            <div class="pt-2 border-t border-stone-100 flex items-center justify-between">
-              <span class="text-xs text-stone-500 font-medium">สำเนาบัตรประชาชนผู้ให้เช่า (Cloudinary ogdfbbpw):</span>
-              <button onclick="triggerLessorFileInput()" class="text-xs text-[#e05646] font-bold hover:underline">☁️ อัปโหลดขึ้น Cloudinary</button>
-              <input type="file" id="lessorFile" accept="image/*" class="hidden" onchange="uploadToCloudinaryAndPreview(event, 'lessor')">
+            <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-950 space-y-1">
+              <strong class="font-bold flex items-center gap-1"><span>💬</span> ต้องการนัดหมายดูห้องจริงหรือสอบถามข้อมูลเพิ่มเติม?</strong>
+              <p class="text-[11px] text-emerald-800">สามารถติดต่อผู้ให้เช่าตามเบอร์โทรศัพท์ด้านบน หรือกดปุ่มลงทะเบียนผู้เช่าเพื่อเริ่มต้นการจองห้องพักได้ทันทีครับ</p>
             </div>
-            <div class="w-full h-36 border border-stone-300 rounded-xl overflow-hidden bg-stone-100 flex items-center justify-center cursor-pointer" onclick="openMediaPreview('สำเนาบัตรประชาชนผู้ให้เช่า', document.getElementById('pd-lessor-card-img').src)">
-              <img id="pd-lessor-card-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250' fill='none'><rect width='400' height='250' rx='12' fill='%23e2ded8'/><path d='M160 90C160 112.091 142.091 130 120 130C97.9086 130 80 112.091 80 90C80 67.9086 97.9086 50 120 50C142.091 50 160 67.9086 160 90Z' fill='%23a8a29e'/><path d='M50 200C50 161.34 81.3401 130 120 130C158.66 130 190 161.34 190 200H50Z' fill='%23a8a29e'/><rect x='220' y='65' width='130' height='14' rx='4' fill='%23a8a29e'/><rect x='220' y='95' width='110' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='115' width='90' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='145' width='120' height='10' rx='4' fill='%23a8a29e'/><rect x='220' y='165' width='80' height='10' rx='4' fill='%23a8a29e'/></svg>" alt="Lessor ID Card" class="w-full h-full object-cover">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- VIEW NEW: DEDICATED LOAN & MORTGAGE ASSET MANAGEMENT (FOR LANDLORD ONLY 🔒) -->
+      <div id="view-loan-management" class="hidden space-y-6 max-w-6xl mx-auto">
+        <div class="youestates-card overflow-hidden border-2 border-amber-500/30">
+          <div class="youestates-card-header flex justify-between items-center bg-stone-900 text-white">
+            <div class="flex items-center gap-2">
+              <span>🏦 เลือกทรัพย์สินเพื่อดูสินเชื่อ:</span>
+              <select id="lm-property-selector" onchange="window.handleLoanPropertySwitch(this.value)" class="bg-[#e05646] text-white font-bold text-xs rounded px-3 py-1 outline-none cursor-pointer">
+              </select>
             </div>
+            <span class="px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px] border border-amber-500/40">
+              🔒 เฉพาะผู้ให้เช่า & บริหารสินทรัพย์ (Landlord Only)
+            </span>
           </div>
 
-          <div class="youestates-card p-6 space-y-4">
-            <div class="flex justify-between items-center border-b border-stone-200 pb-3">
-              <h3 class="font-extrabold text-sm text-[#383838]">คลังไฟล์สแกนเอกสารการกู้ธนาคาร</h3>
-              <button onclick="toggleModal('modal-upload-bank-doc')" class="text-xs text-[#e05646] font-bold hover:underline">
-                📁 แนบเอกสารใหม่
+          <div class="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-stone-100 text-stone-700 text-[10px] font-bold rounded border border-stone-300">LOAN & RETENTION</span>
+                <h1 class="text-2xl font-black text-[#383838]" id="lm-name">ข้อมูลสินเชื่อบ้าน & ดอกเบี้ย</h1>
+              </div>
+              <p class="text-xs text-stone-500 font-normal mt-1" id="lm-address">สถิติการเงิน, เงินต้นคงเหลือ, ค่างวดผ่อน และตารางดอกเบี้ย Retention</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+              <button onclick="openAmortizationModal()" class="flex-1 md:flex-none px-4 py-2.5 youestates-btn-coral text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1.5">
+                <span>📊 ตารางผ่อน & คำนวณ Retention</span>
+              </button>
+              <button onclick="toggleModal('modal-upload-bank-doc')" class="flex-1 md:flex-none px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs rounded-lg border border-stone-300 flex items-center gap-1.5">
+                <span>📁 แนบไฟล์สัญญาเงินกู้</span>
               </button>
             </div>
-            <div class="space-y-3 text-xs" id="pd-bank-docs-container"></div>
           </div>
+        </div>
+
+        <!-- 3 LOAN KPI METRIC CARDS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="youestates-card p-5 bg-stone-900 text-white shadow-md">
+            <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">เงินต้นคงเหลือผ่อนชำระปัจจุบัน</span>
+            <div class="text-2xl font-black text-emerald-400 mt-1" id="lm-balance-display">฿0</div>
+            <div class="text-[11px] text-stone-300 mt-2 font-medium" id="lm-balance-progress">-</div>
+          </div>
+
+          <div class="youestates-card p-5 bg-white shadow-sm">
+            <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">ยอดเงินกู้เริ่มต้นจากสัญญา</span>
+            <div class="text-xl font-bold text-[#383838] mt-1" id="lm-principal-display">฿0</div>
+            <div class="text-[11px] text-stone-500 mt-2" id="lm-startdate-display">เริ่มสัญญาเงินกู้: -</div>
+          </div>
+
+          <div class="youestates-card p-5 bg-white shadow-sm">
+            <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">ค่างวดผ่อนชำระต่อเดือน</span>
+            <div class="text-xl font-bold text-[#e05646] mt-1" id="lm-installment-display">฿0 /เดือน</div>
+            <div class="text-[11px] text-stone-500 mt-2" id="lm-rate-display">อัตราดอกเบี้ยปัจจุบัน: -% ต่อปี</div>
+          </div>
+        </div>
+
+        <!-- CASH FLOW & PROFIT ANALYSIS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="youestates-card p-5 bg-stone-50 border border-stone-200 space-y-1">
+            <span class="text-[11px] text-stone-500 font-bold block">💵 รายรับค่าเช่าต่อเดือน</span>
+            <strong class="text-lg font-black text-emerald-700" id="lm-rent-income">฿0</strong>
+          </div>
+          <div class="youestates-card p-5 bg-stone-50 border border-stone-200 space-y-1">
+            <span class="text-[11px] text-stone-500 font-bold block">🏦 ค่างวดจ่ายธนาคารต่อเดือน</span>
+            <strong class="text-lg font-black text-[#e05646]" id="lm-loan-expense">฿0</strong>
+          </div>
+          <div class="youestates-card p-5 bg-emerald-50 border border-emerald-300 space-y-1">
+            <span class="text-[11px] text-emerald-800 font-bold block">📈 กระแสเงินสดสุทธิ (Net Cash Flow)</span>
+            <strong class="text-lg font-black text-emerald-900" id="lm-net-cashflow">+฿0</strong>
+          </div>
+        </div>
+
+        <!-- RETENTION & RATE SCHEDULE SECTION -->
+        <div class="youestates-card p-6 space-y-4">
+          <div class="flex justify-between items-center border-b border-stone-200 pb-3">
+            <div>
+              <h3 class="font-extrabold text-sm text-[#383838]">ประวัติอัตราดอกเบี้ย & กำหนดการ Retention ตามช่วงปี</h3>
+              <p class="text-xs text-stone-500 mt-0.5">วางแผนยื่นขอ Retention ทุก 3 ปีเพื่อลดภาระดอกเบี้ยเงินกู้</p>
+            </div>
+            <button onclick="openAmortizationModal()" class="text-xs text-[#e05646] font-bold hover:underline">
+              ⚙️ ปรับแต่งช่วงปี / เพิ่ม Retention
+            </button>
+          </div>
+          <div class="space-y-2" id="lm-rate-schedule-summary"></div>
+        </div>
+
+        <!-- BANK LOAN DOCUMENTS SCANS -->
+        <div class="youestates-card p-6 space-y-4">
+          <div class="flex justify-between items-center border-b border-stone-200 pb-3">
+            <div>
+              <h3 class="font-extrabold text-sm text-[#383838]">📁 คลังไฟล์สแกนเอกสารการกู้ธนาคาร & สัญญาจำนอง</h3>
+              <p class="text-xs text-stone-500 mt-0.5">จัดเก็บไฟล์สแกนสัญญาเงินกู้ เอกสารโฉนด และใบเสร็จผ่อนชำระเพื่อการตรวจสอบ</p>
+            </div>
+            <button onclick="toggleModal('modal-upload-bank-doc')" class="text-xs text-[#e05646] font-bold hover:underline">
+              + แนบเอกสารใหม่
+            </button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs" id="lm-bank-docs-container"></div>
         </div>
 
       </div>
@@ -1540,7 +1641,12 @@
 
           <button onclick="toggleModal('modal-mobile-menu'); switchTab('property-detail')" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
             <span class="text-base">🏡</span>
-            <span>สเปกอสังหาฯ & สินเชื่อ</span>
+            <span>รายละเอียดทรัพย์ (สำหรับผู้เช่า)</span>
+          </button>
+
+          <button onclick="toggleModal('modal-mobile-menu'); switchTab('loan-management')" id="mdrawer-loan" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 text-amber-300 transition-colors">
+            <span class="text-base">🏦</span>
+            <span>สินเชื่อ & ดอกเบี้ย (ผู้ให้เช่า 🔒)</span>
           </button>
 
           <button onclick="toggleModal('modal-mobile-menu'); switchTab('property-detail'); switchSubTab('gallery');" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
@@ -1553,7 +1659,7 @@
             <span>ลงทะเบียนผู้เช่า</span>
           </button>
 
-          <button onclick="toggleModal('modal-mobile-menu'); switchTab('register-lessor')" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
+          <button onclick="toggleModal('modal-mobile-menu'); switchTab('register-lessor')" id="mdrawer-register-lessor" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
             <span class="text-base">🔑</span>
             <span>ลงทะเบียนผู้ให้เช่า</span>
           </button>

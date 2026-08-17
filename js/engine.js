@@ -422,6 +422,7 @@
   function renderAllViews() {
     renderAdminData();
     renderPropertyDetailView();
+    renderLoanManagementView();
     renderRegisteredLessorsList();
     renderRegisteredTenantsList();
     renderLessorSelectOptions();
@@ -499,8 +500,11 @@
                 <button onclick="window.deleteProperty('${p.id}')" class="text-xs text-rose-600 hover:text-rose-800 font-bold flex items-center gap-0.5 hover:underline">
                   <span>🗑️ ลบ</span>
                 </button>
-                <button onclick="window.handleDetailPropertySwitch('${p.id}'); window.switchTab('property-detail');" class="text-xs text-[#e05646] font-bold hover:underline">
-                  ดูรายละเอียด & สินเชื่อ ➔
+                <button onclick="window.handleDetailPropertySwitch('${p.id}'); window.switchTab('property-detail');" class="text-xs text-stone-700 font-bold hover:underline">
+                  ดูสเปกผู้เช่า
+                </button>
+                <button onclick="window.handleLoanPropertySwitch('${p.id}'); window.switchTab('loan-management');" class="text-xs text-[#e05646] font-bold hover:underline">
+                  ดูสินเชื่อ ➔
                 </button>
               </div>
             </div>
@@ -580,6 +584,23 @@
     localStorage.setItem('property_os_current_prop_id', propId);
 
     renderPropertyDetailView(propId);
+    renderLoanManagementView(propId);
+    renderContractView();
+    renderAdminData();
+  }
+
+  function handleLoanPropertySwitch(propId) {
+    if (!propId) {
+      const sel = document.getElementById('lm-property-selector');
+      if (sel) propId = sel.value;
+    }
+    if (!propId) return;
+
+    state.currentPropertyId = propId;
+    localStorage.setItem('property_os_current_prop_id', propId);
+
+    renderLoanManagementView(propId);
+    renderPropertyDetailView(propId);
     renderContractView();
     renderAdminData();
   }
@@ -613,7 +634,7 @@
       select.value = prop.id;
     }
 
-    // 0. Occupancy Status Card
+    // 0. Occupancy Status Card (For Tenant Info)
     const occ = getPropertyOccupancy(prop.id);
     const occCard = document.getElementById('pd-occupancy-card');
     if (occCard) {
@@ -623,56 +644,133 @@
       const occDesc = document.getElementById('pd-occ-desc');
 
       if (occ.status === 'occupied') {
-        occCard.className = 'p-3.5 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-950 text-xs flex items-start gap-2.5 transition-all shadow-sm';
-        if (occIcon) occIcon.innerText = '🟢';
-        if (occTitle) occTitle.innerText = `สถานะ: มีผู้เช่า (คุณ ${occ.tenant.fullName})`;
+        occCard.className = 'p-3.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-950 text-xs flex items-start gap-2.5 transition-all shadow-sm';
+        if (occIcon) occIcon.innerText = '⏳';
+        if (occTitle) occTitle.innerText = `สถานะ: มีผู้เช่าอยู่ (ว่างให้เช่าต่อ ${occ.endDate})`;
         if (occBadge) {
           occBadge.innerText = `เหลืออีก ${occ.remainingMonths} เดือน`;
-          occBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-200 text-emerald-900 border border-emerald-300';
+          occBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-900 border border-amber-300';
         }
-        if (occDesc) occDesc.innerHTML = `สัญญาเช่า: <strong>${occ.startDate}</strong> ถึง <strong>${occ.endDate}</strong> (คงเหลือประมาณ <strong>${occ.remainingDays}</strong> วัน / เบอร์โทร: ${occ.tenant.phone || '-'})`;
+        if (occDesc) occDesc.innerHTML = `ปัจจุบันติดสัญญาเช่าถึงวันที่ <strong>${occ.endDate}</strong> สามารถจองล่วงหน้าเพื่อเข้าอยู่วันที่ <strong>${occ.endDate}</strong> เป็นต้นไปได้ครับ`;
       } else if (occ.status === 'booked') {
         occCard.className = 'p-3.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-950 text-xs flex items-start gap-2.5 transition-all shadow-sm';
         if (occIcon) occIcon.innerText = '🟡';
-        if (occTitle) occTitle.innerText = `สถานะ: จองแล้ว (คุณ ${occ.tenant.fullName})`;
+        if (occTitle) occTitle.innerText = `สถานะ: มีการจองแล้ว`;
         if (occBadge) {
           occBadge.innerText = `เริ่ม ${occ.startDate}`;
           occBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-900 border border-amber-300';
         }
         if (occDesc) occDesc.innerHTML = `กำหนดเริ่มสัญญา: <strong>${occ.startDate}</strong> ถึง <strong>${occ.endDate}</strong>`;
       } else {
-        occCard.className = 'p-3.5 rounded-xl border border-stone-200 bg-stone-50 text-stone-800 text-xs flex items-start gap-2.5 transition-all shadow-sm';
-        if (occIcon) occIcon.innerText = '⚪';
-        if (occTitle) occTitle.innerText = 'สถานะ: ทรัพย์สินว่าง (พร้อมปล่อยเช่า)';
+        occCard.className = 'p-3.5 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-950 text-xs flex items-start gap-2.5 transition-all shadow-sm';
+        if (occIcon) occIcon.innerText = '🟢';
+        if (occTitle) occTitle.innerText = 'สถานะ: ห้องว่าง พร้อมเข้าอยู่ทันที';
         if (occBadge) {
           occBadge.innerText = 'พร้อมทำสัญญา';
-          occBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-stone-200 text-stone-700 border border-stone-300';
+          occBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-200 text-emerald-900 border border-emerald-300';
         }
-        if (occDesc) occDesc.innerText = 'ไม่มีสัญญาเช่าเดิมผูกอยู่ สามารถเปิดรับผู้เช่าใหม่และทำสัญญาเช่าได้ทันที';
+        if (occDesc) occDesc.innerText = 'ห้องพักตกแต่งครบ สะอาด พร้อมทำสัญญาและย้ายเข้าอยู่อาศัยได้ทันทีครับ';
       }
     }
 
-    // 1. Specs
+    // 1. Specs (Tenant Facing)
     if (document.getElementById('pd-name')) document.getElementById('pd-name').innerText = prop.name || 'สเปกอสังหาริมทรัพย์';
     if (document.getElementById('pd-address')) document.getElementById('pd-address').innerText = prop.address || '-';
     if (document.getElementById('pd-type')) document.getElementById('pd-type').innerText = prop.type || 'อสังหาฯ เช่า';
     if (document.getElementById('pd-houseno')) document.getElementById('pd-houseno').innerText = prop.houseNo || '-';
     if (document.getElementById('pd-full-address')) document.getElementById('pd-full-address').innerText = prop.address || '-';
     if (document.getElementById('pd-size')) document.getElementById('pd-size').innerText = prop.size || '40 ตร.ม.';
-    if (document.getElementById('pd-rent')) document.getElementById('pd-rent').innerText = `฿${(prop.rent || 0).toLocaleString()} บาท`;
+    if (document.getElementById('pd-rent')) document.getElementById('pd-rent').innerText = `฿${(prop.rent || 0).toLocaleString()} บาท/เดือน`;
     if (document.getElementById('pd-deposit')) document.getElementById('pd-deposit').innerText = `฿${(prop.deposit || 0).toLocaleString()} บาท`;
     if (document.getElementById('pd-meter-elec')) document.getElementById('pd-meter-elec').innerText = prop.meterElec || '-';
     if (document.getElementById('pd-meter-water')) document.getElementById('pd-meter-water').innerText = prop.meterWater || '-';
 
-    // 2. Loan & Retention Numbers
-    const mortgage = calculateMortgage(prop.principal || 0, prop.installment || 0, prop.rate || 4.5, prop.startDate, prop.rateSchedule);
-    if (document.getElementById('pd-balance-display')) document.getElementById('pd-balance-display').innerText = `฿${mortgage.balance.toLocaleString()}`;
-    if (document.getElementById('pd-balance-progress')) document.getElementById('pd-balance-progress').innerText = `ผ่อนชำระแล้ว ${mortgage.paidPct}% (ชำระเงินต้นสะสม ฿${mortgage.paidPrincipal.toLocaleString()} / ดอกเบี้ยสะสม ฿${mortgage.paidInterest.toLocaleString()})`;
-    if (document.getElementById('pd-principal-display')) document.getElementById('pd-principal-display').innerText = `฿${(prop.principal || 0).toLocaleString()}`;
-    if (document.getElementById('pd-installment-display')) document.getElementById('pd-installment-display').innerText = `฿${(prop.installment || 0).toLocaleString()} /เดือน`;
+    // 2. Inventory Furniture List (Tenant Facing)
+    const invContainer = document.getElementById('pd-inventory-container');
+    if (invContainer) {
+      invContainer.innerHTML = '';
+      const inventory = prop.inventoryList || [];
+      if (inventory.length === 0) {
+        invContainer.innerHTML = `<div class="col-span-full text-stone-400 text-center py-4 font-bold">ยังไม่มีรายการเฟอร์นิเจอร์</div>`;
+      } else {
+        inventory.forEach(item => {
+          const itemObj = typeof item === 'object' ? item : { name: item, img: CONFIG.PLACEHOLDER_SVG };
+          invContainer.innerHTML += `
+            <div class="p-3 bg-stone-50 border border-stone-200 rounded-xl flex items-center justify-between shadow-sm">
+              <span class="font-bold text-stone-800">${itemObj.name}</span>
+              <img src="${itemObj.img || CONFIG.PLACEHOLDER_SVG}" class="w-12 h-10 object-cover rounded-lg border border-stone-300 cursor-pointer shadow-sm" onclick="openMediaPreview('${itemObj.name}', this.src)">
+            </div>
+          `;
+        });
+      }
+    }
 
-    // 3. Retention Schedule Cards
-    const retContainer = document.getElementById('pd-rate-schedule-summary');
+    // 3. Lessor Contact Details (Tenant Facing)
+    const lessor = state.lessorProfiles[prop.lessorKey] || Object.values(state.lessorProfiles)[0] || { name: 'ผู้ให้เช่า', phone: '-', address: '-' };
+    if (document.getElementById('pd-lessor-display')) document.getElementById('pd-lessor-display').innerText = lessor.name || 'ผู้ให้เช่า';
+    if (document.getElementById('pd-lessor-phone-detail')) document.getElementById('pd-lessor-phone-detail').innerText = `📞 เบอร์โทรศัพท์ติดต่อ: ${lessor.phone || '-'}`;
+    if (document.getElementById('pd-lessor-address-detail')) document.getElementById('pd-lessor-address-detail').innerText = `📍 ที่อยู่: ${lessor.address || '-'}`;
+
+    // 4. Render Photo & Video Gallery
+    renderPropertyGallery();
+  }
+
+  // 7. DEDICATED LOAN & MORTGAGE ASSET MANAGEMENT (FOR LANDLORD ONLY 🔒)
+  function renderLoanManagementView(targetPropId) {
+    const props = state.propertiesState || [];
+    if (props.length === 0) return;
+
+    const storedId = localStorage.getItem('property_os_current_prop_id');
+    const currentId = targetPropId || state.currentPropertyId || storedId || props[0].id;
+    state.currentPropertyId = currentId;
+
+    const prop = props.find(p => String(p.id) === String(currentId)) || props[0];
+    if (!prop) return;
+
+    const select = document.getElementById('lm-property-selector');
+    if (select) {
+      if (select.options.length !== props.length) {
+        select.innerHTML = '';
+        props.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.innerText = `🏡 ${p.name} ${p.houseNo ? `(${p.houseNo})` : ''}`;
+          select.appendChild(opt);
+        });
+      }
+      select.value = prop.id;
+    }
+
+    if (document.getElementById('lm-name')) document.getElementById('lm-name').innerText = `สินเชื่อ: ${prop.name} ${prop.houseNo ? `(${prop.houseNo})` : ''}`;
+    if (document.getElementById('lm-address')) document.getElementById('lm-address').innerText = prop.address || '-';
+
+    const mortgage = calculateMortgage(prop.principal || 0, prop.installment || 0, prop.rate || 4.5, prop.startDate, prop.rateSchedule);
+    if (document.getElementById('lm-balance-display')) document.getElementById('lm-balance-display').innerText = `฿${mortgage.balance.toLocaleString()}`;
+    if (document.getElementById('lm-balance-progress')) document.getElementById('lm-balance-progress').innerText = `ผ่อนชำระแล้ว ${mortgage.paidPct}% (ชำระเงินต้นสะสม ฿${mortgage.paidPrincipal.toLocaleString()} / ดอกเบี้ยสะสม ฿${mortgage.paidInterest.toLocaleString()})`;
+    if (document.getElementById('lm-principal-display')) document.getElementById('lm-principal-display').innerText = `฿${(prop.principal || 0).toLocaleString()}`;
+    if (document.getElementById('lm-startdate-display')) document.getElementById('lm-startdate-display').innerText = `เริ่มสัญญาเงินกู้: ${prop.startDate || '-'}`;
+    if (document.getElementById('lm-installment-display')) document.getElementById('lm-installment-display').innerText = `฿${(prop.installment || 0).toLocaleString()} /เดือน`;
+    if (document.getElementById('lm-rate-display')) document.getElementById('lm-rate-display').innerText = `อัตราดอกเบี้ยเริ่มต้น: ${prop.rate || 4.5}% ต่อปี`;
+
+    // Cashflow Calculations
+    const rentInc = prop.rent || 0;
+    const loanExp = prop.installment || 0;
+    const netFlow = rentInc - loanExp;
+    if (document.getElementById('lm-rent-income')) document.getElementById('lm-rent-income').innerText = `+฿${rentInc.toLocaleString()} /เดือน`;
+    if (document.getElementById('lm-loan-expense')) document.getElementById('lm-loan-expense').innerText = `-฿${loanExp.toLocaleString()} /เดือน`;
+    const netEl = document.getElementById('lm-net-cashflow');
+    if (netEl) {
+      if (netFlow >= 0) {
+        netEl.innerText = `+฿${netFlow.toLocaleString()} /เดือน`;
+        netEl.className = 'text-lg font-black text-emerald-900';
+      } else {
+        netEl.innerText = `-฿${Math.abs(netFlow).toLocaleString()} /เดือน`;
+        netEl.className = 'text-lg font-black text-rose-700';
+      }
+    }
+
+    // Retention Schedule Cards
+    const retContainer = document.getElementById('lm-rate-schedule-summary');
     if (retContainer) {
       retContainer.innerHTML = '';
       const schedule = (prop.rateSchedule && prop.rateSchedule.length > 0) ? prop.rateSchedule : [
@@ -698,35 +796,20 @@
       });
     }
 
-    // 4. Inventory Furniture List
-    const invContainer = document.getElementById('pd-inventory-container');
-    if (invContainer) {
-      invContainer.innerHTML = '';
-      const inventory = prop.inventoryList || [];
-      if (inventory.length === 0) {
-        invContainer.innerHTML = `<div class="text-stone-400 text-center py-4 font-bold">ยังไม่มีรายการเฟอร์นิเจอร์</div>`;
-      } else {
-        inventory.forEach(item => {
-          const itemObj = typeof item === 'object' ? item : { name: item, img: CONFIG.PLACEHOLDER_SVG };
-          invContainer.innerHTML += `
-            <div class="p-2 bg-stone-50 border border-stone-200 rounded-lg flex items-center justify-between">
-              <span class="font-bold text-stone-800">${itemObj.name}</span>
-              <img src="${itemObj.img || CONFIG.PLACEHOLDER_SVG}" class="w-10 h-8 object-cover rounded border border-stone-300 cursor-pointer" onclick="openMediaPreview('${itemObj.name}', this.src)">
-            </div>
-          `;
-        });
-      }
+    // Bank Docs Scans
+    const docsContainer = document.getElementById('lm-bank-docs-container');
+    if (docsContainer) {
+      docsContainer.innerHTML = `
+        <div class="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-1">
+          <div class="font-bold text-stone-800">📄 สัญญาเงินกู้ซื้อที่อยู่อาศัย</div>
+          <div class="text-[10px] text-stone-400">วงเงินกู้ ฿${(prop.principal || 0).toLocaleString()}</div>
+        </div>
+        <div class="p-3 bg-stone-50 border border-stone-200 rounded-xl space-y-1">
+          <div class="font-bold text-stone-800">📜 สำเนาโฉนดที่ดิน & สัญญาจำนอง</div>
+          <div class="text-[10px] text-stone-400">เลขที่โฉนดอสังหาฯ ${prop.houseNo || '-'}</div>
+        </div>
+      `;
     }
-
-    // 5. Lessor Details
-    const lessor = state.lessorProfiles[prop.lessorKey] || Object.values(state.lessorProfiles)[0] || { name: 'ผู้ให้เช่า', idCard: '-', address: '-' };
-    if (document.getElementById('pd-lessor-display')) document.getElementById('pd-lessor-display').innerText = lessor.name || 'ผู้ให้เช่า';
-    if (document.getElementById('pd-lessor-detail')) document.getElementById('pd-lessor-detail').innerText = `บัตรประชาชน: ${lessor.idCard || '-'}`;
-    if (document.getElementById('pd-lessor-address-detail')) document.getElementById('pd-lessor-address-detail').innerText = `ที่อยู่: ${lessor.address || '-'}`;
-    if (document.getElementById('pd-lessor-card-img') && lessor.imageUrl) document.getElementById('pd-lessor-card-img').src = lessor.imageUrl;
-
-    // 6. Render Photo & Video Gallery
-    renderPropertyGallery();
   }
 
   // 6. GALLERY & MOBILE-FIRST MEDIA ENGINE
@@ -1859,28 +1942,49 @@
   }
 
   function applyRolePermissions() {
+    const isLandlord = state.currentRole === 'landlord';
     const badgeRole = document.getElementById('user-badge-role');
+    const badgeName = document.getElementById('user-badge-name');
     const roleTitle = document.getElementById('header-role-title');
+    const drawerRole = document.getElementById('drawer-user-role');
     const tabPropertyBtn = document.getElementById('tab-property-detail');
     const pdHeaderBadge = document.getElementById('pd-header-badge');
 
-    if (badgeRole) {
-      badgeRole.innerText = '🔑 ผู้ให้เช่า';
-      badgeRole.className = 'px-2 py-0.5 rounded bg-[#e05646] text-white font-bold text-[10px]';
-    }
-    if (roleTitle) roleTitle.innerText = 'ผู้ให้เช่า (Landlord Mode)';
-    if (tabPropertyBtn) tabPropertyBtn.innerText = '🏡 รายละเอียดทรัพย์สิน & สินเชื่อ';
-    if (pdHeaderBadge) pdHeaderBadge.innerText = 'สเปก & เงินกู้';
+    if (isLandlord) {
+      if (badgeRole) {
+        badgeRole.innerText = '🔑 ผู้ให้เช่า';
+        badgeRole.className = 'px-2 py-0.5 rounded bg-[#e05646] text-white font-bold text-[10px]';
+      }
+      if (badgeName) badgeName.innerText = 'ผู้ดูแลพอร์ต';
+      if (roleTitle) roleTitle.innerText = 'ผู้ให้เช่า (Landlord Mode)';
+      if (drawerRole) drawerRole.innerText = '🔑 ผู้ให้เช่า (Landlord)';
+      if (tabPropertyBtn) tabPropertyBtn.innerText = '🏡 รายละเอียดทรัพย์ (สำหรับผู้เช่า)';
+      if (pdHeaderBadge) pdHeaderBadge.innerText = 'ข้อมูลอสังหาฯ เพื่อการตัดสินใจเช่า';
 
-    const landlordOnly = ['tab-admin', 'tab-register-lessor', 'tab-contract', 'subtab-loan', 'subtab-lessor', 'pd-admin-action-buttons'];
-    landlordOnly.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.classList.remove('hidden');
-    });
+      ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('hidden');
+      });
+    } else {
+      if (badgeRole) {
+        badgeRole.innerText = '👤 ผู้เช่า';
+        badgeRole.className = 'px-2 py-0.5 rounded bg-emerald-600 text-white font-bold text-[10px]';
+      }
+      if (badgeName) badgeName.innerText = 'ผู้เช่า / สนใจเช่า';
+      if (roleTitle) roleTitle.innerText = 'ผู้เช่า (Tenant Portal)';
+      if (drawerRole) drawerRole.innerText = '👤 ผู้เช่า (Tenant)';
+      if (tabPropertyBtn) tabPropertyBtn.innerText = '🏡 รายละเอียดทรัพย์สินเพื่อเช่า';
+      if (pdHeaderBadge) pdHeaderBadge.innerText = 'ข้อมูลอสังหาฯ เพื่อการตัดสินใจเช่า';
+
+      ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+    }
   }
 
   function switchTab(tab) {
-    const views = ['landing', 'admin', 'property-detail', 'register-lessor', 'tenant', 'contract', 'tenant-dashboard'];
+    const views = ['landing', 'admin', 'property-detail', 'loan-management', 'register-lessor', 'tenant', 'contract', 'tenant-dashboard'];
     views.forEach(v => {
       const viewEl = document.getElementById(`view-${v}`);
       if (viewEl) viewEl.classList.add('hidden');
@@ -1888,7 +1992,7 @@
     const targetView = document.getElementById(`view-${tab}`);
     if (targetView) targetView.classList.remove('hidden');
 
-    const tabs = ['landing', 'admin', 'property-detail', 'register-lessor', 'tenant', 'contract'];
+    const tabs = ['landing', 'admin', 'property-detail', 'loan-management', 'register-lessor', 'tenant', 'contract'];
     tabs.forEach(t => {
       const btn = document.getElementById(`tab-${t}`);
       if (btn) {
@@ -1916,7 +2020,7 @@
   }
 
   function switchSubTab(sub) {
-    ['specs', 'gallery', 'loan', 'lessor'].forEach(s => {
+    ['specs', 'gallery', 'furniture', 'lessor'].forEach(s => {
       const view = document.getElementById(`subview-${s}`);
       if (view) view.classList.add('hidden');
       const btn = document.getElementById(`subtab-${s}`);
@@ -2149,7 +2253,9 @@
   window.renderAllViews = renderAllViews;
   window.renderAdminData = renderAdminData;
   window.handleDetailPropertySwitch = handleDetailPropertySwitch;
+  window.handleLoanPropertySwitch = handleLoanPropertySwitch;
   window.renderPropertyDetailView = renderPropertyDetailView;
+  window.renderLoanManagementView = renderLoanManagementView;
   window.openAmortizationModal = openAmortizationModal;
   window.renderRatePeriodEditors = renderRatePeriodEditors;
   window.addRatePeriodRow = addRatePeriodRow;
