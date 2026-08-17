@@ -2401,6 +2401,47 @@
     renderAllViews();
   }
 
+  function switchTenantSubView(sub) {
+    const dashView = document.getElementById('view-tenant-dashboard');
+    const formView = document.getElementById('view-tenant');
+
+    if (sub === 'register') {
+      if (dashView) dashView.classList.add('hidden');
+      if (formView) formView.classList.remove('hidden');
+    } else {
+      if (formView) formView.classList.add('hidden');
+      if (dashView) dashView.classList.remove('hidden');
+    }
+
+    const isReg = sub === 'register';
+    ['btn-tenant-sub-dashboard', 'btn-tenant-reg-sub-dashboard'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.className = !isReg
+          ? 'px-3 py-2.5 bg-[#383838] text-white rounded-xl font-bold text-center shadow-md transition-all'
+          : 'px-3 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center shadow-sm transition-all';
+      }
+    });
+
+    ['btn-tenant-sub-register', 'btn-tenant-reg-sub-register'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.className = isReg
+          ? 'px-3 py-2.5 bg-[#383838] text-white rounded-xl font-bold text-center shadow-md transition-all'
+          : 'px-3 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center shadow-sm transition-all';
+      }
+    });
+
+    // Scroll back to top immediately
+    const mainEl = document.querySelector('main');
+    if (mainEl) mainEl.scrollTop = 0;
+    window.scrollTo(0, 0);
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
+
+    renderAllViews();
+  }
+
   function switchSubTab(sub) {
     const isLandlord = state.currentRole === 'landlord';
     if (!isLandlord && sub === 'upload-gallery') {
@@ -2669,6 +2710,7 @@
   window.applyRolePermissions = applyRolePermissions;
   window.switchTab = switchTab;
   window.switchSubTab = switchSubTab;
+  window.switchTenantSubView = switchTenantSubView;
   window.openEditPropertyDetailModal = openEditPropertyDetailModal;
   window.handlePropertyEditSubmit = handlePropertyEditSubmit;
   window.handlePropertyDetailEditSubmit = handlePropertyDetailEditSubmit;

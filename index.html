@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_64"></script>
+  <script src="js/engine.js?v=20260814_65"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -807,7 +807,17 @@
       </div>
 
       <!-- TENANT PORTAL -->
-      <div id="view-tenant-dashboard" class="hidden space-y-6 max-w-4xl mx-auto">
+      <div id="view-tenant-dashboard" class="hidden space-y-5 max-w-4xl mx-auto">
+        <!-- TENANT SUB-NAVIGATION -->
+        <div class="grid grid-cols-2 gap-2 text-xs font-bold select-none p-1.5 bg-stone-200 rounded-2xl mb-1 max-w-md mx-auto">
+          <button type="button" onclick="switchTenantSubView('dashboard')" id="btn-tenant-sub-dashboard" class="px-3 py-2.5 bg-[#383838] text-white rounded-xl font-bold text-center shadow-md transition-all">
+            <span>📊 1. ข้อมูลสิทธิ์ผู้เช่า</span>
+          </button>
+          <button type="button" onclick="switchTenantSubView('register')" id="btn-tenant-sub-register" class="px-3 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center shadow-sm transition-all">
+            <span>📝 2. ลงทะเบียนผู้เช่า</span>
+          </button>
+        </div>
+
         <div class="youestates-card overflow-hidden">
           <div class="youestates-card-header flex justify-between items-center">
             <span>👤 TENANT PORTAL — ข้อมูลสิทธิ์ผู้เช่า</span>
@@ -819,8 +829,8 @@
               <p class="text-xs text-stone-500 font-medium mt-1">รายละเอียดสเปกห้องพัก ระยะเวลาเช่าสะสม และตารางกำหนดชำระเงิน</p>
             </div>
             <div class="flex items-center gap-2">
-              <button onclick="switchTab('tenant')" class="px-4 py-2.5 bg-stone-200 hover:bg-stone-300 text-stone-800 rounded-lg text-xs font-bold shadow-sm">
-                ✏️ แก้ไขข้อมูลผู้เช่า
+              <button onclick="switchTenantSubView('register')" class="px-4 py-2.5 bg-stone-200 hover:bg-stone-300 text-stone-800 rounded-lg text-xs font-bold shadow-sm">
+                ✏️ ลงทะเบียน / แก้ไขผู้เช่า
               </button>
               <button onclick="switchTab('contract')" class="youestates-btn-coral px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm">
                 📄 ดูสัญญาเช่าบ้าน A4
@@ -1473,7 +1483,17 @@
       </div>
 
       <!-- VIEW 3: TENANT ONBOARDING FORM WITH AUTO LEASE DATES CALCULATION -->
-      <div id="view-tenant" class="hidden space-y-6 max-w-2xl mx-auto">
+      <div id="view-tenant" class="hidden space-y-5 max-w-2xl mx-auto">
+        <!-- TENANT SUB-NAVIGATION -->
+        <div class="grid grid-cols-2 gap-2 text-xs font-bold select-none p-1.5 bg-stone-200 rounded-2xl mb-1 max-w-md mx-auto">
+          <button type="button" onclick="switchTenantSubView('dashboard')" id="btn-tenant-reg-sub-dashboard" class="px-3 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center shadow-sm transition-all">
+            <span>📊 1. ข้อมูลสิทธิ์ผู้เช่า</span>
+          </button>
+          <button type="button" onclick="switchTenantSubView('register')" id="btn-tenant-reg-sub-register" class="px-3 py-2.5 bg-[#383838] text-white rounded-xl font-bold text-center shadow-md transition-all">
+            <span>📝 2. ลงทะเบียนผู้เช่า</span>
+          </button>
+        </div>
+
         <div class="youestates-card p-6 md:p-8 space-y-6">
           <div class="border-b border-stone-200 pb-4 flex justify-between items-center">
             <div>
