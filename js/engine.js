@@ -891,11 +891,14 @@
     if (document.getElementById('exterior-photo-count-badge')) document.getElementById('exterior-photo-count-badge').innerText = `${exteriorItems.length} รูป`;
     if (document.getElementById('interior-photo-count-badge')) document.getElementById('interior-photo-count-badge').innerText = `${interiorItems.length} รูป`;
 
-    // 4. Render Bento Grid for Exterior
+    // 4. Render Bento Grid for Exterior (Read-only for Tenants)
     renderBentoGridContainer('gallery-bento-exterior', exteriorItems, 'exterior');
 
-    // 5. Render Bento Grid for Interior
+    // 5. Render Bento Grid for Interior (Read-only for Tenants)
     renderBentoGridContainer('gallery-bento-interior', interiorItems, 'interior');
+
+    // 6. Render Management Grid for Landlords
+    renderLandlordManageGallery(allItems);
   }
 
   function renderBentoGridContainer(containerId, items, categoryName) {
@@ -908,7 +911,7 @@
         <div class="col-span-full py-8 text-center bg-stone-50 rounded-2xl border border-dashed border-stone-300 p-6 space-y-2">
           <div class="text-2xl">${categoryName === 'exterior' ? '🏠' : '🛋️'}</div>
           <div class="text-xs font-bold text-stone-600">ยังไม่มีรูปภาพในหมวด${categoryName === 'exterior' ? 'ภายนอก' : 'ภายใน'}</div>
-          <p class="text-[11px] text-stone-400">กดปุ่ม "+ อัปโหลดรูป (หลายรูป)" ด้านบนเพื่อเลือกรูปภาพจากเครื่อง</p>
+          <p class="text-[11px] text-stone-400">รูปภาพจะปรากฏที่นี่เมื่อผู้ให้เช่าทำการอัปโหลด</p>
         </div>
       `;
       return;
@@ -924,8 +927,8 @@
       }
 
       container.innerHTML += `
-        <div class="${spanClasses} group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-200 bg-stone-900 cursor-pointer select-none min-h-[140px]">
-          <div class="w-full h-full" onclick="openGalleryLightbox('${item.id}')">
+        <div class="${spanClasses} group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-200 bg-stone-900 cursor-pointer select-none min-h-[140px]" onclick="openGalleryLightbox('${item.id}')">
+          <div class="w-full h-full">
             ${isVideo ? `
               <div class="w-full h-full bg-slate-950 flex flex-col items-center justify-center text-white relative">
                 <span class="text-3xl filter drop-shadow-md">▶️</span>
@@ -936,22 +939,64 @@
             `}
           </div>
 
-          <!-- FLOATING QUICK ACTIONS OVERLAY -->
+          <!-- FLOATING READ-ONLY OVERLAY (FOR TENANTS — NO DELETE BUTTON) -->
           <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none flex flex-col justify-between p-2.5">
             <div class="flex justify-between items-center pointer-events-auto">
               <span class="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold">
                 ${categoryName === 'exterior' ? '🏠 ภายนอก' : '🛋️ ภายใน'}
               </span>
-              <button type="button" onclick="event.stopPropagation(); deleteGalleryItem('${item.id}')" title="ลบรูปนี้" class="w-7 h-7 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-transform active:scale-90">
-                🗑️
-              </button>
             </div>
             <div class="text-right pointer-events-auto">
-              <span onclick="openGalleryLightbox('${item.id}')" class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-white text-stone-900 font-bold text-[10px] shadow cursor-pointer">
+              <span class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-white text-stone-900 font-bold text-[10px] shadow cursor-pointer">
                 🔍 ขยายดูรูป
               </span>
             </div>
           </div>
+        </div>
+      `;
+    });
+  }
+
+  function renderLandlordManageGallery(items) {
+    const container = document.getElementById('gallery-manage-list');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (!items || items.length === 0) {
+      container.innerHTML = `
+        <div class="col-span-full py-8 text-center bg-stone-50 rounded-2xl border border-dashed border-stone-300 p-6 space-y-1">
+          <div class="text-xl">📁</div>
+          <div class="text-xs font-bold text-stone-600">ยังไม่มีรูปภาพในคลังสื่อ</div>
+          <p class="text-[11px] text-stone-400">เลือกกดปุ่มอัปโหลดรูปภาพด้านบนเพื่อเริ่มใส่รูป</p>
+        </div>
+      `;
+      return;
+    }
+
+    items.forEach(item => {
+      const isExt = item.category === 'exterior';
+      const isVideo = item.type === 'video';
+
+      container.innerHTML += `
+        <div class="relative group rounded-xl overflow-hidden border border-stone-200 bg-stone-900 aspect-square shadow-sm">
+          <div class="w-full h-full cursor-pointer" onclick="openGalleryLightbox('${item.id}')">
+            ${isVideo ? `
+              <div class="w-full h-full bg-slate-950 flex flex-col items-center justify-center text-white p-2 text-center">
+                <span class="text-2xl">🎬</span>
+                <span class="text-[9px] font-bold text-rose-400 mt-1 uppercase">Video</span>
+              </div>
+            ` : `
+              <img src="${item.url || CONFIG.PLACEHOLDER_SVG}" alt="Thumb" class="w-full h-full object-cover">
+            `}
+          </div>
+
+          <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/70 text-white text-[9px] font-bold">
+            ${isExt ? '🏠 ภายนอก' : '🛋️ ภายใน'}
+          </span>
+
+          <button type="button" onclick="event.stopPropagation(); deleteGalleryItem('${item.id}')" title="ลบรูปนี้ออกจากระบบ" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-transform active:scale-90">
+            🗑️
+          </button>
         </div>
       `;
     });
@@ -2277,7 +2322,7 @@
       if (tabPropertyBtn) tabPropertyBtn.innerHTML = '<span>🏡</span> <span class="tab-label">สเปกทรัพย์สิน</span>';
       if (pdHeaderBadge) pdHeaderBadge.innerText = 'ข้อมูลอสังหาฯ เพื่อการตัดสินใจเช่า';
 
-      ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group'].forEach(id => {
+      ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group', 'subtab-upload-gallery'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.remove('hidden');
       });
@@ -2292,10 +2337,15 @@
       if (tabPropertyBtn) tabPropertyBtn.innerHTML = '<span>🏡</span> <span class="tab-label">สเปกทรัพย์สิน</span>';
       if (pdHeaderBadge) pdHeaderBadge.innerText = 'ข้อมูลอสังหาฯ เพื่อการตัดสินใจเช่า';
 
-      ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group'].forEach(id => {
+      ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group', 'subtab-upload-gallery'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
       });
+
+      const uploadView = document.getElementById('subview-upload-gallery');
+      if (uploadView && !uploadView.classList.contains('hidden')) {
+        switchSubTab('gallery');
+      }
     }
   }
 
@@ -2336,19 +2386,19 @@
   }
 
   function switchSubTab(sub) {
-    ['specs', 'gallery', 'furniture', 'lessor'].forEach(s => {
+    ['specs', 'gallery', 'furniture', 'lessor', 'upload-gallery'].forEach(s => {
       const view = document.getElementById(`subview-${s}`);
       if (view) view.classList.add('hidden');
       const btn = document.getElementById(`subtab-${s}`);
       if (btn) {
-        btn.className = 'px-3 py-2.5 bg-white md:bg-stone-200 text-stone-700 hover:bg-stone-100 md:hover:bg-stone-300 rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-sm md:shadow-none transition-all';
+        btn.className = 'px-2 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-sm transition-all';
       }
     });
     const activeView = document.getElementById(`subview-${sub}`);
     if (activeView) activeView.classList.remove('hidden');
     const activeBtn = document.getElementById(`subtab-${sub}`);
     if (activeBtn) {
-      activeBtn.className = 'px-3 py-2.5 bg-[#383838] text-white rounded-xl md:rounded-b-none md:rounded-t-lg font-bold text-center flex items-center justify-center gap-1 shadow-md md:shadow-none transition-all';
+      activeBtn.className = 'px-2 py-2.5 bg-[#383838] text-white rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-md transition-all';
     }
   }
 

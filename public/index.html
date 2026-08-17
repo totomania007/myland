@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_58"></script>
+  <script src="js/engine.js?v=20260814_59"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -973,19 +973,22 @@
           </div>
         </div>
 
-        <!-- SUB-NAVIGATION: 4 COLUMNS FULL FIT, ZERO SCROLLBAR -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 md:gap-2 text-xs font-bold select-none p-1.5 bg-stone-200 rounded-2xl mb-2">
+        <!-- SUB-NAVIGATION: 5 COLUMNS COMPACT FIT, ZERO SCROLLBAR -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-1.5 md:gap-2 text-xs font-bold select-none p-1.5 bg-stone-200 rounded-2xl mb-2">
           <button onclick="switchSubTab('specs')" id="subtab-specs" class="px-2 py-2.5 bg-[#383838] text-white rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-md transition-all">
             <span>🏡 1. ข้อมูลห้อง</span>
           </button>
           <button onclick="switchSubTab('gallery')" id="subtab-gallery" class="px-2 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-sm transition-all">
-            <span>📸 2. รูป & วิดีโอ</span>
+            <span>📸 2. รูปถ่ายห้องจริง</span>
           </button>
           <button onclick="switchSubTab('furniture')" id="subtab-furniture" class="px-2 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-sm transition-all">
             <span>🛋️ 3. เฟอร์นิเจอร์</span>
           </button>
           <button onclick="switchSubTab('lessor')" id="subtab-lessor" class="px-2 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-sm transition-all">
             <span>👤 4. ผู้ให้เช่า</span>
+          </button>
+          <button onclick="switchSubTab('upload-gallery')" id="subtab-upload-gallery" class="px-2 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-sm transition-all">
+            <span>📤 5. อัปโหลดรูปภาพ</span>
           </button>
         </div>
 
@@ -1079,33 +1082,21 @@
           </div>
         </div>
 
-        <!-- SUBVIEW 2: PHOTO GALLERY (2 BENTO GRID CATEGORIES: EXTERIOR & INTERIOR) -->
+        <!-- SUBVIEW 2: PHOTO GALLERY (READ-ONLY FOR TENANTS — NO UPLOAD/EDIT/DELETE) -->
         <div id="subview-gallery" class="hidden space-y-6">
           
-          <!-- TOP ACTIONS TOOLBAR -->
-          <div class="youestates-card p-4 md:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-stone-200">
+          <!-- READ-ONLY NOTICE FOR TENANTS -->
+          <div class="youestates-card p-4 md:p-5 flex items-center justify-between gap-3 bg-stone-50 border border-stone-200">
             <div>
-              <h3 class="font-extrabold text-base text-[#383838]">📸 คลังรูปถ่ายสเปกทรัพย์สิน (Property Photo Gallery)</h3>
-              <p class="text-xs text-stone-500 font-medium mt-0.5">แยก 2 หมวดหมู่ชัดเจน: ภายนอก และ ภายใน แสดงผลแบบ Bento Grid พร้อมคำอธิบายรวม</p>
+              <h3 class="font-extrabold text-base text-[#383838]">📸 รูปถ่ายและบรรยากาศห้องจริง (Property Photo Gallery)</h3>
+              <p class="text-xs text-stone-500 font-medium mt-0.5">ภาพถ่ายจริงจากสถานที่ แยก 2 หมวด: ภาพถ่ายภายนอก และ ภาพถ่ายภายใน (คลิกที่รูปเพื่อดูรูปขนาดใหญ่)</p>
             </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <label class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5 transition-all">
-                <span>☁️ อัปโหลดรูปภายนอก (หลายรูป)</span>
-                <input type="file" multiple accept="image/*" class="hidden" onchange="uploadPropertyGalleryMultiple(event, 'exterior')">
-              </label>
-              <label class="px-3.5 py-2 bg-[#383838] hover:bg-black text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5 transition-all">
-                <span>☁️ อัปโหลดรูปภายใน (หลายรูป)</span>
-                <input type="file" multiple accept="image/*" class="hidden" onchange="uploadPropertyGalleryMultiple(event, 'interior')">
-              </label>
-              <button type="button" onclick="openAddMediaLinkModal()" class="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs rounded-xl border border-stone-300 flex items-center gap-1">
-                <span>🔗 แทรกลิงก์ / วิดีโอ</span>
-              </button>
-            </div>
+            <span class="px-3 py-1 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-full">✨ ข้อมูลจริงพร้อมปล่อยเช่า</span>
           </div>
 
-          <!-- SECTION 1: EXTERIOR BENTO GRID -->
+          <!-- SECTION 1: EXTERIOR BENTO GRID (READ ONLY) -->
           <div class="youestates-card p-5 md:p-6 space-y-4 border border-stone-200 shadow-sm bg-white">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-stone-200 pb-3">
+            <div class="flex items-center justify-between border-b border-stone-200 pb-3">
               <div class="flex items-center gap-2">
                 <span class="text-xl">🏠</span>
                 <div>
@@ -1113,36 +1104,27 @@
                     <h4 class="font-extrabold text-base text-[#383838]">หมวดที่ 1: ภาพถ่ายภายนอกอสังหาฯ (Exterior)</h4>
                     <span id="exterior-photo-count-badge" class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-black">0 รูป</span>
                   </div>
-                  <span class="text-xs text-stone-400">ภาพถ่ายบรรยากาศภายนอกอาคาร, ทางเข้า, ที่จอดรถ, วิวทิวทัศน์โดยรอบ</span>
+                  <span class="text-xs text-stone-400">บรรยากาศภายนอกอาคาร, ทางเข้า, ที่จอดรถ, วิวทิวทัศน์โดยรอบ</span>
                 </div>
               </div>
-              <label class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1 self-start md:self-auto">
-                <span>+ ☁️ เพิ่มรูปภายนอก (หลายรูป)</span>
-                <input type="file" multiple accept="image/*" class="hidden" onchange="uploadPropertyGalleryMultiple(event, 'exterior')">
-              </label>
             </div>
 
             <!-- UNIFIED DESCRIPTION BANNER FOR EXTERIOR -->
-            <div class="p-3.5 bg-stone-50 rounded-xl border border-stone-200 text-xs text-stone-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
-              <div class="flex items-start gap-2 flex-1">
-                <span class="text-stone-400 font-bold mt-0.5">📌</span>
-                <div>
-                  <span class="font-bold text-stone-900 block">คำอธิบายภาพรวมหมวดภายนอก:</span>
-                  <p id="exterior-unified-desc" class="text-stone-600 font-normal leading-relaxed mt-0.5">บรรยากาศภายนอกอาคาร ทำเลที่ตั้ง การเดินทางสะดวกสบาย มีที่จอดรถ และระบบรักษาความปลอดภัยครบครัน</p>
-                </div>
+            <div class="p-3.5 bg-stone-50 rounded-xl border border-stone-200 text-xs text-stone-700 flex items-center gap-2.5">
+              <span class="text-stone-400 font-bold">📌</span>
+              <div>
+                <span class="font-bold text-stone-900 block">คำอธิบายภาพรวมหมวดภายนอก:</span>
+                <p id="exterior-unified-desc" class="text-stone-600 font-normal leading-relaxed mt-0.5">บรรยากาศภายนอกอาคาร ทำเลที่ตั้ง การเดินทางสะดวกสบาย มีที่จอดรถ และระบบรักษาความปลอดภัยครบครัน</p>
               </div>
-              <button type="button" onclick="editCategoryDescription('exterior')" class="px-2.5 py-1 bg-white hover:bg-stone-100 border border-stone-300 text-stone-700 font-bold rounded-lg text-[11px] shadow-sm whitespace-nowrap">
-                ✏️ แก้ไขคำอธิบายภายนอก
-              </button>
             </div>
 
-            <!-- BENTO GRID EXTERIOR -->
+            <!-- BENTO GRID EXTERIOR (READ ONLY) -->
             <div id="gallery-bento-exterior" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 auto-rows-[160px] md:auto-rows-[180px]"></div>
           </div>
 
-          <!-- SECTION 2: INTERIOR BENTO GRID -->
+          <!-- SECTION 2: INTERIOR BENTO GRID (READ ONLY) -->
           <div class="youestates-card p-5 md:p-6 space-y-4 border border-stone-200 shadow-sm bg-white">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-stone-200 pb-3">
+            <div class="flex items-center justify-between border-b border-stone-200 pb-3">
               <div class="flex items-center gap-2">
                 <span class="text-xl">🛋️</span>
                 <div>
@@ -1150,32 +1132,81 @@
                     <h4 class="font-extrabold text-base text-[#383838]">หมวดที่ 2: ภาพถ่ายภายในห้องพัก (Interior)</h4>
                     <span id="interior-photo-count-badge" class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-black">0 รูป</span>
                   </div>
-                  <span class="text-xs text-stone-400">ภาพถ่ายห้องนอน, ห้องนั่งเล่น, โซนครัว, ห้องน้ำ และเฟอร์นิเจอร์ตกแต่งครบ</span>
+                  <span class="text-xs text-stone-400">ห้องนอน, ห้องนั่งเล่น, โซนครัว, ห้องน้ำ และเฟอร์นิเจอร์ตกแต่งครบ</span>
                 </div>
               </div>
-              <label class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1 self-start md:self-auto">
-                <span>+ ☁️ เพิ่มรูปภายใน (หลายรูป)</span>
-                <input type="file" multiple accept="image/*" class="hidden" onchange="uploadPropertyGalleryMultiple(event, 'interior')">
-              </label>
             </div>
 
             <!-- UNIFIED DESCRIPTION BANNER FOR INTERIOR -->
-            <div class="p-3.5 bg-stone-50 rounded-xl border border-stone-200 text-xs text-stone-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
-              <div class="flex items-start gap-2 flex-1">
-                <span class="text-stone-400 font-bold mt-0.5">📌</span>
-                <div>
-                  <span class="font-bold text-stone-900 block">คำอธิบายภาพรวมหมวดภายใน:</span>
-                  <p id="interior-unified-desc" class="text-stone-600 font-normal leading-relaxed mt-0.5">พื้นที่ใช้สอยภายในห้องพัก ตกแต่งครบพร้อมเข้าอยู่ มีเครื่องปรับอากาศ เตียงนอน ตู้เสื้อผ้า โซฟา และสิ่งอำนวยความสะดวกครบชุด</p>
-                </div>
+            <div class="p-3.5 bg-stone-50 rounded-xl border border-stone-200 text-xs text-stone-700 flex items-center gap-2.5">
+              <span class="text-stone-400 font-bold">📌</span>
+              <div>
+                <span class="font-bold text-stone-900 block">คำอธิบายภาพรวมหมวดภายใน:</span>
+                <p id="interior-unified-desc" class="text-stone-600 font-normal leading-relaxed mt-0.5">พื้นที่ใช้สอยภายในห้องพัก ตกแต่งครบพร้อมเข้าอยู่ มีเครื่องปรับอากาศ เตียงนอน ตู้เสื้อผ้า โซฟา และสิ่งอำนวยความสะดวกครบชุด</p>
               </div>
-              <button type="button" onclick="editCategoryDescription('interior')" class="px-2.5 py-1 bg-white hover:bg-stone-100 border border-stone-300 text-stone-700 font-bold rounded-lg text-[11px] shadow-sm whitespace-nowrap">
-                ✏️ แก้ไขคำอธิบายภายใน
+            </div>
+
+            <!-- BENTO GRID INTERIOR (READ ONLY) -->
+            <div id="gallery-bento-interior" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 auto-rows-[160px] md:auto-rows-[180px]"></div>
+          </div>
+        </div>
+
+        <!-- SUBVIEW 5: LANDLORD UPLOAD & MEDIA MANAGER (FOR LANDLORDS ONLY) -->
+        <div id="subview-upload-gallery" class="hidden space-y-6">
+          <div class="youestates-card p-5 md:p-6 space-y-4 bg-white border border-stone-200 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-200 pb-3">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 bg-[#e05646] text-white text-[10px] font-black rounded uppercase">LANDLORD ONLY</span>
+                  <h3 class="font-extrabold text-base text-[#383838]">📤 จัดการ & อัปโหลดรูปภาพอสังหาริมทรัพย์</h3>
+                </div>
+                <p class="text-xs text-stone-500 font-medium mt-0.5">อัปโหลดรูปภาพได้ทีละหลายรูป แยกหมวดหมู่ภายนอก/ภายใน พร้อมระบบลบรูปออกจาก Cloudflare ทันที</p>
+              </div>
+              <button type="button" onclick="openAddMediaLinkModal()" class="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs rounded-xl border border-stone-300 flex items-center gap-1 self-start sm:self-auto">
+                <span>🔗 แทรกลิงก์ YouTube / วิดีโอ</span>
               </button>
             </div>
 
-            <!-- BENTO GRID INTERIOR -->
-            <div id="gallery-bento-interior" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 auto-rows-[160px] md:auto-rows-[180px]"></div>
+            <!-- UPLOAD CONTROLS GRID -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- EXTERIOR UPLOAD CARD -->
+              <div class="p-4 bg-stone-50 rounded-xl border border-stone-200 space-y-3">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center gap-2">
+                    <span class="text-lg">🏠</span>
+                    <strong class="text-xs text-stone-800">หมวดที่ 1: ภาพถ่ายภายนอก (Exterior)</strong>
+                  </div>
+                  <button type="button" onclick="editCategoryDescription('exterior')" class="text-[11px] text-[#e05646] font-bold hover:underline">✏️ แก้ไขคำอธิบาย</button>
+                </div>
+                <label class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2 transition-all">
+                  <span>☁️ อัปโหลดรูปภายนอก (เลือกได้หลายรูป)</span>
+                  <input type="file" multiple accept="image/*" class="hidden" onchange="uploadPropertyGalleryMultiple(event, 'exterior')">
+                </label>
+              </div>
+
+              <!-- INTERIOR UPLOAD CARD -->
+              <div class="p-4 bg-stone-50 rounded-xl border border-stone-200 space-y-3">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center gap-2">
+                    <span class="text-lg">🛋️</span>
+                    <strong class="text-xs text-stone-800">หมวดที่ 2: ภาพถ่ายภายใน (Interior)</strong>
+                  </div>
+                  <button type="button" onclick="editCategoryDescription('interior')" class="text-[11px] text-[#e05646] font-bold hover:underline">✏️ แก้ไขคำอธิบาย</button>
+                </div>
+                <label class="w-full py-3 bg-[#383838] hover:bg-black text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2 transition-all">
+                  <span>☁️ อัปโหลดรูปภายใน (เลือกได้หลายรูป)</span>
+                  <input type="file" multiple accept="image/*" class="hidden" onchange="uploadPropertyGalleryMultiple(event, 'interior')">
+                </label>
+              </div>
+            </div>
+
+            <!-- MANAGEMENT GALLERY LIST FOR LANDLORD -->
+            <div class="pt-4 border-t border-stone-200 space-y-3">
+              <h4 class="font-extrabold text-xs text-[#383838]">📋 รายการรูปภาพทั้งหมดที่บันทึกไว้ในระบบ (กด 🗑️ เพื่อลบออกจาก Cloudflare):</h4>
+              <div id="gallery-manage-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"></div>
+            </div>
           </div>
+        </div>
 
           <!-- SECTION 3: SHAREABLE PROMOTIONAL SHOWCASE CARD -->
           <div class="youestates-card p-5 md:p-6 space-y-4 border-2 border-emerald-500/40 bg-stone-900 text-white relative overflow-hidden">
