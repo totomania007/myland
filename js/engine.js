@@ -2393,6 +2393,22 @@
     applyRolePermissions();
   }
 
+  function forceScrollToTop() {
+    try {
+      if (document.activeElement && document.activeElement.tagName !== 'BODY') {
+        document.activeElement.blur();
+      }
+      window.scrollTo(0, 0);
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      if (document.documentElement) document.documentElement.scrollTop = 0;
+      if (document.body) document.body.scrollTop = 0;
+      const mainEl = document.querySelector('main');
+      if (mainEl) mainEl.scrollTop = 0;
+      const winEl = document.querySelector('.youestates-window');
+      if (winEl) winEl.scrollTop = 0;
+    } catch(e) {}
+  }
+
   function verifyAdminPinSubmit() {
     const input = document.getElementById('admin-pin-input');
     const enteredPin = (input?.value || '').trim();
@@ -2420,13 +2436,7 @@
 
       applyRolePermissions();
       switchTab('admin');
-
-      // Instant scroll reset
-      window.scrollTo(0, 0);
-      if (document.documentElement) document.documentElement.scrollTop = 0;
-      if (document.body) document.body.scrollTop = 0;
-      const mainEl = document.querySelector('main');
-      if (mainEl) mainEl.scrollTop = 0;
+      forceScrollToTop();
     } else {
       alert('❌ รหัส PIN ไม่ถูกต้อง! ไม่อนุญาตให้บุคคลทั่วไปเข้าสู่โหมดผู้ให้เช่า (Default PIN: 1234)');
       if (input) {
@@ -2444,6 +2454,13 @@
     const drawerRole = document.getElementById('drawer-user-role');
     const tabPropertyBtn = document.getElementById('tab-property-detail');
     const pdHeaderBadge = document.getElementById('pd-header-badge');
+    const navGrid = document.getElementById('main-nav-grid');
+
+    if (navGrid) {
+      navGrid.className = isLandlord
+        ? 'w-full grid grid-cols-7 gap-1.5'
+        : 'w-full grid grid-cols-4 gap-1.5';
+    }
 
     if (isLandlord) {
       if (badgeRole) {
@@ -2532,14 +2549,10 @@
       activeMBtn.className = 'flex-1 flex flex-col items-center gap-0.5 text-[10px] font-black text-emerald-400 py-1 scale-105 transition-all';
     }
 
-    // Scroll back to top immediately on all containers
-    const mainEl = document.querySelector('main');
-    if (mainEl) mainEl.scrollTop = 0;
-    window.scrollTo(0, 0);
-    if (document.documentElement) document.documentElement.scrollTop = 0;
-    if (document.body) document.body.scrollTop = 0;
-
+    forceScrollToTop();
     renderAllViews();
+    forceScrollToTop();
+    requestAnimationFrame(() => forceScrollToTop());
   }
 
   function switchTenantSubView(sub) {
