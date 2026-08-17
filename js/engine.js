@@ -859,23 +859,15 @@
     return url;
   }
 
-  function renderPropertyGallery(filterCategory) {
-    if (filterCategory) currentGalleryFilter = filterCategory;
+  function renderPropertyGallery() {
     const prop = getCurrentProperty();
-    const grid = document.getElementById('property-gallery-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
-
-    if (!prop) {
-      grid.innerHTML = `<div class="col-span-full text-center py-6 text-stone-400 text-xs font-bold">กรุณาเลือกทรัพย์สิน</div>`;
-      return;
-    }
+    if (!prop) return;
 
     if (!prop.gallery) {
       prop.gallery = [];
     }
 
-    // Promo Card Sync
+    // 1. Promo Card Sync
     if (document.getElementById('pd-promo-title')) document.getElementById('pd-promo-title').innerText = prop.name || 'อสังหาริมทรัพย์';
     if (document.getElementById('pd-promo-location')) document.getElementById('pd-promo-location').innerText = prop.address || '-';
     if (document.getElementById('pd-promo-price')) document.getElementById('pd-promo-price').innerText = `฿${(prop.rent || 0).toLocaleString()} /เดือน`;
@@ -884,60 +876,80 @@
       document.getElementById('pd-promo-cover-img').src = (prop.gallery && prop.gallery.length > 0 && prop.gallery[0].url) ? prop.gallery[0].url : CONFIG.PLACEHOLDER_SVG;
     }
 
-    // Filter Items
-    let items = prop.gallery || [];
-    if (currentGalleryFilter && currentGalleryFilter !== 'all') {
-      items = items.filter(it => it.category === currentGalleryFilter || (currentGalleryFilter === 'video' && it.type === 'video'));
-    }
-    activeGalleryItems = items;
+    // 2. Separate into 2 categories: Exterior and Interior
+    const allItems = prop.gallery || [];
+    const exteriorItems = allItems.filter(it => it.category === 'exterior');
+    const interiorItems = allItems.filter(it => it.category !== 'exterior');
+    activeGalleryItems = allItems;
+
+    // 3. Category Descriptions & Counts
+    const extDesc = prop.exteriorDescription || 'บรรยากาศภายนอกอาคาร ทำเลที่ตั้ง การเดินทางสะดวกสบาย มีที่จอดรถ และระบบรักษาความปลอดภัยครบครัน';
+    const intDesc = prop.interiorDescription || 'พื้นที่ใช้สอยภายในห้องพัก ตกแต่งครบพร้อมเข้าอยู่ มีเครื่องปรับอากาศ เตียงนอน ตู้เสื้อผ้า โซฟา และสิ่งอำนวยความสะดวกครบชุด';
+
+    if (document.getElementById('exterior-unified-desc')) document.getElementById('exterior-unified-desc').innerText = extDesc;
+    if (document.getElementById('interior-unified-desc')) document.getElementById('interior-unified-desc').innerText = intDesc;
+    if (document.getElementById('exterior-photo-count-badge')) document.getElementById('exterior-photo-count-badge').innerText = `${exteriorItems.length} รูป`;
+    if (document.getElementById('interior-photo-count-badge')) document.getElementById('interior-photo-count-badge').innerText = `${interiorItems.length} รูป`;
+
+    // 4. Render Bento Grid for Exterior
+    renderBentoGridContainer('gallery-bento-exterior', exteriorItems, 'exterior');
+
+    // 5. Render Bento Grid for Interior
+    renderBentoGridContainer('gallery-bento-interior', interiorItems, 'interior');
+  }
+
+  function renderBentoGridContainer(containerId, items, categoryName) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
 
     if (items.length === 0) {
-      grid.innerHTML = `
-        <div class="col-span-full text-center py-8 text-stone-400 bg-stone-50 rounded-2xl border border-dashed border-stone-200 p-6 space-y-2">
-          <div class="text-2xl">📸</div>
-          <div class="text-xs font-bold text-stone-600">ยังไม่มีรูปภาพหรือวิดีโอในคลังของ "${prop.name}"</div>
-          <p class="text-[11px] text-stone-400">กดปุ่ม "+ อัปโหลดรูปภาพ" หรือ "แทรกลิงก์" ด้านบนเพื่อเพิ่มสื่อ</p>
+      container.innerHTML = `
+        <div class="col-span-full py-8 text-center bg-stone-50 rounded-2xl border border-dashed border-stone-300 p-6 space-y-2">
+          <div class="text-2xl">${categoryName === 'exterior' ? '🏠' : '🛋️'}</div>
+          <div class="text-xs font-bold text-stone-600">ยังไม่มีรูปภาพในหมวด${categoryName === 'exterior' ? 'ภายนอก' : 'ภายใน'}</div>
+          <p class="text-[11px] text-stone-400">กดปุ่ม "+ อัปโหลดรูป (หลายรูป)" ด้านบนเพื่อเลือกรูปภาพจากเครื่อง</p>
         </div>
       `;
       return;
     }
 
-    items.forEach((item) => {
+    items.forEach((item, idx) => {
       const isVideo = item.type === 'video';
-      const categoryBadges = {
-        exterior: '🏠 ภายนอก',
-        interior: '🛋️ ภายใน',
-        highlight: '✨ จุดเด่น',
-        video: '🎬 วิดีโอ'
-      };
-      const catLabel = categoryBadges[item.category] || '📸 รูปภาพ';
+      let spanClasses = 'col-span-1 row-span-1';
+      if (idx === 0 && items.length >= 3) {
+        spanClasses = 'col-span-2 row-span-2';
+      } else if (idx === 4 && items.length >= 7) {
+        spanClasses = 'col-span-2 row-span-1';
+      }
 
-      grid.innerHTML += `
-        <div class="group relative bg-white border border-stone-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-          <div class="relative w-full aspect-[4/3] bg-stone-100 overflow-hidden cursor-pointer" onclick="openGalleryLightbox('${item.id}')">
+      container.innerHTML += `
+        <div class="${spanClasses} group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-200 bg-stone-900 cursor-pointer select-none min-h-[140px]">
+          <div class="w-full h-full" onclick="openGalleryLightbox('${item.id}')">
             ${isVideo ? `
               <div class="w-full h-full bg-slate-950 flex flex-col items-center justify-center text-white relative">
                 <span class="text-3xl filter drop-shadow-md">▶️</span>
                 <span class="text-[10px] font-bold text-rose-400 mt-1 uppercase">Video Tour</span>
               </div>
             ` : `
-              <img src="${item.url || CONFIG.PLACEHOLDER_SVG}" alt="${item.title || 'Property Photo'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              <img src="${item.url || CONFIG.PLACEHOLDER_SVG}" alt="Property Photo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
             `}
-            <span class="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-sm text-white font-bold text-[9px]">
-              ${catLabel}
-            </span>
           </div>
 
-          <div class="p-2.5 space-y-1 bg-white">
-            <h4 class="font-bold text-xs text-stone-800 truncate" title="${item.title || '-'}">${item.title || 'ภาพอสังหาฯ'}</h4>
-            <p class="text-[10px] text-stone-400 truncate">${item.caption || '-'}</p>
-            <div class="flex items-center justify-between pt-1 border-t border-stone-100">
-              <button type="button" onclick="openGalleryLightbox('${item.id}')" class="text-[10px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
-                <span>👁️ ดู</span>
+          <!-- FLOATING QUICK ACTIONS OVERLAY -->
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none flex flex-col justify-between p-2.5">
+            <div class="flex justify-between items-center pointer-events-auto">
+              <span class="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold">
+                ${categoryName === 'exterior' ? '🏠 ภายนอก' : '🛋️ ภายใน'}
+              </span>
+              <button type="button" onclick="event.stopPropagation(); deleteGalleryItem('${item.id}')" title="ลบรูปนี้" class="w-7 h-7 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-md transition-transform active:scale-90">
+                🗑️
               </button>
-              <button type="button" onclick="deleteGalleryItem('${item.id}')" class="text-[10px] font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1">
-                <span>🗑️ ลบ</span>
-              </button>
+            </div>
+            <div class="text-right pointer-events-auto">
+              <span onclick="openGalleryLightbox('${item.id}')" class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-white text-stone-900 font-bold text-[10px] shadow cursor-pointer">
+                🔍 ขยายดูรูป
+              </span>
             </div>
           </div>
         </div>
@@ -945,24 +957,9 @@
     });
   }
 
-  function filterGalleryPhotos(category) {
-    currentGalleryFilter = category;
-    ['all', 'exterior', 'interior', 'highlight', 'video'].forEach(c => {
-      const btn = document.getElementById(`gfilter-${c}`);
-      if (btn) {
-        if (c === category) {
-          btn.className = 'px-3 py-1.5 rounded-lg bg-[#383838] text-white whitespace-nowrap font-bold text-xs';
-        } else {
-          btn.className = 'px-3 py-1.5 rounded-lg bg-stone-200 text-stone-700 hover:bg-stone-300 whitespace-nowrap font-bold text-xs';
-        }
-      }
-    });
-    renderPropertyGallery(category);
-  }
-
-  async function uploadPropertyGalleryImage(event) {
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
+  async function uploadPropertyGalleryMultiple(event, category = 'interior') {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
     const prop = getCurrentProperty();
     if (!prop) {
@@ -970,23 +967,68 @@
       return;
     }
 
+    if (!prop.gallery) prop.gallery = [];
+
+    const fileList = Array.from(files);
+    let successCount = 0;
+
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      try {
+        const compressedDataUrl = await compressImageFile(file, 1200, 0.82);
+        const newItem = {
+          id: `g-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+          type: 'image',
+          title: '',
+          category: category || 'interior',
+          url: compressedDataUrl,
+          caption: ''
+        };
+        prop.gallery.unshift(newItem);
+        successCount++;
+      } catch (err) {
+        console.warn('Error compressing image:', file.name, err);
+      }
+    }
+
+    const propIdx = state.propertiesState.findIndex(p => String(p.id) === String(prop.id));
+    if (propIdx >= 0) {
+      state.propertiesState[propIdx] = prop;
+    }
+
+    saveStateToLocalStorage();
+    renderPropertyGallery();
+    event.target.value = '';
+
+    alert(`✅ อัปโหลดและบันทึกรูปภาพหมวด${category === 'exterior' ? 'ภายนอก' : 'ภายใน'} จำนวน ${successCount} รูป เรียบร้อยแล้ว!`);
+
     try {
-      const compressedDataUrl = await compressImageFile(file, 1200, 0.8);
-      const title = prompt('กรุณาใส่ชื่อรูปภาพ (เช่น ห้องนั่งเล่น, วิวระเบียง, ห้องน้ำ):', file.name.replace(/\.[^/.]+$/, "")) || 'รูปภาพทรัพย์สิน';
-      const catChoice = prompt('กรุณาเลือกหมวดหมู่ (พิมพ์ 1=ภายนอก, 2=ภายใน, 3=จุดเด่น):', '2');
-      const category = catChoice === '1' ? 'exterior' : (catChoice === '3' ? 'highlight' : 'interior');
+      await fetch('/api/properties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(prop)
+      });
+    } catch (err) {}
+  }
 
-      if (!prop.gallery) prop.gallery = [];
-      const newItem = {
-        id: `g-${Date.now()}`,
-        type: 'image',
-        title,
-        category: category || 'interior',
-        url: compressedDataUrl,
-        caption: 'อัปโหลดพร้อมบีบอัดความละเอียดสูง'
-      };
+  async function editCategoryDescription(category) {
+    const prop = getCurrentProperty();
+    if (!prop) return;
 
-      prop.gallery.unshift(newItem);
+    const isExt = category === 'exterior';
+    const currentVal = isExt
+      ? (prop.exteriorDescription || 'บรรยากาศภายนอกอาคาร ทำเลที่ตั้ง การเดินทางสะดวกสบาย มีที่จอดรถ และระบบรักษาความปลอดภัยครบครัน')
+      : (prop.interiorDescription || 'พื้นที่ใช้สอยภายในห้องพัก ตกแต่งครบพร้อมเข้าอยู่ มีเครื่องปรับอากาศ เตียงนอน ตู้เสื้อผ้า โซฟา และสิ่งอำนวยความสะดวกครบชุด');
+
+    const promptText = `กรุณาใส่คำอธิบายภาพรวมหมวด${isExt ? 'ภายนอก' : 'ภายใน'}:`;
+    const newVal = prompt(promptText, currentVal);
+
+    if (newVal !== null && newVal.trim() !== '') {
+      if (isExt) {
+        prop.exteriorDescription = newVal.trim();
+      } else {
+        prop.interiorDescription = newVal.trim();
+      }
 
       const propIdx = state.propertiesState.findIndex(p => String(p.id) === String(prop.id));
       if (propIdx >= 0) {
@@ -995,9 +1037,7 @@
 
       saveStateToLocalStorage();
       renderPropertyGallery();
-      alert(`✅ บันทึกรูปภาพ "${title}" ลงในคลังของ "${prop.name}" เรียบร้อยแล้ว!`);
-
-      event.target.value = '';
+      alert(`✅ บันทึกคำอธิบายรวมหมวด${isExt ? 'ภายนอก' : 'ภายใน'} เรียบร้อยแล้ว!`);
 
       try {
         await fetch('/api/properties', {
@@ -1006,8 +1046,6 @@
           body: JSON.stringify(prop)
         });
       } catch (err) {}
-    } catch (e) {
-      alert('เกิดข้อผิดพลาดในการบีบอัดรูปภาพ: ' + e.message);
     }
   }
 
@@ -1026,7 +1064,7 @@
     const type = document.getElementById('gml-type')?.value || 'image';
     let url = document.getElementById('gml-url')?.value.trim();
     const title = document.getElementById('gml-title')?.value.trim() || 'สื่ออสังหาริมทรัพย์';
-    const category = document.getElementById('gml-category')?.value || (type === 'video' ? 'video' : 'interior');
+    const category = document.getElementById('gml-category')?.value || 'interior';
     const caption = document.getElementById('gml-caption')?.value.trim() || '';
 
     if (!url) {
@@ -1058,7 +1096,7 @@
     saveStateToLocalStorage();
     renderPropertyGallery();
     toggleModal('modal-add-media-link');
-    alert(`✅ บันทึกลิงก์ "${title}" ลงในคลังของ "${prop.name}" เรียบร้อยแล้ว!`);
+    alert(`✅ บันทึกลิงก์ลงในคลังของ "${prop.name}" เรียบร้อยแล้ว!`);
 
     if (document.getElementById('gml-url')) document.getElementById('gml-url').value = '';
     if (document.getElementById('gml-title')) document.getElementById('gml-title').value = '';
@@ -1077,12 +1115,12 @@
     const prop = getCurrentProperty();
     if (!prop || !prop.gallery) return;
 
-    const item = prop.gallery.find(it => String(it.id) === String(itemId));
-    if (!item) return;
+    const itemIdx = prop.gallery.findIndex(it => String(it.id) === String(itemId));
+    if (itemIdx === -1) return;
 
-    if (!confirm(`คุณต้องการลบ "${item.title || 'สื่อรายการนี้'}" ออกจากคลังของ "${prop.name}" ใช่หรือไม่?`)) return;
+    if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรูปภาพนี้ออกจากคลัง?')) return;
 
-    prop.gallery = prop.gallery.filter(it => String(it.id) !== String(itemId));
+    prop.gallery.splice(itemIdx, 1);
 
     const propIdx = state.propertiesState.findIndex(p => String(p.id) === String(prop.id));
     if (propIdx >= 0) {
@@ -1091,7 +1129,11 @@
 
     saveStateToLocalStorage();
     renderPropertyGallery();
-    alert(`✅ ลบสื่อออกจากคลังและบันทึกเรียบร้อยแล้ว!`);
+
+    const lightboxModal = document.getElementById('modal-gallery-lightbox');
+    if (lightboxModal && !lightboxModal.classList.contains('hidden')) {
+      toggleModal('modal-gallery-lightbox');
+    }
 
     try {
       await fetch('/api/properties', {
@@ -2292,10 +2334,9 @@
   window.openQuickMeterModal = openQuickMeterModal;
   window.handleQuickMeterSubmit = handleQuickMeterSubmit;
   window.handleAddPropertySubmit = handleAddPropertySubmit;
-  window.compressImageFile = compressImageFile;
   window.renderPropertyGallery = renderPropertyGallery;
-  window.filterGalleryPhotos = filterGalleryPhotos;
-  window.uploadPropertyGalleryImage = uploadPropertyGalleryImage;
+  window.uploadPropertyGalleryMultiple = uploadPropertyGalleryMultiple;
+  window.editCategoryDescription = editCategoryDescription;
   window.openAddMediaLinkModal = openAddMediaLinkModal;
   window.handleAddMediaLinkSubmit = handleAddMediaLinkSubmit;
   window.deleteGalleryItem = deleteGalleryItem;
