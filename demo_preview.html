@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_74"></script>
+  <script src="js/engine.js?v=20260814_75"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1813,7 +1813,7 @@
               <div class="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1 px-1">Pages</div>
               <div id="pdf-thumb-1" onclick="pdfJumpToPage(1)" class="pdfjs-thumb active">
                 <div class="w-full aspect-[1/1.414] bg-stone-100 border border-stone-300 rounded flex flex-col p-1 text-[7px] text-stone-600 overflow-hidden select-none">
-                  <div class="font-bold text-center border-b border-stone-300 pb-0.5 text-[8px]">สัญญา (หน้า ๑)</div>
+                  <div class="font-bold text-center border-b border-stone-300 pb-0.5 text-[8px]">สัญญา (หน้า 1)</div>
                   <div class="space-y-0.5 mt-0.5">
                     <div class="h-1 bg-stone-300 rounded w-5/6 mx-auto"></div>
                     <div class="h-1 bg-stone-200 rounded w-full"></div>
@@ -1821,12 +1821,12 @@
                     <div class="h-1 bg-stone-200 rounded w-4/5"></div>
                   </div>
                 </div>
-                <span class="text-[10px] font-bold text-stone-300 mt-1 block">1. สัญญาหลัก (หน้า ๑)</span>
+                <span class="text-[10px] font-bold text-stone-300 mt-1 block">1. สัญญาหลัก (หน้า 1)</span>
               </div>
 
               <div id="pdf-thumb-2" onclick="pdfJumpToPage(2)" class="pdfjs-thumb">
                 <div class="w-full aspect-[1/1.414] bg-stone-100 border border-stone-300 rounded flex flex-col p-1 text-[7px] text-stone-600 overflow-hidden select-none">
-                  <div class="font-bold text-center border-b border-stone-300 pb-0.5 text-[8px]">สัญญา (หน้า ๒)</div>
+                  <div class="font-bold text-center border-b border-stone-300 pb-0.5 text-[8px]">สัญญา (หน้า 2)</div>
                   <div class="space-y-0.5 mt-0.5">
                     <div class="h-1 bg-stone-200 rounded w-full"></div>
                     <div class="h-1 bg-stone-300 rounded w-4/5"></div>
@@ -1836,7 +1836,7 @@
                     </div>
                   </div>
                 </div>
-                <span class="text-[10px] font-bold text-stone-300 mt-1 block">2. สัญญาหลัก (หน้า ๒)</span>
+                <span class="text-[10px] font-bold text-stone-300 mt-1 block">2. สัญญาหลัก (หน้า 2)</span>
               </div>
 
               <div id="pdf-thumb-3" onclick="pdfJumpToPage(3)" class="pdfjs-thumb">
@@ -1850,7 +1850,7 @@
                     </div>
                   </div>
                 </div>
-                <span class="text-[10px] font-bold text-stone-300 mt-1 block">3. แนบท้าย ๑-๓</span>
+                <span class="text-[10px] font-bold text-stone-300 mt-1 block">3. แนบท้าย 1-3</span>
               </div>
             </div>
 
@@ -1858,7 +1858,7 @@
             <div id="pdf-viewport" class="pdfjs-viewport flex-1">
               <div id="pdf-canvas-wrapper" class="pdfjs-canvas-wrapper">
                 
-                <!-- PAGE 1: MAIN CONTRACT BODY (ข้อ ๑ - ข้อ ๓(๗)) -->
+                <!-- PAGE 1: MAIN CONTRACT BODY (ข้อ 1 - ข้อ 3(7)) -->
                 <div id="a4-sheet-page-1" class="a4-sheet sarabun-contract flex flex-col justify-between">
                   <div>
                     <div class="text-center font-bold text-[22pt] mb-3 tracking-tight">หนังสือสัญญาเช่าบ้าน</div>
@@ -1873,50 +1873,50 @@
                       
                       <p class="font-bold pt-0.5" style="text-indent: 2.5em;">ทั้งสองฝ่ายตกลงทำสัญญากันไว้มีข้อความดังต่อไปนี้</p>
 
-                      <p style="text-indent: 2.5em;"><strong>ข้อ ๑</strong> ผู้ให้เช่าตกลงให้เช่าและผู้เช่าตกลงรับเช่าบ้านเลขที่ <strong><span id="c-house-no-1" class="border-b border-dotted border-black px-1 font-bold">-</span></strong> ซึ่งอยู่ที่ <span id="c-full-address-1" class="border-b border-dotted border-black px-1 font-bold">-</span> ซึ่งต่อไปนี้ในสัญญานี้จะเรียกว่า <strong>“ทรัพย์สิน”</strong> มีกำหนดเวลา <strong><span id="c-duration-1" class="border-b border-dotted border-black px-1 font-bold">1 ปี</span></strong> เพื่อใช้เป็นที่อยู่อาศัย นับตั้งแต่วันที่ <strong><span id="c-start-date-1" class="border-b border-dotted border-black px-1 font-bold">-</span></strong> ถึงวันที่ <strong><span id="c-end-date-1" class="border-b border-dotted border-black px-1 font-bold">-</span></strong> และผู้เช่ายอมเสียค่าเช่าให้เดือนละ <strong><span id="c-rent-1" class="border-b border-dotted border-black px-1 font-bold">0</span> บาท (<span id="c-rent-text-1" class="border-b border-dotted border-black px-1 font-bold">ศูนย์บาทถ้วน</span>)</strong> มีกำหนดชำระเงินค่าเช่าทุกวันที่ <strong>๕</strong> ของทุกๆ เดือน หากผู้เช่าไม่ชำระตามที่กำหนดยอมให้ผู้ให้เช่ายึดทรัพย์สินและปิดประตูใส่กุญแจทรัพย์สินที่เช่าได้</p>
+                      <p style="text-indent: 2.5em;"><strong>ข้อ 1</strong> ผู้ให้เช่าตกลงให้เช่าและผู้เช่าตกลงรับเช่าบ้านเลขที่ <strong><span id="c-house-no-1" class="border-b border-dotted border-black px-1 font-bold">-</span></strong> ซึ่งอยู่ที่ <span id="c-full-address-1" class="border-b border-dotted border-black px-1 font-bold">-</span> ซึ่งต่อไปนี้ในสัญญานี้จะเรียกว่า <strong>“ทรัพย์สิน”</strong> มีกำหนดเวลา <strong><span id="c-duration-1" class="border-b border-dotted border-black px-1 font-bold">1 ปี</span></strong> เพื่อใช้เป็นที่อยู่อาศัย นับตั้งแต่วันที่ <strong><span id="c-start-date-1" class="border-b border-dotted border-black px-1 font-bold">-</span></strong> ถึงวันที่ <strong><span id="c-end-date-1" class="border-b border-dotted border-black px-1 font-bold">-</span></strong> และผู้เช่ายอมเสียค่าเช่าให้เดือนละ <strong><span id="c-rent-1" class="border-b border-dotted border-black px-1 font-bold">0</span> บาท (<span id="c-rent-text-1" class="border-b border-dotted border-black px-1 font-bold">ศูนย์บาทถ้วน</span>)</strong> มีกำหนดชำระเงินค่าเช่าทุกวันที่ <strong>5</strong> ของทุกๆ เดือน หากผู้เช่าไม่ชำระตามที่กำหนดยอมให้ผู้ให้เช่ายึดทรัพย์สินและปิดประตูใส่กุญแจทรัพย์สินที่เช่าได้</p>
                       
-                      <p style="text-indent: 2.5em;"><strong>ข้อ ๒</strong> เพื่อเป็นการประกันในการปฏิบัติตามสัญญาเช่า ผู้เช่าตกลงมอบเงินประกันการเช่าจำนวน <strong><span id="c-deposit-1" class="border-b border-dotted border-black px-1 font-bold">0</span> บาท (<span id="c-deposit-text-1" class="border-b border-dotted border-black px-1 font-bold">ศูนย์บาทถ้วน</span>)</strong> ให้แก่ผู้ให้เช่า และผู้ให้เช่าได้รับเงินจำนวนดังกล่าวไปเรียบร้อยแล้วในวันทำสัญญาฉบับนี้ ถ้าผู้เช่าเช่าครบกำหนดตามสัญญา ผู้ให้เช่าจะคืนเงินประกันให้หลังจากที่ได้หักเป็นค่าใช้จ่ายหรือค่าเสียหายอย่างใดๆ อันเกิดขึ้นแก่ทรัพย์สินที่เช่าแล้ว</p>
+                      <p style="text-indent: 2.5em;"><strong>ข้อ 2</strong> เพื่อเป็นการประกันในการปฏิบัติตามสัญญาเช่า ผู้เช่าตกลงมอบเงินประกันการเช่าจำนวน <strong><span id="c-deposit-1" class="border-b border-dotted border-black px-1 font-bold">0</span> บาท (<span id="c-deposit-text-1" class="border-b border-dotted border-black px-1 font-bold">ศูนย์บาทถ้วน</span>)</strong> ให้แก่ผู้ให้เช่า และผู้ให้เช่าได้รับเงินจำนวนดังกล่าวไปเรียบร้อยแล้วในวันทำสัญญาฉบับนี้ ถ้าผู้เช่าเช่าครบกำหนดตามสัญญา ผู้ให้เช่าจะคืนเงินประกันให้หลังจากที่ได้หักเป็นค่าใช้จ่ายหรือค่าเสียหายอย่างใดๆ อันเกิดขึ้นแก่ทรัพย์สินที่เช่าแล้ว</p>
 
-                      <p style="text-indent: 2.5em;"><strong>ข้อ ๓ ผู้เช่าสัญญาว่า</strong></p>
-                      <p style="padding-left: 2em;">(๑) จะเป็นผู้ชำระค่าน้ำ ค่าไฟฟ้า ค่าโทรศัพท์ ของบ้านหลังที่เช่าเอง และนำใบเสร็จการชำระเงินมามอบให้ผู้เช่าในวันชำระค่าเช่าของทุกเดือน</p>
-                      <p style="padding-left: 2em;">(๒) จะเป็นผู้รับภาระชำระค่าภาษีโรงเรือนและที่ดิน (ภาษีที่ดินและสิ่งปลูกสร้าง)</p>
-                      <p style="padding-left: 2em;">(๓) เมื่อผู้เช่าประสงค์จะดัดแปลงหรือก่อสร้างเพิ่มเติมทรัพย์สินที่เช่านี้จะต้องเสนอแบบแปลนและรายการให้ผู้ให้เช่าพิจารณา เมื่อผู้ให้เช่าให้ความยินยอมเป็นหนังสือแล้วจึงจะทำได้</p>
+                      <p style="text-indent: 2.5em;"><strong>ข้อ 3 ผู้เช่าสัญญาว่า</strong></p>
+                      <p style="padding-left: 2em;">(1) จะเป็นผู้ชำระค่าน้ำ ค่าไฟฟ้า ค่าโทรศัพท์ ของบ้านหลังที่เช่าเอง และนำใบเสร็จการชำระเงินมามอบให้ผู้เช่าในวันชำระค่าเช่าของทุกเดือน</p>
+                      <p style="padding-left: 2em;">(2) จะเป็นผู้รับภาระชำระค่าภาษีโรงเรือนและที่ดิน (ภาษีที่ดินและสิ่งปลูกสร้าง)</p>
+                      <p style="padding-left: 2em;">(3) เมื่อผู้เช่าประสงค์จะดัดแปลงหรือก่อสร้างเพิ่มเติมทรัพย์สินที่เช่านี้จะต้องเสนอแบบแปลนและรายการให้ผู้ให้เช่าพิจารณา เมื่อผู้ให้เช่าให้ความยินยอมเป็นหนังสือแล้วจึงจะทำได้</p>
                       <p style="padding-left: 2.5em;">บรรดาสิ่งที่ผู้เช่านำมาติดตั้งในทรัพย์สินที่เช่า ถ้ามีลักษณะเป็นสิ่งติดตรึงกับตัวอาคาร หรือ ที่ดินบริเวณทรัพย์สินที่เช่าแล้ว ผู้เช่าจะขุดหรือรื้อถอนไปไม่ได้ เว้นแต่จะได้รับอนุญาตเป็นหนังสือจากผู้ให้เช่า</p>
-                      <p style="padding-left: 2em;">(๔) ผู้เช่ายอมให้ผู้ให้เช่าหรือตัวแทนของผู้ให้เช่าไปตรวจทรัพย์สินที่เช่าได้เสมอ</p>
-                      <p style="padding-left: 2em;">(๕) ถ้าผู้เช่าจะทำประกันอัคคีภัยอย่างใดในทรัพย์สินที่เช่า ผู้เช่าต้องได้รับความยินยอมเป็นหนังสือจากผู้ให้เช่าจึงจะทำได้</p>
-                      <p style="padding-left: 2em;">(๖) ผู้เช่าจะสงวนรักษาอาคารและส่วนประกอบรวมทั้งอุปกรณ์ทั้งหลาย และเครื่องตกแต่งอาคารและสถานที่เช่าให้อยู่ในสภาพอันบำรุงรักษาอย่างดีตามควรแก่สภาพสิ่งของนั้นๆ และจะทำการซ่อมแซมเล็กน้อยตามที่จำเป็นเพื่อการสงวนรักษาทรัพย์สินดังกล่าวนั้นด้วย</p>
-                      <p style="padding-left: 2em;">(๗) ผู้เช่าจะไม่ให้เช่าช่วง และไม่ยอมให้บุคคลอื่นนอกจากบุคคลในครอบครัวของผู้เช่าเข้าอยู่ในทรัพย์สินและที่ดินบริเวณทรัพย์สินที่เช่า</p>
+                      <p style="padding-left: 2em;">(4) ผู้เช่ายอมให้ผู้ให้เช่าหรือตัวแทนของผู้ให้เช่าไปตรวจทรัพย์สินที่เช่าได้เสมอ</p>
+                      <p style="padding-left: 2em;">(5) ถ้าผู้เช่าจะทำประกันอัคคีภัยอย่างใดในทรัพย์สินที่เช่า ผู้เช่าต้องได้รับความยินยอมเป็นหนังสือจากผู้ให้เช่าจึงจะทำได้</p>
+                      <p style="padding-left: 2em;">(6) ผู้เช่าจะสงวนรักษาอาคารและส่วนประกอบรวมทั้งอุปกรณ์ทั้งหลาย และเครื่องตกแต่งอาคารและสถานที่เช่าให้อยู่ในสภาพอันบำรุงรักษาอย่างดีตามควรแก่สภาพสิ่งของนั้นๆ และจะทำการซ่อมแซมเล็กน้อยตามที่จำเป็นเพื่อการสงวนรักษาทรัพย์สินดังกล่าวนั้นด้วย</p>
+                      <p style="padding-left: 2em;">(7) ผู้เช่าจะไม่ให้เช่าช่วง และไม่ยอมให้บุคคลอื่นนอกจากบุคคลในครอบครัวของผู้เช่าเข้าอยู่ในทรัพย์สินและที่ดินบริเวณทรัพย์สินที่เช่า</p>
                     </div>
                   </div>
 
                   <!-- PAGE 1 FOOTER -->
                   <div class="pt-2 border-t border-stone-400 flex justify-between items-center text-[12pt] text-stone-600">
-                    <div>/ (๘) ผู้เช่าจะไม่โอน ...</div>
-                    <div class="font-bold">หน้าที่ ๑ / ๒</div>
+                    <div>/ (8) ผู้เช่าจะไม่โอน ...</div>
+                    <div class="font-bold">หน้าที่ 1 / 2</div>
                   </div>
                 </div>
 
-                <!-- PAGE 2: MAIN CONTRACT BODY (ข้อ ๓(๘) - ข้อ ๗ & ลายมือชื่อ) -->
+                <!-- PAGE 2: MAIN CONTRACT BODY (ข้อ 3(8) - ข้อ 7 & ลายมือชื่อ) -->
                 <div id="a4-sheet-page-2" class="a4-sheet sarabun-contract flex flex-col justify-between">
                   <div>
-                    <div class="text-center font-bold text-[14pt] mb-2 text-stone-700">- ๒ -</div>
+                    <div class="text-center font-bold text-[14pt] mb-2 text-stone-700">- 2 -</div>
 
                     <div class="space-y-2 text-[14.5pt] leading-snug text-justify">
-                      <p style="padding-left: 2em;">(๘) ผู้เช่าจะไม่โอนสิทธิการเช่าของตนซึ่งมีอยู่เหนือทรัพย์สินที่เช่า ไม่ว่าทั้งหมดหรือบางส่วนให้แก่บุคคลอื่น</p>
-                      <p style="padding-left: 2em;">(๙) ผู้เช่าจะไม่ประพฤติและกระทำการอย่างหนึ่งอย่างใดเป็นที่รำคาญแก่เพื่อนบ้านใกล้เคียงหรือกระทำสิ่งที่น่าจะเป็นอันตรายแก่สถานที่เช่าหรืออาจเป็นอันตรายแก่บุคคลหรือทรัพย์สินของผู้หนึ่งผู้ใดที่อยู่ใกล้เคียง และจะไม่กระทำหรือให้ผู้อื่นกระทำการอันผิดกฎหมายในสถานที่เช่านี้</p>
-                      <p style="padding-left: 2em;">(๑๐) ผู้เช่าจะเป็นผู้รับผิดในบรรดาความเสียหาย หรือบุบสลายใดๆ อันเกิดขึ้นแก่ทรัพย์สินที่เช่าเพราะความผิดของผู้เช่าหรือบุคคลในครอบครัวของผู้เช่า</p>
+                      <p style="padding-left: 2em;">(8) ผู้เช่าจะไม่โอนสิทธิการเช่าของตนซึ่งมีอยู่เหนือทรัพย์สินที่เช่า ไม่ว่าทั้งหมดหรือบางส่วนให้แก่บุคคลอื่น</p>
+                      <p style="padding-left: 2em;">(9) ผู้เช่าจะไม่ประพฤติและกระทำการอย่างหนึ่งอย่างใดเป็นที่รำคาญแก่เพื่อนบ้านใกล้เคียงหรือกระทำสิ่งที่น่าจะเป็นอันตรายแก่สถานที่เช่าหรืออาจเป็นอันตรายแก่บุคคลหรือทรัพย์สินของผู้หนึ่งผู้ใดที่อยู่ใกล้เคียง และจะไม่กระทำหรือให้ผู้อื่นกระทำการอันผิดกฎหมายในสถานที่เช่านี้</p>
+                      <p style="padding-left: 2em;">(10) ผู้เช่าจะเป็นผู้รับผิดในบรรดาความเสียหาย หรือบุบสลายใดๆ อันเกิดขึ้นแก่ทรัพย์สินที่เช่าเพราะความผิดของผู้เช่าหรือบุคคลในครอบครัวของผู้เช่า</p>
 
-                      <p style="text-indent: 2.5em;"><strong>ข้อ ๔ ผู้ให้เช่าสัญญาว่า</strong></p>
-                      <p style="padding-left: 2em;">(๑) จะออกใบรับเงินค่าเช่าทุกคราวที่รับชำระค่าเช่า</p>
-                      <p style="padding-left: 2em;">(๒) จะทำการซ่อมแซมทรัพย์สินที่เช่าตามหน้าที่ของผู้ให้เช่า เว้นแต่การซ่อมแซมเล็กน้อย เพื่อสงวนรักษาทรัพย์สินอันเป็นหน้าที่ของผู้เช่าดังกล่าวในข้อสาม (๖)</p>
+                      <p style="text-indent: 2.5em;"><strong>ข้อ 4 ผู้ให้เช่าสัญญาว่า</strong></p>
+                      <p style="padding-left: 2em;">(1) จะออกใบรับเงินค่าเช่าทุกคราวที่รับชำระค่าเช่า</p>
+                      <p style="padding-left: 2em;">(2) จะทำการซ่อมแซมทรัพย์สินที่เช่าตามหน้าที่ของผู้ให้เช่า เว้นแต่การซ่อมแซมเล็กน้อย เพื่อสงวนรักษาทรัพย์สินอันเป็นหน้าที่ของผู้เช่าดังกล่าวในข้อ 3 (6)</p>
 
-                      <p style="text-indent: 2.5em;"><strong>ข้อ ๕</strong> ถ้าผู้เช่าไม่ปฏิบัติตามสัญญาเช่านี้ไม่ว่าด้วยเหตุใดๆ ผู้ให้เช่ามีสิทธิบอกเลิกสัญญาเช่าได้ทันที นอกจากนี้ถ้าผู้เช่าถูกศาลสั่งยึดทรัพย์ ให้ถือว่าสัญญานี้เป็นอันเลิกกันทันที โดยผู้ให้เช่าไม่ต้องบอกเลิก</p>
+                      <p style="text-indent: 2.5em;"><strong>ข้อ 5</strong> ถ้าผู้เช่าไม่ปฏิบัติตามสัญญาเช่านี้ไม่ว่าด้วยเหตุใดๆ ผู้ให้เช่ามีสิทธิบอกเลิกสัญญาเช่าได้ทันที นอกจากนี้ถ้าผู้เช่าถูกศาลสั่งยึดทรัพย์ ให้ถือว่าสัญญานี้เป็นอันเลิกกันทันที โดยผู้ให้เช่าไม่ต้องบอกเลิก</p>
 
-                      <p style="text-indent: 2.5em;"><strong>ข้อ ๖</strong> เมื่อสัญญาเช่าระงับสิ้นไปไม่ว่าด้วยเหตุใดๆ ก็ตาม ผู้ให้เช่ามีสิทธิเข้าครอบครองทรัพย์สินที่เช่า โดยถือว่าผู้เช่าและบริวารยินยอมออกจากทรัพย์สินที่เช่า ทั้งนี้ โดยผู้ให้เช่ามีสิทธิขนย้ายทรัพย์สินของผู้เช่าและบุคคลในครอบครัวของผู้เช่าออกจากทรัพย์สินที่เช่า รวมทั้งปิดประตูใส่กุญแจทรัพย์สินที่เช่าได้ทันที และผู้เช่าตกลงจะเป็นผู้รับผิดชอบในค่าใช้จ่ายและความเสียหายที่เกิดขึ้นจากการดังกล่าวเพียงผู้เดียว</p>
+                      <p style="text-indent: 2.5em;"><strong>ข้อ 6</strong> เมื่อสัญญาเช่าระงับสิ้นไปไม่ว่าด้วยเหตุใดๆ ก็ตาม ผู้ให้เช่ามีสิทธิเข้าครอบครองทรัพย์สินที่เช่า โดยถือว่าผู้เช่าและบริวารยินยอมออกจากทรัพย์สินที่เช่า ทั้งนี้ โดยผู้ให้เช่ามีสิทธิขนย้ายทรัพย์สินของผู้เช่าและบุคคลในครอบครัวของผู้เช่าออกจากทรัพย์สินที่เช่า รวมทั้งปิดประตูใส่กุญแจทรัพย์สินที่เช่าได้ทันที และผู้เช่าตกลงจะเป็นผู้รับผิดชอบในค่าใช้จ่ายและความเสียหายที่เกิดขึ้นจากการดังกล่าวเพียงผู้เดียว</p>
 
-                      <p style="text-indent: 2.5em;"><strong>ข้อ ๗</strong> ในวันทำสัญญานี้ผู้เช่าได้ตรวจตราทรัพย์สินที่เช่าแล้ว เห็นว่ามีสภาพดีและเป็นปกติดีทุกประการ และผู้ให้เช่าได้ส่งมอบทรัพย์สินที่เช่าให้แก่ผู้เช่าแล้ว</p>
+                      <p style="text-indent: 2.5em;"><strong>ข้อ 7</strong> ในวันทำสัญญานี้ผู้เช่าได้ตรวจตราทรัพย์สินที่เช่าแล้ว เห็นว่ามีสภาพดีและเป็นปกติดีทุกประการ และผู้ให้เช่าได้ส่งมอบทรัพย์สินที่เช่าให้แก่ผู้เช่าแล้ว</p>
 
-                      <p style="text-indent: 2.5em; padding-top: 0.5em;">สัญญานี้ทำขึ้นสองฉบับ มีข้อความตรงกัน คู่สัญญาได้อ่านเข้าใจข้อความในสัญญานี้โดยตลอดแล้ว จึงลงลายมือชื่อไว้เป็นสำคัญต่อหน้าพยานและยึดถือไว้ฝ่ายละฉบับ</p>
+                      <p style="text-indent: 2.5em; padding-top: 0.5em;">สัญญานี้ทำขึ้น 2 ฉบับ มีข้อความตรงกัน คู่สัญญาได้อ่านเข้าใจข้อความในสัญญานี้โดยตลอดแล้ว จึงลงลายมือชื่อไว้เป็นสำคัญต่อหน้าพยานและยึดถือไว้ฝ่ายละฉบับ</p>
                     </div>
 
                     <!-- SIGNATURE SECTION -->
@@ -1945,23 +1945,23 @@
                   <!-- PAGE 2 FOOTER -->
                   <div class="pt-2 border-t border-stone-400 flex justify-between items-center text-[12pt] text-stone-600">
                     <div>หนังสือสัญญาเช่าบ้าน — YouEstates Property OS</div>
-                    <div class="font-bold">หน้าที่ ๒ / ๒</div>
+                    <div class="font-bold">หน้าที่ 2 / 2</div>
                   </div>
                 </div>
 
-                <!-- PAGE 3: ATTACHMENTS (เอกสารแนบท้าย ๑, ๒, ๓) -->
+                <!-- PAGE 3: ATTACHMENTS (เอกสารแนบท้าย 1, 2, 3) -->
                 <div id="a4-sheet-page-3" class="a4-sheet sarabun-contract flex flex-col justify-between">
                   <div class="space-y-3">
                     <!-- HEADER FOR PAGE 3 -->
                     <div class="flex justify-between items-center border-b border-black pb-1.5">
                       <div class="font-bold text-[16pt]">เอกสารแนบท้ายสัญญาเช่าบ้าน</div>
-                      <div class="stamp-original">เอกสารแนบท้าย ๑ - ๓</div>
+                      <div class="stamp-original">เอกสารแนบท้าย 1 - 3</div>
                     </div>
 
                     <!-- ATTACHMENT 1: INVENTORY TABLE -->
                     <div class="text-[13pt]">
                       <div class="font-bold mb-1 text-black">
-                        เอกสารแนบท้าย ๑: รายการเฟอร์นิเจอร์และอุปกรณ์ส่งมอบ ณ วันทำสัญญา
+                        เอกสารแนบท้าย 1: รายการเฟอร์นิเจอร์และอุปกรณ์ส่งมอบ ณ วันทำสัญญา
                       </div>
                       <table class="w-full border-collapse border border-black text-[12pt]">
                         <thead>
@@ -1981,7 +1981,7 @@
                     <div class="grid grid-cols-2 gap-3 text-[12.5pt] pt-1">
                       <div>
                         <div class="flex justify-between items-center mb-1">
-                          <span class="font-bold text-black">เอกสารแนบท้าย ๒: สำเนาบัตรประชาชนผู้เช่า</span>
+                          <span class="font-bold text-black">เอกสารแนบท้าย 2: สำเนาบัตรประชาชนผู้เช่า</span>
                           <span class="stamp-certified">สำเนาถูกต้อง</span>
                         </div>
                         <div class="w-full h-32 border border-black bg-stone-50 flex items-center justify-center overflow-hidden rounded-sm relative">
@@ -1990,7 +1990,7 @@
                       </div>
                       <div>
                         <div class="flex justify-between items-center mb-1">
-                          <span class="font-bold text-black">เอกสารแนบท้าย ๓: สำเนาบัตรประชาชนผู้ให้เช่า</span>
+                          <span class="font-bold text-black">เอกสารแนบท้าย 3: สำเนาบัตรประชาชนผู้ให้เช่า</span>
                           <span class="stamp-certified">สำเนาถูกต้อง</span>
                         </div>
                         <div class="w-full h-32 border border-black bg-stone-50 flex items-center justify-center overflow-hidden rounded-sm relative">
@@ -2003,7 +2003,7 @@
                   <!-- PAGE 3 FOOTER -->
                   <div class="pt-2 border-t border-stone-400 flex justify-between items-center text-[12pt] text-stone-600">
                     <div>เอกสารแนบท้ายสัญญาเช่าบ้าน — YouEstates Property OS</div>
-                    <div class="font-bold">เอกสารแนบท้าย ๑ - ๓</div>
+                    <div class="font-bold">เอกสารแนบท้าย 1 - 3</div>
                   </div>
                 </div>
 
