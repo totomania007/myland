@@ -1831,7 +1831,105 @@
     } catch(err) {}
   }
 
-  // 9. LEASE CONTRACT & PRINT ENGINE
+  // 9. LEASE CONTRACT & PDF.JS REALISTIC VIEWER ENGINE
+  let pdfCurrentPage = 1;
+  let pdfCurrentZoom = 1.0;
+  let pdfRotation = 0;
+  let isPdfSidebarOpen = true;
+
+  function togglePdfSidebar() {
+    const sidebar = document.getElementById('pdf-thumbnails-sidebar');
+    const btn = document.getElementById('pdf-sidebar-toggle-btn');
+    if (!sidebar) return;
+    isPdfSidebarOpen = !isPdfSidebarOpen;
+    if (isPdfSidebarOpen) {
+      sidebar.classList.remove('hidden');
+      if (btn) btn.classList.add('active');
+    } else {
+      sidebar.classList.add('hidden');
+      if (btn) btn.classList.remove('active');
+    }
+  }
+
+  function pdfJumpToPage(pageNum) {
+    pageNum = parseInt(pageNum) || 1;
+    if (pageNum < 1) pageNum = 1;
+    if (pageNum > 2) pageNum = 2;
+    pdfCurrentPage = pageNum;
+
+    const pageInput = document.getElementById('pdf-page-num');
+    if (pageInput) pageInput.value = pageNum;
+
+    [1, 2].forEach(p => {
+      const thumb = document.getElementById(`pdf-thumb-${p}`);
+      if (thumb) {
+        if (p === pageNum) thumb.classList.add('active');
+        else thumb.classList.remove('active');
+      }
+    });
+
+    const targetSheet = document.getElementById(`a4-sheet-page-${pageNum}`);
+    if (targetSheet) {
+      targetSheet.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  function pdfPrevPage() {
+    if (pdfCurrentPage > 1) {
+      pdfJumpToPage(pdfCurrentPage - 1);
+    }
+  }
+
+  function pdfNextPage() {
+    if (pdfCurrentPage < 2) {
+      pdfJumpToPage(pdfCurrentPage + 1);
+    }
+  }
+
+  function pdfApplyZoomAndRotation() {
+    const wrapper = document.getElementById('pdf-canvas-wrapper');
+    if (!wrapper) return;
+    wrapper.style.transform = `scale(${pdfCurrentZoom}) rotate(${pdfRotation}deg)`;
+  }
+
+  function handlePdfZoomChange(val) {
+    if (val === 'fit-width') {
+      const viewport = document.getElementById('pdf-viewport');
+      if (viewport) {
+        const vw = viewport.clientWidth - 60;
+        pdfCurrentZoom = Math.max(0.4, Math.min(1.5, vw / 800));
+      }
+    } else if (val === 'fit-page') {
+      const viewport = document.getElementById('pdf-viewport');
+      if (viewport) {
+        const vh = viewport.clientHeight - 80;
+        pdfCurrentZoom = Math.max(0.4, Math.min(1.2, vh / 1120));
+      }
+    } else {
+      pdfCurrentZoom = parseFloat(val) || 1.0;
+    }
+    pdfApplyZoomAndRotation();
+  }
+
+  function pdfZoomIn() {
+    pdfCurrentZoom = Math.min(2.0, Math.round((pdfCurrentZoom + 0.15) * 100) / 100);
+    const select = document.getElementById('pdf-zoom-select');
+    if (select) select.value = String(pdfCurrentZoom);
+    pdfApplyZoomAndRotation();
+  }
+
+  function pdfZoomOut() {
+    pdfCurrentZoom = Math.max(0.4, Math.round((pdfCurrentZoom - 0.15) * 100) / 100);
+    const select = document.getElementById('pdf-zoom-select');
+    if (select) select.value = String(pdfCurrentZoom);
+    pdfApplyZoomAndRotation();
+  }
+
+  function pdfRotate() {
+    pdfRotation = (pdfRotation + 90) % 360;
+    pdfApplyZoomAndRotation();
+  }
+
   function calculateLeaseDates(startDateStr, durationYears) {
     if (!startDateStr) return { endDate: '', thaiText: '' };
     const start = new Date(startDateStr);
@@ -1878,8 +1976,8 @@
     const prop = getCurrentProperty();
     if (!prop) return;
 
-    const lessor = state.lessorProfiles[prop.lessorKey] || Object.values(state.lessorProfiles)[0] || { name: 'ผู้ให้เช่า', idCard: '-', address: '-', age: '-' };
-    const tenant = Object.values(state.tenantDatabase)[0] || { fullName: 'ผู้เช่า', idCard: '-', address: '-', age: '-', startDate: prop.startDate || '2026-08-13', duration: '1' };
+    const lessor = state.lessorProfiles[prop.lessorKey] || Object.values(state.lessorProfiles)[0] || { name: 'ผู้ให้เช่า', idCard: '-', address: '-', age: '-', imageUrl: CONFIG.PLACEHOLDER_SVG };
+    const tenant = Object.values(state.tenantDatabase)[0] || { fullName: 'ผู้เช่า', idCard: '-', address: '-', age: '-', startDate: prop.startDate || '2026-08-13', duration: '1', idCardUrl: CONFIG.PLACEHOLDER_SVG };
 
     const dates = calculateLeaseDates(tenant.startDate || prop.startDate || '2026-08-13', tenant.duration || 1);
 
@@ -1918,6 +2016,16 @@
     ['sig-lessor-1', 'sig-lessor-name'].forEach(id => safeSetText(id, lessor.name || 'ผู้ให้เช่า'));
     ['sig-lessee-1', 'sig-tenant-name'].forEach(id => safeSetText(id, tenant.fullName || 'ผู้เช่า'));
 
+    // Attachments: Tenant & Lessor ID Photocopies
+    const tenantCardImg = document.getElementById('c-card-img-1');
+    if (tenantCardImg) {
+      tenantCardImg.src = tenant.idCardUrl || tenant.idCardScanUrl || CONFIG.PLACEHOLDER_SVG;
+    }
+    const lessorCardImg = document.getElementById('c-lessor-card-img-1');
+    if (lessorCardImg) {
+      lessorCardImg.src = lessor.imageUrl || lessor.idCardUrl || CONFIG.PLACEHOLDER_SVG;
+    }
+
     const tableBody = document.getElementById('c-inventory-table-body');
     if (tableBody) {
       tableBody.innerHTML = '';
@@ -1933,7 +2041,7 @@
               <td class="border border-black p-1.5">1 รายการ</td>
               <td class="border border-black p-1.5">สมบูรณ์พร้อมใช้</td>
               <td class="border border-black p-1.5">
-                <img src="${item.img || CONFIG.PLACEHOLDER_SVG}" class="h-10 mx-auto object-cover rounded border border-stone-300">
+                <img src="${item.img || CONFIG.PLACEHOLDER_SVG}" class="h-9 mx-auto object-cover rounded border border-stone-300">
               </td>
             </tr>
           `;
@@ -2342,8 +2450,14 @@
   window.deleteGalleryItem = deleteGalleryItem;
   window.openGalleryLightbox = openGalleryLightbox;
   window.openPromoCoverLightbox = openPromoCoverLightbox;
-  window.prevLightboxMedia = prevLightboxMedia;
-  window.nextLightboxMedia = nextLightboxMedia;
+  window.togglePdfSidebar = togglePdfSidebar;
+  window.pdfJumpToPage = pdfJumpToPage;
+  window.pdfPrevPage = pdfPrevPage;
+  window.pdfNextPage = pdfNextPage;
+  window.handlePdfZoomChange = handlePdfZoomChange;
+  window.pdfZoomIn = pdfZoomIn;
+  window.pdfZoomOut = pdfZoomOut;
+  window.pdfRotate = pdfRotate;
   window.copyPropertyPromoLink = copyPropertyPromoLink;
 
   // 12. AUTO-START & LIFECYCLE LISTENERS

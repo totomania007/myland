@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_48"></script>
+  <script src="js/engine.js?v=20260814_49"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -170,14 +170,77 @@
       transform: scale(1.08) rotate(3deg);
     }
 
-    .a4-preview-canvas {
-      background-color: #4a4d52;
-      padding: 40px 20px;
+    /* PDF.JS REALISTIC VIEWER & MULTI-PAGE A4 ENGINE */
+    .pdfjs-container {
+      background-color: #525659;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
       display: flex;
+      flex-direction: column;
+    }
+
+    .pdfjs-toolbar {
+      background-color: #323639;
+      color: #f1f5f9;
+      border-bottom: 1px solid #1e293b;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-family: 'Prompt', sans-serif;
+      user-select: none;
+      z-index: 10;
+    }
+
+    .pdfjs-btn {
+      background: transparent;
+      color: #e2e8f0;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
-      border-radius: 1.25rem;
-      overflow-x: auto;
-      box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+      gap: 5px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .pdfjs-btn:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .pdfjs-btn.active {
+      background-color: #10b981;
+      color: #ffffff;
+    }
+
+    .pdfjs-viewport {
+      background-color: #525659;
+      padding: 30px 16px;
+      overflow: auto;
+      max-height: 82vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      box-shadow: inset 0 3px 12px rgba(0, 0, 0, 0.35);
+      scroll-behavior: smooth;
+    }
+
+    .pdfjs-canvas-wrapper {
+      transition: transform 0.2s ease-out;
+      transform-origin: top center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
     }
 
     .a4-sheet {
@@ -186,12 +249,13 @@
       padding: 20mm 20mm 20mm 25mm;
       background: #ffffff;
       color: #000000;
-      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4), 0 1px 4px rgba(0, 0, 0, 0.2);
       font-family: 'Sarabun', 'TH Sarabun PSK', sans-serif !important;
       font-size: 16pt !important;
       line-height: 1.45 !important;
       box-sizing: border-box;
       position: relative;
+      border-radius: 2px;
     }
 
     .sarabun-contract {
@@ -212,6 +276,65 @@
       text-indent: 0 !important;
     }
 
+    .stamp-original {
+      border: 2px solid #dc2626;
+      color: #dc2626;
+      padding: 2px 8px;
+      font-weight: 800;
+      font-size: 11pt;
+      letter-spacing: 1px;
+      border-radius: 4px;
+      display: inline-block;
+      transform: rotate(-2deg);
+      user-select: none;
+    }
+
+    .stamp-certified {
+      border: 1.5px solid #1d4ed8;
+      color: #1d4ed8;
+      padding: 2px 6px;
+      font-weight: 700;
+      font-size: 10pt;
+      letter-spacing: 0.5px;
+      border-radius: 3px;
+      display: inline-block;
+      transform: rotate(-1deg);
+      user-select: none;
+    }
+
+    .pdfjs-sidebar {
+      width: 140px;
+      background: #2a2e33;
+      border-right: 1px solid #1e293b;
+      padding: 12px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      user-select: none;
+    }
+
+    .pdfjs-thumb {
+      background: #ffffff;
+      border: 2px solid transparent;
+      border-radius: 4px;
+      padding: 4px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      transition: all 0.15s ease;
+      text-align: center;
+    }
+
+    .pdfjs-thumb:hover {
+      border-color: #60a5fa;
+      transform: scale(1.03);
+    }
+
+    .pdfjs-thumb.active {
+      border-color: #10b981;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4);
+    }
+
     @page {
       size: A4 portrait;
       margin: 20mm 20mm 20mm 25mm;
@@ -220,15 +343,21 @@
     @media print {
       .no-print { display: none !important; }
       body { background: white !important; padding: 0 !important; margin: 0 !important; }
-      .a4-preview-canvas { background: transparent !important; padding: 0 !important; display: block !important; box-shadow: none !important; border-radius: 0 !important; }
+      .pdfjs-container { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }
+      .pdfjs-toolbar, .pdfjs-sidebar { display: none !important; }
+      .pdfjs-viewport { background: transparent !important; padding: 0 !important; overflow: visible !important; max-height: none !important; box-shadow: none !important; display: block !important; }
+      .pdfjs-canvas-wrapper { transform: none !important; gap: 0 !important; display: block !important; }
       .a4-sheet {
         width: 100% !important;
-        min-height: 0 !important;
+        min-height: 297mm !important;
+        height: auto !important;
         padding: 0 !important;
         margin: 0 !important;
         box-shadow: none !important;
         border: none !important;
         font-size: 16pt !important;
+        page-break-after: always !important;
+        break-after: page !important;
       }
     }
   </style>
@@ -1326,98 +1455,228 @@
         </div>
       </div>
 
-      <!-- VIEW 4: CONTRACT GENERATOR (A4 16PT TH SARABUN) -->
-      <div id="view-contract" class="hidden space-y-6 max-w-5xl mx-auto">
-        <div class="flex justify-between items-center no-print youestates-card p-4">
-          <div>
-            <h3 class="font-extrabold text-[#383838] text-sm">📄 หนังสือสัญญาเช่าบ้าน (มาตรฐานราชการ A4 ฟอนต์ TH Sarabun 16pt)</h3>
-            <p class="text-xs text-stone-400 font-medium">สัดส่วนขนาดจริง 210 x 297 มม. ขอบซ้าย 2.5 ซม. / ขอบอื่น 2.0 ซม. พร้อมสั่งพิมพ์หรือบันทึกเป็น PDF</p>
-          </div>
-          <button onclick="window.print()" class="youestates-btn-coral text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-sm flex items-center gap-2">
-            🖨️ สั่งพิมพ์สัญญา / บันทึก PDF (Print A4)
-          </button>
-        </div>
-
-        <div class="a4-preview-canvas">
-          <div class="a4-sheet sarabun-contract">
-            <div class="absolute top-6 right-6 border border-black px-2 py-0.5 text-[11pt] font-bold">ต้นฉบับ</div>
-            
-            <div class="text-center font-bold text-[20pt] mb-4 tracking-normal">หนังสือสัญญาเช่าบ้าน</div>
-            
-            <div class="text-right mb-4 text-[16pt]">
-              ทำที่ <span id="c-place-1" class="font-bold border-b border-dotted border-black pb-0.5 px-2">-</span><br>
-              วันที่ <span id="c-date-1" class="font-bold border-b border-dotted border-black pb-0.5 px-2">-</span>
+      <!-- VIEW 4: CONTRACT GENERATOR (PDF.JS REALISTIC REAL-PRINT A4 VIEWER) -->
+      <div id="view-contract" class="hidden space-y-4 max-w-5xl mx-auto">
+        
+        <!-- PDF.JS CONTAINER -->
+        <div class="pdfjs-container no-print">
+          <!-- PDF.JS AUTHENTIC TOOLBAR -->
+          <div class="pdfjs-toolbar flex flex-wrap items-center justify-between gap-2 border-b border-stone-800">
+            <!-- LEFT TOOLS -->
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="togglePdfSidebar()" id="pdf-sidebar-toggle-btn" class="pdfjs-btn active" title="เปิด/ปิด แถบหน้าตัวอย่าง (Thumbnails)">
+                <span>📑 หน้าตัวอย่าง</span>
+              </button>
+              <div class="h-4 w-px bg-stone-700 mx-1"></div>
+              <button type="button" onclick="pdfPrevPage()" class="pdfjs-btn" title="หน้าก่อนหน้า">▲</button>
+              <div class="flex items-center gap-1 text-xs font-semibold text-stone-300">
+                <span class="text-[11px] text-stone-400">หน้า</span>
+                <input type="number" id="pdf-page-num" value="1" min="1" max="2" onchange="pdfJumpToPage(this.value)" class="w-9 bg-stone-900 border border-stone-700 text-center rounded text-white text-xs py-0.5 font-bold">
+                <span class="text-[11px] text-stone-400">/ 2</span>
+              </div>
+              <button type="button" onclick="pdfNextPage()" class="pdfjs-btn" title="หน้าถัดไป">▼</button>
             </div>
 
-            <div class="space-y-2 text-[16pt] leading-normal">
-              <p>สัญญานี้ทำขึ้นระหว่าง <strong><span id="c-lessor-name-1">ผู้ให้เช่า</span></strong> อายุ <span id="c-lessor-age-1">-</span> ปี อยู่บ้านเลขที่ <span id="c-lessor-address-1">-</span> เลขประจำตัวประชาชน <span id="c-lessor-idcard-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ผู้ให้เช่า”</strong> ฝ่ายหนึ่ง</p>
-              <p>กับ <strong><span id="c-lessee-name-1">ผู้เช่า</span></strong> อายุ <span id="c-lessee-age-1">-</span> ปี อยู่บ้านเลขที่ <span id="c-lessee-address-1">-</span> เลขประจำตัวประชาชน <span id="c-lessee-idcard-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ผู้เช่า”</strong> อีกฝ่ายหนึ่ง</p>
-
-              <p class="font-bold pt-1">คู่สัญญาทั้งสองฝ่ายได้ตกลงทำสัญญากันไว้มีข้อความดังต่อไปนี้</p>
-
-              <p><strong>ข้อ ๑</strong> ผู้ให้เช่าตกลงให้เช่าและผู้เช่าตกลงรับเช่าบ้านเลขที่ <strong><span id="c-house-no-1">-</span></strong> รายละเอียดที่ตั้ง <span id="c-full-address-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ทรัพย์สินที่เช่า”</strong> มีกำหนดระยะเวลาเช่า <strong><span id="c-duration-1">1 ปี</span></strong> เพื่อใช้เป็นที่พักอาศัย นับตั้งแต่วันที่ <strong><span id="c-start-date-1">-</span></strong> ถึงวันที่ <strong><span id="c-end-date-1">-</span></strong> และผู้เช่ายอมเสียค่าเช่าให้เดือนละ <strong><span id="c-rent-1">0</span> บาท (<span id="c-rent-text-1">ศูนย์บาทถ้วน</span>)</strong> มีกำหนดชำระเงินค่าเช่าทุกวันที่ <strong>๕</strong> ของทุกเดือน</p>
-              
-              <p><strong>ข้อ ๒</strong> ในวันทำสัญญานี้ ผู้เช่าได้มอบเงินประกันการปฏิบัติตามสัญญาเช่าจำนวน <strong><span id="c-deposit-1">0</span> บาท (<span id="c-deposit-text-1">ศูนย์บาทถ้วน</span>)</strong> ให้แก่ผู้ให้เช่าเรียบร้อยแล้ว โดยผู้ให้เช่าจะคืนเงินประกันนี้ให้เมื่อสิ้นสุดสัญญาและผู้เช่าส่งมอบทรัพย์สินคืนในสภาพเรียบร้อย</p>
-
-              <p><strong>ข้อ ๓</strong> ผู้เช่าสัญญาว่าจะชำระค่าน้ำ ค่าไฟฟ้า ค่าภาษีโรงเรือน/ที่ดิน และค่าบำรุงรักษาตามปกติ ไม่นำทรัพย์สินไปให้เช่าช่วง และไม่กระทำการใดอันผิดกฎหมายหรือสร้างความเดือดร้อนรำคาญ</p>
-              
-              <p><strong>ข้อ ๔</strong> ผู้ให้เช่าสัญญาว่าจะออกใบรับเงินค่าเช่าให้แก่ผู้เช่าทุกคราว และดูแลรักษาโครงสร้างอาคารตามหน้าที่ผู้ให้เช่า</p>
-              
-              <p><strong>ข้อ ๕</strong> หากผู้เช่าผิดนัดชำระค่าเช่าหรือผิดสัญญาข้อหนึ่งข้อใด ผู้ให้เช่ามีสิทธิบอกเลิกสัญญาเช่าได้ทันที</p>
-              
-              <p><strong>ข้อ ๖</strong> เมื่อสัญญาเช่าสิ้นสุดลง ไม่ว่าด้วยเหตุใด ผู้ให้เช่ามีสิทธิกลับเข้าครอบครองทรัพย์สินและขนย้ายทรัพย์สินของผู้เช่าออกได้</p>
-              
-              <p><strong>ข้อ ๗</strong> ในวันทำสัญญานี้ ผู้เช่าได้ตรวจตราทรัพย์สินที่เช่าและรายการอุปกรณ์เฟอร์นิเจอร์แล้ว เห็นว่ามีสภาพเรียบร้อยสมบูรณ์ทุกประการ</p>
+            <!-- CENTER TOOLS (ZOOM & FIT) -->
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="pdfZoomOut()" class="pdfjs-btn text-base font-bold px-2 py-0.5" title="ย่อขนาด (−)">−</button>
+              <select id="pdf-zoom-select" onchange="handlePdfZoomChange(this.value)" class="bg-stone-900 text-stone-200 border border-stone-700 rounded text-xs px-2 py-1 font-semibold outline-none cursor-pointer">
+                <option value="fit-width">พอดีความกว้าง (Fit Width)</option>
+                <option value="fit-page">พอดีหน้ากระดาษ (Fit Page)</option>
+                <option value="0.6">60%</option>
+                <option value="0.8">80%</option>
+                <option value="1.0" selected>100% (ขนาดจริง 1:1)</option>
+                <option value="1.15">115%</option>
+                <option value="1.3">130%</option>
+              </select>
+              <button type="button" onclick="pdfZoomIn()" class="pdfjs-btn text-base font-bold px-2 py-0.5" title="ขยายขนาด (+)">+</button>
             </div>
 
-            <!-- ATTACHMENT 1: INVENTORY TABLE -->
-            <div class="mt-6 pt-3 border-t border-black text-[14pt]">
-              <div class="font-bold mb-2 text-black">
-                เอกสารแนบท้าย ๑: รายการเฟอร์นิเจอร์และอุปกรณ์ส่งมอบ ณ วันทำสัญญา
-              </div>
-              <table class="w-full border-collapse border border-black text-[13pt]">
-                <thead>
-                  <tr class="bg-stone-100 border-b border-black font-bold">
-                    <th class="border border-black p-1 text-center w-12">ลำดับ</th>
-                    <th class="border border-black p-1 text-left">รายการ</th>
-                    <th class="border border-black p-1 text-center w-20">จำนวน</th>
-                    <th class="border border-black p-1 text-center w-24">สภาพ</th>
-                    <th class="border border-black p-1 text-center w-28">ภาพถ่าย</th>
-                  </tr>
-                </thead>
-                <tbody id="c-inventory-table-body"></tbody>
-              </table>
-            </div>
-
-            <!-- ATTACHMENT 2 & 3: ID CARD PHOTOCOPIES -->
-            <div class="mt-6 pt-3 border-t border-black grid grid-cols-2 gap-4 text-[13pt]">
-              <div>
-                <div class="font-bold text-black mb-1">เอกสารแนบท้าย ๒: สำเนาบัตรประชาชนผู้เช่า</div>
-                <div class="w-full h-28 border border-black bg-stone-50 flex items-center justify-center overflow-hidden">
-                  <img id="c-card-img-1" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250' fill='none'><rect width='400' height='250' fill='%23f5f5f5'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='18'>สำเนาถูกต้อง ผู้เช่า</text></svg>" alt="Tenant ID" class="w-full h-full object-cover">
-                </div>
-              </div>
-              <div>
-                <div class="font-bold text-black mb-1">เอกสารแนบท้าย ๓: สำเนาบัตรประชาชนผู้ให้เช่า</div>
-                <div class="w-full h-28 border border-black bg-stone-50 flex items-center justify-center overflow-hidden">
-                  <img id="c-lessor-card-img-1" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250' fill='none'><rect width='400' height='250' fill='%23f5f5f5'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='18'>สำเนาถูกต้อง ผู้ให้เช่า</text></svg>" alt="Lessor ID" class="w-full h-full object-cover">
-                </div>
-              </div>
-            </div>
-
-            <!-- SIGNATURE SECTION -->
-            <div class="mt-8 pt-4 border-t border-black grid grid-cols-2 gap-8 text-center text-[15pt]">
-              <div>
-                <div class="mb-8 font-bold">ลงชื่อ..........................................................ผู้ให้เช่า</div>
-                <div>( <span id="sig-lessor-1">ผู้ให้เช่า</span> )</div>
-              </div>
-              <div>
-                <div class="mb-8 font-bold">ลงชื่อ..........................................................ผู้เช่า</div>
-                <div>( <span id="sig-lessee-1">ผู้เช่า</span> )</div>
-              </div>
+            <!-- RIGHT TOOLS (ROTATE, FULLSCREEN, DOWNLOAD, PRINT) -->
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="pdfRotate()" class="pdfjs-btn hidden sm:inline-flex" title="หมุนเอกสาร 90 องศา">
+                <span>🔄 หมุน</span>
+              </button>
+              <button type="button" onclick="window.print()" class="pdfjs-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-lg shadow-md border-0" title="สั่งพิมพ์เอกสาร A4 หรือบันทึกเป็น PDF">
+                <span>🖨️ สั่งพิมพ์ A4 / PDF</span>
+              </button>
             </div>
           </div>
+
+          <!-- VIEWER BODY (SIDEBAR + VIEWPORT) -->
+          <div class="flex relative">
+            <!-- SIDEBAR THUMBNAILS -->
+            <div id="pdf-thumbnails-sidebar" class="pdfjs-sidebar">
+              <div class="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1 px-1">Pages</div>
+              <div id="pdf-thumb-1" onclick="pdfJumpToPage(1)" class="pdfjs-thumb active">
+                <div class="w-full aspect-[1/1.414] bg-stone-100 border border-stone-300 rounded flex flex-col p-1 text-[7px] text-stone-600 overflow-hidden select-none">
+                  <div class="font-bold text-center border-b border-stone-300 pb-0.5 text-[8px]">สัญญาเช่า</div>
+                  <div class="space-y-0.5 mt-0.5">
+                    <div class="h-1 bg-stone-300 rounded w-5/6 mx-auto"></div>
+                    <div class="h-1 bg-stone-200 rounded w-full"></div>
+                    <div class="h-1 bg-stone-200 rounded w-full"></div>
+                    <div class="h-1 bg-stone-200 rounded w-4/5"></div>
+                  </div>
+                </div>
+                <span class="text-[10px] font-bold text-stone-300 mt-1 block">1. สัญญาหลัก</span>
+              </div>
+
+              <div id="pdf-thumb-2" onclick="pdfJumpToPage(2)" class="pdfjs-thumb">
+                <div class="w-full aspect-[1/1.414] bg-stone-100 border border-stone-300 rounded flex flex-col p-1 text-[7px] text-stone-600 overflow-hidden select-none">
+                  <div class="font-bold text-center border-b border-stone-300 pb-0.5 text-[8px]">แนบท้าย</div>
+                  <div class="space-y-0.5 mt-0.5">
+                    <div class="h-2 bg-stone-200 rounded w-full"></div>
+                    <div class="grid grid-cols-2 gap-0.5 mt-1">
+                      <div class="h-3 bg-stone-300 rounded"></div>
+                      <div class="h-3 bg-stone-300 rounded"></div>
+                    </div>
+                  </div>
+                </div>
+                <span class="text-[10px] font-bold text-stone-300 mt-1 block">2. แนบท้าย & ลายเซ็น</span>
+              </div>
+            </div>
+
+            <!-- PDF VIEWPORT & CANVAS WRAPPER -->
+            <div id="pdf-viewport" class="pdfjs-viewport flex-1">
+              <div id="pdf-canvas-wrapper" class="pdfjs-canvas-wrapper">
+                
+                <!-- PAGE 1: MAIN CONTRACT BODY -->
+                <div id="a4-sheet-page-1" class="a4-sheet sarabun-contract flex flex-col justify-between">
+                  <div>
+                    <!-- ORIGINAL BADGE -->
+                    <div class="flex justify-between items-start mb-2">
+                      <span class="text-[12pt] text-stone-500 font-medium">สัญญาเช่าอาคารเพื่ออยู่อาศัย</span>
+                      <div class="stamp-original">ต้นฉบับ</div>
+                    </div>
+                    
+                    <div class="text-center font-bold text-[22pt] mb-3 tracking-normal">หนังสือสัญญาเช่าบ้าน</div>
+                    
+                    <div class="text-right mb-4 text-[16pt] leading-normal">
+                      ทำที่ <span id="c-place-1" class="font-bold border-b border-dotted border-black pb-0.5 px-2">-</span><br>
+                      วันที่ <span id="c-date-1" class="font-bold border-b border-dotted border-black pb-0.5 px-2">-</span>
+                    </div>
+
+                    <div class="space-y-2 text-[16pt] leading-normal">
+                      <p>สัญญานี้ทำขึ้นระหว่าง <strong><span id="c-lessor-name-1">ผู้ให้เช่า</span></strong> อายุ <span id="c-lessor-age-1">-</span> ปี อยู่บ้านเลขที่ <span id="c-lessor-address-1">-</span> เลขประจำตัวประชาชน <span id="c-lessor-idcard-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ผู้ให้เช่า”</strong> ฝ่ายหนึ่ง</p>
+                      <p>กับ <strong><span id="c-lessee-name-1">ผู้เช่า</span></strong> อายุ <span id="c-lessee-age-1">-</span> ปี อยู่บ้านเลขที่ <span id="c-lessee-address-1">-</span> เลขประจำตัวประชาชน <span id="c-lessee-idcard-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ผู้เช่า”</strong> อีกฝ่ายหนึ่ง</p>
+
+                      <p class="font-bold pt-1 no-indent text-center">คู่สัญญาทั้งสองฝ่ายได้ตกลงทำสัญญากันไว้มีข้อความดังต่อไปนี้</p>
+
+                      <p><strong>ข้อ ๑</strong> ผู้ให้เช่าตกลงให้เช่าและผู้เช่าตกลงรับเช่าบ้านเลขที่ <strong><span id="c-house-no-1">-</span></strong> รายละเอียดที่ตั้ง <span id="c-full-address-1">-</span> ซึ่งต่อไปในสัญญานี้จะเรียกว่า <strong>“ทรัพย์สินที่เช่า”</strong> มีกำหนดระยะเวลาเช่า <strong><span id="c-duration-1">1 ปี</span></strong> เพื่อใช้เป็นที่พักอาศัย นับตั้งแต่วันที่ <strong><span id="c-start-date-1">-</span></strong> ถึงวันที่ <strong><span id="c-end-date-1">-</span></strong> และผู้เช่ายอมเสียค่าเช่าให้เดือนละ <strong><span id="c-rent-1">0</span> บาท (<span id="c-rent-text-1">ศูนย์บาทถ้วน</span>)</strong> มีกำหนดชำระเงินค่าเช่าทุกวันที่ <strong>๕</strong> ของทุกเดือน</p>
+                      
+                      <p><strong>ข้อ ๒</strong> ในวันทำสัญญานี้ ผู้เช่าได้มอบเงินประกันการปฏิบัติตามสัญญาเช่าจำนวน <strong><span id="c-deposit-1">0</span> บาท (<span id="c-deposit-text-1">ศูนย์บาทถ้วน</span>)</strong> ให้แก่ผู้ให้เช่าเรียบร้อยแล้ว โดยผู้ให้เช่าจะคืนเงินประกันนี้ให้เมื่อสิ้นสุดสัญญาและผู้เช่าส่งมอบทรัพย์สินคืนในสภาพเรียบร้อย</p>
+
+                      <p><strong>ข้อ ๓</strong> ผู้เช่าสัญญาว่าจะชำระค่าน้ำ ค่าไฟฟ้า ค่าภาษีโรงเรือน/ที่ดิน และค่าบำรุงรักษาตามปกติ ไม่นำทรัพย์สินไปให้เช่าช่วง และไม่กระทำการใดอันผิดกฎหมายหรือสร้างความเดือดร้อนรำคาญ</p>
+                      
+                      <p><strong>ข้อ ๔</strong> ผู้ให้เช่าสัญญาว่าจะออกใบรับเงินค่าเช่าให้แก่ผู้เช่าทุกคราว และดูแลรักษาโครงสร้างอาคารตามหน้าที่ผู้ให้เช่า</p>
+                      
+                      <p><strong>ข้อ ๕</strong> หากผู้เช่าผิดนัดชำระค่าเช่าหรือผิดสัญญาข้อหนึ่งข้อใด ผู้ให้เช่ามีสิทธิบอกเลิกสัญญาเช่าได้ทันที</p>
+                      
+                      <p><strong>ข้อ ๖</strong> เมื่อสัญญาเช่าสิ้นสุดลง ไม่ว่าด้วยเหตุใด ผู้ให้เช่ามีสิทธิกลับเข้าครอบครองทรัพย์สินและขนย้ายทรัพย์สินของผู้เช่าออกได้</p>
+                      
+                      <p><strong>ข้อ ๗</strong> ในวันทำสัญญานี้ ผู้เช่าได้ตรวจตราทรัพย์สินที่เช่าและรายการอุปกรณ์เฟอร์นิเจอร์ตามเอกสารแนบท้าย ๑ แล้ว เห็นว่ามีสภาพเรียบร้อยสมบูรณ์ทุกประการ</p>
+                    </div>
+                  </div>
+
+                  <!-- PAGE 1 FOOTER -->
+                  <div class="pt-4 border-t border-stone-400 flex justify-between items-center text-[12pt] text-stone-600">
+                    <div>ลงชื่อย่อกำกับ: ผู้ให้เช่า .................... / ผู้เช่า ....................</div>
+                    <div class="font-bold">หน้าที่ ๑ / ๒</div>
+                  </div>
+                </div>
+
+                <!-- PAGE 2: ATTACHMENTS & SIGNATURES -->
+                <div id="a4-sheet-page-2" class="a4-sheet sarabun-contract flex flex-col justify-between">
+                  <div class="space-y-4">
+                    <!-- HEADER FOR PAGE 2 -->
+                    <div class="flex justify-between items-center border-b border-black pb-2">
+                      <div class="font-bold text-[16pt]">หนังสือสัญญาเช่าบ้าน (เอกสารแนบท้าย & ลายมือชื่อ)</div>
+                      <div class="stamp-original">เอกสารแนบท้าย</div>
+                    </div>
+
+                    <!-- ATTACHMENT 1: INVENTORY TABLE -->
+                    <div class="text-[14pt]">
+                      <div class="font-bold mb-1 text-black">
+                        เอกสารแนบท้าย ๑: รายการเฟอร์นิเจอร์และอุปกรณ์ส่งมอบ ณ วันทำสัญญา
+                      </div>
+                      <table class="w-full border-collapse border border-black text-[12.5pt]">
+                        <thead>
+                          <tr class="bg-stone-100 border-b border-black font-bold">
+                            <th class="border border-black p-1 text-center w-10">ลำดับ</th>
+                            <th class="border border-black p-1 text-left">รายการ</th>
+                            <th class="border border-black p-1 text-center w-16">จำนวน</th>
+                            <th class="border border-black p-1 text-center w-20">สภาพ</th>
+                            <th class="border border-black p-1 text-center w-24">ภาพถ่าย</th>
+                          </tr>
+                        </thead>
+                        <tbody id="c-inventory-table-body"></tbody>
+                      </table>
+                    </div>
+
+                    <!-- ATTACHMENT 2 & 3: ID CARD PHOTOCOPIES -->
+                    <div class="grid grid-cols-2 gap-4 text-[13pt] pt-2">
+                      <div>
+                        <div class="flex justify-between items-center mb-1">
+                          <span class="font-bold text-black">เอกสารแนบท้าย ๒: สำเนาบัตรประชาชนผู้เช่า</span>
+                          <span class="stamp-certified">สำเนาถูกต้อง</span>
+                        </div>
+                        <div class="w-full h-32 border border-black bg-stone-50 flex items-center justify-center overflow-hidden rounded-sm relative">
+                          <img id="c-card-img-1" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250' fill='none'><rect width='400' height='250' fill='%23f5f5f5'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='18'>สำเนาบัตรประชาชนผู้เช่า</text></svg>" alt="Tenant ID" class="w-full h-full object-cover">
+                        </div>
+                      </div>
+                      <div>
+                        <div class="flex justify-between items-center mb-1">
+                          <span class="font-bold text-black">เอกสารแนบท้าย ๓: สำเนาบัตรประชาชนผู้ให้เช่า</span>
+                          <span class="stamp-certified">สำเนาถูกต้อง</span>
+                        </div>
+                        <div class="w-full h-32 border border-black bg-stone-50 flex items-center justify-center overflow-hidden rounded-sm relative">
+                          <img id="c-lessor-card-img-1" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250' fill='none'><rect width='400' height='250' fill='%23f5f5f5'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='18'>สำเนาบัตรประชาชนผู้ให้เช่า</text></svg>" alt="Lessor ID" class="w-full h-full object-cover">
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- SIGNATURE SECTION -->
+                    <div class="pt-4 border-t-2 border-black space-y-6 text-center text-[15pt]">
+                      <div class="text-left font-bold text-[14pt]">
+                        สัญญานี้ทำขึ้นเป็นสองฉบับมีข้อความถูกต้องตรงกัน คู่สัญญาได้อ่านและเข้าใจข้อความโดยละเอียดแล้ว จึงได้ลงลายมือชื่อไว้เป็นหลักฐานต่อหน้าพยาน
+                      </div>
+
+                      <div class="grid grid-cols-2 gap-8 pt-2">
+                        <div class="space-y-1">
+                          <div>ลงชื่อ ............................................................ ผู้ให้เช่า</div>
+                          <div class="font-bold">( <span id="sig-lessor-1">ผู้ให้เช่า</span> )</div>
+                        </div>
+                        <div class="space-y-1">
+                          <div>ลงชื่อ ............................................................ ผู้เช่า</div>
+                          <div class="font-bold">( <span id="sig-lessee-1">ผู้เช่า</span> )</div>
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-2 gap-8 pt-2 text-[14pt] text-stone-800">
+                        <div class="space-y-1">
+                          <div>ลงชื่อ ............................................................ พยาน</div>
+                          <div>( ............................................................ )</div>
+                        </div>
+                        <div class="space-y-1">
+                          <div>ลงชื่อ ............................................................ พยาน</div>
+                          <div>( ............................................................ )</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- PAGE 2 FOOTER -->
+                  <div class="pt-4 border-t border-stone-400 flex justify-between items-center text-[12pt] text-stone-600">
+                    <div>สัญญาเช่าบ้าน YouEstates Property OS — ระบบจัดการสัญญาเช่ามาตรฐาน</div>
+                    <div class="font-bold">หน้าที่ ๒ / ๒</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
         </div>
+
       </div>
 
     </main>
