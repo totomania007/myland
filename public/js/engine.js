@@ -923,16 +923,16 @@
       if (idx === 0 && items.length >= 3) {
         spanClasses = 'col-span-2 row-span-2';
       } else if (idx === 4 && items.length >= 7) {
-        spanClasses = 'col-span-2 row-span-1';
+        spanClasses = 'col-span-2 sm:col-span-1 row-span-1';
       }
 
       container.innerHTML += `
-        <div class="${spanClasses} group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-200 bg-stone-900 cursor-pointer select-none min-h-[140px]" onclick="openGalleryLightbox('${item.id}')">
+        <div class="${spanClasses} group relative rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-200 bg-stone-900 cursor-pointer select-none h-full min-h-[120px]" onclick="openGalleryLightbox('${item.id}')">
           <div class="w-full h-full">
             ${isVideo ? `
               <div class="w-full h-full bg-slate-950 flex flex-col items-center justify-center text-white relative">
-                <span class="text-3xl filter drop-shadow-md">▶️</span>
-                <span class="text-[10px] font-bold text-rose-400 mt-1 uppercase">Video Tour</span>
+                <span class="text-2xl sm:text-3xl filter drop-shadow-md">▶️</span>
+                <span class="text-[9px] sm:text-[10px] font-bold text-rose-400 mt-1 uppercase">Video Tour</span>
               </div>
             ` : `
               <img src="${item.url || CONFIG.PLACEHOLDER_SVG}" alt="Property Photo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
@@ -940,14 +940,14 @@
           </div>
 
           <!-- FLOATING READ-ONLY OVERLAY (FOR TENANTS — NO DELETE BUTTON) -->
-          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none flex flex-col justify-between p-2.5">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none flex flex-col justify-between p-2">
             <div class="flex justify-between items-center pointer-events-auto">
-              <span class="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white text-[10px] font-bold">
+              <span class="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white text-[9px] sm:text-[10px] font-bold">
                 ${categoryName === 'exterior' ? '🏠 ภายนอก' : '🛋️ ภายใน'}
               </span>
             </div>
             <div class="text-right pointer-events-auto">
-              <span class="px-2.5 py-1 rounded-lg bg-white/90 hover:bg-white text-stone-900 font-bold text-[10px] shadow cursor-pointer">
+              <span class="px-2 py-1 rounded-lg bg-white/90 hover:bg-white text-stone-900 font-bold text-[9px] sm:text-[10px] shadow cursor-pointer">
                 🔍 ขยายดูรูป
               </span>
             </div>
