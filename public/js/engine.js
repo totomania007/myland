@@ -363,14 +363,22 @@
       const resP = await fetch('/api/properties');
       if (resP.ok) {
         const dbProps = await resP.json();
-        if (Array.isArray(dbProps)) {
-          if (dbProps.length > 0 || localStorage.getItem('property_os_properties_synced')) {
-            state.propertiesState = dbProps;
-            localStorage.setItem('property_os_properties', JSON.stringify(dbProps));
-            localStorage.setItem('property_os_properties_synced', 'true');
-            if (!state.currentPropertyId || !dbProps.find(p => String(p.id) === String(state.currentPropertyId))) {
-              state.currentPropertyId = dbProps[0]?.id || null;
+        if (Array.isArray(dbProps) && dbProps.length > 0) {
+          // Merge properties safely: preserve local gallery if it has newer/more images
+          const mergedProps = dbProps.map(dbp => {
+            const localP = (state.propertiesState || []).find(lp => String(lp.id) === String(dbp.id));
+            if (localP && localP.gallery && localP.gallery.length > 0) {
+              if (!dbp.gallery || dbp.gallery.length < localP.gallery.length) {
+                dbp.gallery = localP.gallery;
+              }
             }
+            return dbp;
+          });
+          state.propertiesState = mergedProps;
+          localStorage.setItem('property_os_properties', JSON.stringify(mergedProps));
+          localStorage.setItem('property_os_properties_synced', 'true');
+          if (!state.currentPropertyId || !mergedProps.find(p => String(p.id) === String(state.currentPropertyId))) {
+            state.currentPropertyId = mergedProps[0]?.id || null;
           }
         }
       }
@@ -851,6 +859,55 @@
     });
   }
 
+  async function uploadFileToCloudinary(file) {
+    const cloudName = CONFIG.CLOUDINARY_CLOUD_NAME || 'ogdfbbpw';
+    const uploadPreset = CONFIG.CLOUDINARY_UPLOAD_PRESET || 'house_landlord';
+
+    // 1. Direct Cloudinary Client-Side Upload
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', uploadPreset);
+
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && (data.secure_url || data.url)) {
+          return data.secure_url || data.url;
+        }
+      }
+    } catch (err) {
+      console.warn('Direct Cloudinary upload failed, trying /api/upload fallback...', err);
+    }
+
+    // 2. Fallback via Cloudflare Pages Function /api/upload
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.url) {
+          return data.url;
+        }
+      }
+    } catch (err) {
+      console.warn('Fallback /api/upload error:', err);
+    }
+
+    // 3. Last fallback: compressed webp Data URL
+    return await compressImageFile(file, 800, 0.75);
+  }
+
   function parseVideoEmbedUrl(url) {
     if (!url) return null;
     url = url.trim();
@@ -1019,23 +1076,42 @@
     const fileList = Array.from(files);
     let successCount = 0;
 
+    // Non-blocking upload toast
+    let uploadToast = document.getElementById('gallery-upload-toast');
+    if (!uploadToast) {
+      uploadToast = document.createElement('div');
+      uploadToast.id = 'gallery-upload-toast';
+      uploadToast.className = 'fixed bottom-6 right-6 bg-stone-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl z-50 flex items-center gap-3 border border-stone-700 animate-pulse text-xs font-bold';
+      document.body.appendChild(uploadToast);
+    }
+    uploadToast.style.display = 'flex';
+    uploadToast.innerHTML = `<span>⏳</span><span>กำลังอัปโหลดรูปภาพ 0/${fileList.length} รูป ขึ้น Cloudinary...</span>`;
+
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
       try {
-        const compressedDataUrl = await compressImageFile(file, 1200, 0.82);
+        if (uploadToast) {
+          uploadToast.innerHTML = `<span>☁️</span><span>กำลังอัปโหลดรูปที่ ${i + 1}/${fileList.length} (${file.name}) ขึ้นคลังภาพ...</span>`;
+        }
+        const cdnUrl = await uploadFileToCloudinary(file);
         const newItem = {
-          id: `g-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+          id: `g-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
           type: 'image',
-          title: '',
+          title: file.name.replace(/\.[^/.]+$/, ''),
           category: category || 'interior',
-          url: compressedDataUrl,
+          url: cdnUrl,
           caption: ''
         };
         prop.gallery.unshift(newItem);
         successCount++;
       } catch (err) {
-        console.warn('Error compressing image:', file.name, err);
+        console.warn('Error uploading image:', file.name, err);
       }
+    }
+
+    if (uploadToast) {
+      uploadToast.innerHTML = `<span>✅</span><span>อัปโหลดสำเร็จ ${successCount} รูป กำลังบันทึกข้อมูล...</span>`;
+      setTimeout(() => { if (uploadToast) uploadToast.remove(); }, 2500);
     }
 
     const propIdx = state.propertiesState.findIndex(p => String(p.id) === String(prop.id));
@@ -1047,15 +1123,57 @@
     renderPropertyGallery();
     event.target.value = '';
 
-    alert(`✅ อัปโหลดและบันทึกรูปภาพหมวด${category === 'exterior' ? 'ภายนอก' : 'ภายใน'} จำนวน ${successCount} รูป เรียบร้อยแล้ว!`);
-
+    // Synchronize to Cloudflare D1
     try {
       await fetch('/api/properties', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(prop)
       });
-    } catch (err) {}
+    } catch (err) {
+      console.warn('D1 sync warning:', err);
+    }
+  }
+
+  async function uploadToCloudinaryAndPreview(event, target) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    let toast = document.getElementById('doc-upload-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'doc-upload-toast';
+      toast.className = 'fixed bottom-6 right-6 bg-stone-900 text-white px-5 py-3 rounded-2xl shadow-2xl z-50 flex items-center gap-2 border border-stone-700 text-xs font-bold';
+      document.body.appendChild(toast);
+    }
+    toast.style.display = 'flex';
+    toast.innerHTML = `<span>☁️</span><span>กำลังอัปโหลดเอกสารขึ้น Cloudinary...</span>`;
+
+    try {
+      const cdnUrl = await uploadFileToCloudinary(file);
+      if (toast) {
+        toast.innerHTML = `<span>✅</span><span>อัปโหลดเอกสารสำเร็จ!</span>`;
+        setTimeout(() => { if (toast) toast.remove(); }, 2000);
+      }
+
+      if (target === 'tenant') {
+        const previewImg = document.getElementById('imagePreview');
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const fileText = document.getElementById('fileText');
+        if (previewImg) previewImg.src = cdnUrl;
+        if (previewContainer) previewContainer.classList.remove('hidden');
+        if (fileText) fileText.innerText = `✅ อัปโหลดบัตรประชาชนสำเร็จ: ${file.name}`;
+      } else if (target === 'lessor-tab') {
+        const fileText = document.getElementById('lessorTabFileText');
+        if (fileText) fileText.innerText = `✅ อัปโหลดบัตรประชาชนผู้ให้เช่าสำเร็จ: ${file.name}`;
+      } else if (target === 'bank') {
+        const fileText = document.getElementById('bankDocFileText');
+        if (fileText) fileText.innerText = `✅ อัปโหลดเอกสารธนาคารสำเร็จ: ${file.name}`;
+      }
+    } catch(err) {
+      if (toast) toast.remove();
+      alert(`❌ ไม่สามารถอัปโหลดไฟล์ได้: ${err.message}`);
+    }
   }
 
   async function editCategoryDescription(category) {
@@ -2912,6 +3030,8 @@
   window.handleQuickMeterSubmit = handleQuickMeterSubmit;
   window.handleAddPropertySubmit = handleAddPropertySubmit;
   window.renderPropertyGallery = renderPropertyGallery;
+  window.uploadFileToCloudinary = uploadFileToCloudinary;
+  window.uploadToCloudinaryAndPreview = uploadToCloudinaryAndPreview;
   window.uploadPropertyGalleryMultiple = uploadPropertyGalleryMultiple;
   window.editCategoryDescription = editCategoryDescription;
   window.openAddMediaLinkModal = openAddMediaLinkModal;
