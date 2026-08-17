@@ -1977,9 +1977,15 @@
     if (!prop) return;
 
     const lessor = state.lessorProfiles[prop.lessorKey] || Object.values(state.lessorProfiles)[0] || { name: 'ผู้ให้เช่า', idCard: '-', address: '-', age: '-', imageUrl: CONFIG.PLACEHOLDER_SVG };
-    const tenant = Object.values(state.tenantDatabase)[0] || { fullName: 'ผู้เช่า', idCard: '-', address: '-', age: '-', startDate: prop.startDate || '2026-08-13', duration: '1', idCardUrl: CONFIG.PLACEHOLDER_SVG };
+    const tenant = Object.values(state.tenantDatabase).find(t => t.propertyId === prop.id) 
+                || Object.values(state.tenantDatabase)[0] 
+                || { fullName: 'ผู้เช่า', idCard: '-', address: '-', age: '-', startDate: prop.startDate || '2026-08-13', duration: 1, idCardUrl: CONFIG.PLACEHOLDER_SVG };
 
-    const dates = calculateLeaseDates(tenant.startDate || prop.startDate || '2026-08-13', tenant.duration || 1);
+    const leaseStartDateStr = tenant.startDate || prop.startDate || '2026-08-13';
+    const dates = calculateLeaseDates(leaseStartDateStr, tenant.duration || 1);
+
+    // Contract signing date (ใช้วันที่เริ่มสัญญา หรือ วันที่ปัจจุบัน)
+    const signingDateThai = dates.startThai || '-';
 
     const safeSetText = (id, txt) => {
       const el = document.getElementById(id);
@@ -1990,7 +1996,7 @@
     const depositVal = prop.deposit || tenant.deposit || 0;
 
     ['c-place-1', 'c-place'].forEach(id => safeSetText(id, prop.address || prop.name || 'กรุงเทพมหานคร'));
-    ['c-date-1', 'c-date'].forEach(id => safeSetText(id, dates.startThai || '-'));
+    ['c-date-1', 'c-date'].forEach(id => safeSetText(id, signingDateThai));
 
     ['c-lessor-name-1', 'c-lessor-name'].forEach(id => safeSetText(id, lessor.name || '-'));
     ['c-lessor-age-1', 'c-lessor-age'].forEach(id => safeSetText(id, lessor.age || '-'));
@@ -2058,7 +2064,9 @@
     }
 
     const lessor = state.lessorProfiles[prop.lessorKey] || Object.values(state.lessorProfiles)[0] || { name: 'ผู้ให้เช่า', idCard: '-', address: '-', age: '-' };
-    const tenant = Object.values(state.tenantDatabase)[0] || { fullName: 'ผู้เช่า', idCard: '-', address: '-', age: '-', startDate: prop.startDate || '2026-08-13', duration: '1' };
+    const tenant = Object.values(state.tenantDatabase).find(t => t.propertyId === prop.id)
+                || Object.values(state.tenantDatabase)[0]
+                || { fullName: 'ผู้เช่า', idCard: '-', address: '-', age: '-', startDate: prop.startDate || '2026-08-13', duration: '1' };
     const dates = calculateLeaseDates(tenant.startDate || prop.startDate || '2026-08-13', tenant.duration || 1);
     const rentVal = prop.rent || tenant.rent || 0;
     const depositVal = prop.deposit || tenant.deposit || 0;
