@@ -454,23 +454,106 @@
     applyRolePermissions();
   }
 
-  function renderTenantDashboardView() {
-    const prop = getCurrentProperty();
+  function normalizePhone(p) {
+    return (p || '').replace(/\D/g, '');
+  }
+
+  function handleTenantAuthSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const phoneInput = document.getElementById('tenant-auth-phone')?.value.trim();
+    const id4Input = document.getElementById('tenant-auth-id4')?.value.trim();
+
+    if (!phoneInput || !id4Input) {
+      alert('⚠️ กรุณากรอกเบอร์โทรศัพท์และเลข 4 หลักท้ายของบัตรประชาชนให้ครบถ้วน');
+      return;
+    }
+
+    const rawPhone = normalizePhone(phoneInput);
     const tenants = Object.values(state.tenantDatabase || {});
-    const tenant = (prop ? tenants.find(t => String(t.propId) === String(prop.id)) : null) || tenants[0] || {
-      fullName: 'ผู้เช่า / ผู้สนใจเช่า',
-      phone: '-',
-      lineId: '-',
-      facebook: '-',
-      email: '-',
-      xTwitter: '-',
-      emergencyContact: '-',
-      rent: prop?.rent || 0,
-      deposit: prop?.deposit || 0,
-      startDate: prop?.startDate || '2026-08-13',
-      endDate: '2027-08-12',
-      duration: '1'
-    };
+    const matched = tenants.find(t => {
+      const tPhone = normalizePhone(t.phone);
+      const tIdCard = (t.idCard || '').replace(/\D/g, '');
+      const last4 = tIdCard.length >= 4 ? tIdCard.slice(-4) : '';
+      return (tPhone === rawPhone || tPhone.endsWith(rawPhone) || rawPhone.endsWith(tPhone)) && (last4 === id4Input);
+    });
+
+    if (!matched) {
+      alert('❌ ไม่พบข้อมูลผู้เช่าที่ตรงกับเบอร์โทรศัพท์และเลข 4 ตัวท้ายบัตรประชาชนที่ระบุ\n\n💡 กรุณาตรวจสอบเบอร์โทรศัพท์ หรือติดต่อผู้ให้เช่าเพื่อสอบถามข้อมูลสิทธิ์ครับ');
+      return;
+    }
+
+    state.authenticatedTenantId = matched.id;
+    sessionStorage.setItem('property_os_auth_tenant_id', matched.id);
+
+    // Auto switch to tenant's rented property
+    if (matched.propId) {
+      state.currentPropertyId = matched.propId;
+      localStorage.setItem('property_os_current_prop_id', matched.propId);
+    }
+
+    renderAllViews();
+    alert(`✅ ยืนยันตัวตนสำเร็จ! ยินดีต้อนรับ คุณ ${matched.fullName}\nระบบได้ปลดล็อกข้อมูลสัญญาและสิทธิ์เฉพาะบุคคลให้ท่านแล้วครับ`);
+  }
+
+  function logoutTenantAuth() {
+    state.authenticatedTenantId = null;
+    sessionStorage.removeItem('property_os_auth_tenant_id');
+    renderAllViews();
+    alert('🚪 ออกจากระบบข้อมูลสิทธิ์ผู้เช่าเรียบร้อยแล้ว');
+  }
+
+  function renderTenantDashboardView() {
+    const isLandlord = state.currentRole === 'landlord';
+    const authGate = document.getElementById('tenant-auth-gate');
+    const authContent = document.getElementById('tenant-auth-content');
+    const storedAuthId = sessionStorage.getItem('property_os_auth_tenant_id');
+    const authTenantId = state.authenticatedTenantId || storedAuthId;
+
+    let tenant = null;
+    let prop = null;
+
+    if (isLandlord) {
+      // Landlord mode has full access
+      if (authGate) authGate.classList.add('hidden');
+      if (authContent) authContent.classList.remove('hidden');
+      prop = getCurrentProperty();
+      const tenants = Object.values(state.tenantDatabase || {});
+      tenant = (prop ? tenants.find(t => String(t.propId) === String(prop.id)) : null) || tenants[0] || {
+        fullName: 'ผู้เช่า (โหมดผู้ให้เช่า)',
+        phone: '-',
+        lineId: '-',
+        facebook: '-',
+        email: '-',
+        xTwitter: '-',
+        emergencyContact: '-',
+        rent: prop?.rent || 0,
+        deposit: prop?.deposit || 0,
+        startDate: prop?.startDate || '2026-08-13',
+        endDate: '2027-08-12',
+        duration: '1'
+      };
+      if (document.getElementById('tenant-verified-badge-name')) {
+        document.getElementById('tenant-verified-badge-name').innerText = `👑 โหมดผู้ให้เช่า (ดูข้อมูลผู้เช่า: คุณ ${tenant.fullName})`;
+      }
+    } else {
+      // Tenant mode: Requires verification gate
+      if (!authTenantId || !state.tenantDatabase[authTenantId]) {
+        if (authGate) authGate.classList.remove('hidden');
+        if (authContent) authContent.classList.add('hidden');
+        return;
+      }
+
+      // Tenant is verified!
+      if (authGate) authGate.classList.add('hidden');
+      if (authContent) authContent.classList.remove('hidden');
+      tenant = state.tenantDatabase[authTenantId];
+      prop = (state.propertiesState || []).find(p => String(p.id) === String(tenant.propId)) || getCurrentProperty();
+      if (document.getElementById('tenant-verified-badge-name')) {
+        document.getElementById('tenant-verified-badge-name').innerText = `คุณ ${tenant.fullName} (ผู้เช่าตัวจริง 🔒)`;
+      }
+    }
+
+    if (!tenant) return;
 
     const lessor = (prop ? state.lessorProfiles[prop.lessorKey] : null) || Object.values(state.lessorProfiles)[0] || {
       name: 'ผู้ให้เช่า',
@@ -2454,14 +2537,31 @@
     ['c-place-1', 'c-place'].forEach(id => safeSetText(id, prop.address || prop.name || 'กรุงเทพมหานคร'));
     ['c-date-1', 'c-date'].forEach(id => safeSetText(id, signingDateThai));
 
+    function maskIdCard(id) {
+      if (!id || id === '-') return '-';
+      const cleaned = id.replace(/\D/g, '');
+      if (cleaned.length >= 13) {
+        return `${cleaned[0]}-${cleaned.slice(1,5)}-xxxxx-${cleaned.slice(9,11)}-${cleaned[12]}`;
+      }
+      return id;
+    }
+
+    const isLandlord = state.currentRole === 'landlord';
+    const authTenantId = state.authenticatedTenantId || sessionStorage.getItem('property_os_auth_tenant_id');
+    const isTenantOwner = Boolean(authTenantId && tenant && String(tenant.id) === String(authTenantId));
+    const shouldUnmask = isLandlord || isTenantOwner;
+
+    const displayLessorId = shouldUnmask ? (lessor.idCard || '-') : maskIdCard(lessor.idCard);
+    const displayTenantId = shouldUnmask ? (tenant.idCard || '-') : maskIdCard(tenant.idCard);
+
     ['c-lessor-name-1', 'c-lessor-name'].forEach(id => safeSetText(id, lessor.name || '-'));
     ['c-lessor-age-1', 'c-lessor-age'].forEach(id => safeSetText(id, lessor.age || '-'));
-    ['c-lessor-idcard-1', 'c-lessor-idcard'].forEach(id => safeSetText(id, lessor.idCard || '-'));
+    ['c-lessor-idcard-1', 'c-lessor-idcard'].forEach(id => safeSetText(id, displayLessorId));
     ['c-lessor-address-1', 'c-lessor-address'].forEach(id => safeSetText(id, lessor.address || '-'));
 
     ['c-lessee-name-1', 'c-tenant-name-1', 'c-tenant-name'].forEach(id => safeSetText(id, tenant.fullName || '-'));
     ['c-lessee-age-1', 'c-tenant-age-1', 'c-tenant-age'].forEach(id => safeSetText(id, tenant.age || '-'));
-    ['c-lessee-idcard-1', 'c-tenant-idcard-1', 'c-tenant-idcard'].forEach(id => safeSetText(id, tenant.idCard || '-'));
+    ['c-lessee-idcard-1', 'c-tenant-idcard-1', 'c-tenant-idcard'].forEach(id => safeSetText(id, displayTenantId));
     ['c-lessee-address-1', 'c-tenant-address-1', 'c-tenant-address'].forEach(id => safeSetText(id, tenant.address || '-'));
 
     ['c-house-no-1', 'c-property-houseno'].forEach(id => safeSetText(id, prop.houseNo || '-'));
@@ -2478,14 +2578,14 @@
     ['sig-lessor-1', 'sig-lessor-name'].forEach(id => safeSetText(id, lessor.name || 'ผู้ให้เช่า'));
     ['sig-lessee-1', 'sig-tenant-name'].forEach(id => safeSetText(id, tenant.fullName || 'ผู้เช่า'));
 
-    // Attachments: Tenant & Lessor ID Photocopies
+    // Attachments: Tenant & Lessor ID Photocopies (Hidden for unauthenticated public viewers)
     const tenantCardImg = document.getElementById('c-card-img-1');
     if (tenantCardImg) {
-      tenantCardImg.src = tenant.idCardUrl || tenant.idCardScanUrl || CONFIG.PLACEHOLDER_SVG;
+      tenantCardImg.src = shouldUnmask ? (tenant.idCardUrl || tenant.idCardScanUrl || CONFIG.PLACEHOLDER_SVG) : CONFIG.PLACEHOLDER_SVG;
     }
     const lessorCardImg = document.getElementById('c-lessor-card-img-1');
     if (lessorCardImg) {
-      lessorCardImg.src = lessor.imageUrl || lessor.idCardUrl || CONFIG.PLACEHOLDER_SVG;
+      lessorCardImg.src = shouldUnmask ? (lessor.imageUrl || lessor.idCardUrl || CONFIG.PLACEHOLDER_SVG) : CONFIG.PLACEHOLDER_SVG;
     }
 
     const tableBody = document.getElementById('c-inventory-table-body');
@@ -2812,7 +2912,7 @@
       const tabTenantBtn = document.getElementById('tab-tenant');
       if (tabTenantBtn) tabTenantBtn.innerHTML = '<span>👤</span> <span class="tab-label">ลงทะเบียนผู้เช่า</span>';
 
-      ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group', 'subtab-upload-gallery'].forEach(id => {
+      ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group', 'subtab-upload-gallery', 'registered-tenants-section'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.remove('hidden');
       });
@@ -2835,7 +2935,7 @@
       const tabTenantBtn = document.getElementById('tab-tenant');
       if (tabTenantBtn) tabTenantBtn.innerHTML = '<span>👤</span> <span class="tab-label">พอร์ทัลผู้เช่า</span>';
 
-      ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group', 'subtab-upload-gallery'].forEach(id => {
+      ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group', 'subtab-upload-gallery', 'registered-tenants-section'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
       });
@@ -3210,6 +3310,8 @@
   window.openAdminPinModal = openAdminPinModal;
   window.verifyAdminPinSubmit = verifyAdminPinSubmit;
   window.logoutLandlord = logoutLandlord;
+  window.handleTenantAuthSubmit = handleTenantAuthSubmit;
+  window.logoutTenantAuth = logoutTenantAuth;
   window.renderAdminAccountsList = renderAdminAccountsList;
   window.handleAddAdminSubmit = handleAddAdminSubmit;
   window.deleteAdminAccount = deleteAdminAccount;

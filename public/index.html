@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_71"></script>
+  <script src="js/engine.js?v=20260814_72"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -807,6 +807,7 @@
       </div>
 
       <!-- TENANT PORTAL -->
+      <!-- TENANT PORTAL -->
       <div id="view-tenant-dashboard" class="hidden space-y-5 max-w-4xl mx-auto">
         <!-- TENANT SUB-NAVIGATION -->
         <div class="grid grid-cols-2 gap-2 text-xs font-bold select-none p-1.5 bg-stone-200 rounded-2xl mb-1 max-w-md mx-auto">
@@ -818,108 +819,156 @@
           </button>
         </div>
 
-        <div class="youestates-card overflow-hidden">
-          <div class="youestates-card-header flex justify-between items-center">
-            <span>👤 TENANT PORTAL — ข้อมูลสิทธิ์ผู้เช่า</span>
-            <span class="text-xs text-stone-300 font-normal">Live System</span>
+        <!-- 1. TENANT AUTHENTICATION SCREENING GATE (PDPA SECURITY) -->
+        <div id="tenant-auth-gate" class="youestates-card p-6 md:p-8 space-y-6 max-w-lg mx-auto text-center border-t-4 border-t-emerald-600 shadow-md">
+          <div class="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center text-3xl mx-auto shadow-inner">
+            🛡️
           </div>
-          <div class="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h2 class="text-xl font-black text-[#383838]">ระบบคัดกรอง & ยืนยันตัวตนผู้เช่า</h2>
+            <p class="text-xs text-stone-500 font-medium mt-1">กรุณาระบุเบอร์โทรศัพท์และเลข 4 หลักท้ายของบัตรประชาชนเพื่อเข้าถึงข้อมูลสิทธิ์และสัญญาเช่าส่วนบุคคล (มาตรการคุ้มครองข้อมูล PDPA)</p>
+          </div>
+
+          <form onsubmit="handleTenantAuthSubmit(event)" class="space-y-4 text-left">
             <div>
-              <h1 class="text-2xl font-black text-[#383838]" id="tenant-dash-welcome">ยินดีต้อนรับผู้เช่า</h1>
-              <p class="text-xs text-stone-500 font-medium mt-1">รายละเอียดสเปกห้องพัก ระยะเวลาเช่าสะสม และตารางกำหนดชำระเงิน</p>
+              <label class="block font-bold text-stone-700 mb-1 text-xs">📱 เบอร์โทรศัพท์ที่ลงทะเบียนไว้</label>
+              <input type="tel" id="tenant-auth-phone" required placeholder="เช่น 081-234-5678" class="w-full bg-stone-100 border border-stone-300 rounded-xl px-4 py-3 text-stone-800 outline-none focus:bg-white focus:border-emerald-600 font-medium text-sm">
+            </div>
+
+            <div>
+              <label class="block font-bold text-stone-700 mb-1 text-xs">🆔 เลขท้าย 4 หลักของบัตรประชาชน</label>
+              <input type="password" id="tenant-auth-id4" maxlength="4" required placeholder="•••• (4 หลักท้าย)" class="w-full bg-stone-100 border border-stone-300 rounded-xl px-4 py-3 text-stone-800 outline-none focus:bg-white focus:border-emerald-600 font-bold text-sm tracking-widest text-center">
+            </div>
+
+            <button type="submit" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+              <span>🔍 ตรวจสอบสิทธิ์ & เข้าดูสัญญาเช่าของฉัน</span>
+            </button>
+          </form>
+
+          <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-left text-[11px] text-emerald-900 flex items-start gap-2">
+            <span class="text-sm">🔒</span>
+            <span><strong>การคุ้มครองข้อมูลส่วนบุคคล:</strong> ระบบจะแสดงเฉพาะข้อมูลห้องพัก สัญญาเช่า และประวัติการชำระเงินของผู้เช่าที่ระบุข้อมูลถูกต้องตรงกับฐานข้อมูลเท่านั้น ผู้เช่าท่านอื่นจะไม่สามารถมองเห็นข้อมูลของท่านได้</span>
+          </div>
+        </div>
+
+        <!-- 2. TENANT DASHBOARD AUTHENTICATED CONTENT (SHOWN WHEN VERIFIED) -->
+        <div id="tenant-auth-content" class="hidden space-y-5">
+          <!-- VERIFIED TENANT HEADER -->
+          <div class="p-3.5 bg-emerald-100 border border-emerald-300 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">✅</span>
+              <div>
+                <span class="text-[10px] text-emerald-800 uppercase font-bold block">ยืนยันตัวตนสำเร็จ (Verified Tenant)</span>
+                <strong class="text-xs text-emerald-950 font-black" id="tenant-verified-badge-name">คุณ ผู้เช่า</strong>
+              </div>
             </div>
             <div class="flex items-center gap-2">
-              <button onclick="switchTenantSubView('register')" class="px-4 py-2.5 bg-stone-200 hover:bg-stone-300 text-stone-800 rounded-lg text-xs font-bold shadow-sm">
-                ✏️ ลงทะเบียน / แก้ไขผู้เช่า
-              </button>
-              <button onclick="switchTab('contract')" class="youestates-btn-coral px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm">
-                📄 ดูสัญญาเช่าบ้าน A4
+              <button onclick="logoutTenantAuth()" class="px-3 py-1.5 bg-white hover:bg-stone-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-bold shadow-sm transition-colors">
+                🚪 ออกจากระบบผู้เช่า
               </button>
             </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="youestates-card p-5 space-y-1">
-            <span class="text-xs font-bold text-stone-400 uppercase tracking-wider block">🗓️ ระยะเวลาเช่าสะสม</span>
-            <div class="text-2xl font-black text-[#383838]" id="tenant-dash-months-elapsed">0 เดือน</div>
-            <div class="text-[11px] text-stone-500 font-medium" id="tenant-dash-start-date">ระบุในสัญญาเช่า</div>
-          </div>
-
-          <div class="youestates-card p-5 border-l-4 border-l-emerald-600 space-y-1">
-            <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider block">✅ จ่ายค่าเช่าแล้ว</span>
-            <div class="text-2xl font-black text-emerald-700" id="tenant-dash-months-paid">0 งวด</div>
-            <div class="text-[11px] text-emerald-700 font-bold" id="tenant-dash-sum-paid">ชำระสะสมรวม: ฿0</div>
-          </div>
-
-          <div class="youestates-card p-5 border-l-4 border-l-[#e05646] space-y-1 bg-stone-50">
-            <span class="text-xs font-bold text-[#e05646] uppercase tracking-wider block">⏳ กำหนดชำระงวดถัดไป</span>
-            <div class="text-2xl font-black text-[#e05646]" id="tenant-dash-days-due">-</div>
-            <div class="text-[11px] text-stone-600 font-bold" id="tenant-dash-next-due-date">ไม่มีค้างชำระ</div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="youestates-card p-4">
-            <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">ทรัพย์สินที่เช่า</span>
-            <strong class="text-sm text-[#383838] font-extrabold" id="tenant-dash-unit">ระบุทรัพย์สิน</strong>
-          </div>
-          <div class="youestates-card p-4">
-            <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">ค่าเช่ารายเดือน</span>
-            <strong class="text-sm text-[#e05646] font-black" id="tenant-dash-rent">฿0 บาท/เดือน</strong>
-          </div>
-          <div class="youestates-card p-4">
-            <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">เงินประกันสัญญา</span>
-            <strong class="text-sm text-[#383838] font-bold" id="tenant-dash-deposit">฿0 บาท</strong>
-          </div>
-        </div>
-
-        <!-- CONTACT CHANNELS CARD FOR TENANT & LESSOR -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="youestates-card p-4 space-y-2 border-l-4 border-l-emerald-500">
-            <div class="flex justify-between items-center border-b border-stone-200 pb-1.5">
-              <span class="text-xs font-black text-stone-800">👤 ข้อมูลติดต่อผู้เช่า (My Contacts)</span>
-              <span class="text-[10px] text-stone-400">ผู้เช่าห้อง</span>
-            </div>
-            <div class="space-y-1 text-xs" id="tenant-dash-my-contacts">
-              <div class="flex justify-between"><span class="text-stone-500">ชื่อผู้เช่า:</span> <strong class="text-stone-800" id="td-my-name">-</strong></div>
-              <div class="flex justify-between"><span class="text-stone-500">เบอร์โทรศัพท์:</span> <strong class="text-stone-800" id="td-my-phone">-</strong></div>
-              <div class="flex justify-between"><span class="text-stone-500">LINE ID:</span> <strong class="text-emerald-700 font-bold" id="td-my-line">-</strong></div>
-              <div class="flex justify-between"><span class="text-stone-500">Facebook / Email:</span> <strong class="text-stone-800" id="td-my-social">-</strong></div>
-              <div class="flex justify-between"><span class="text-stone-500">ผู้ติดต่อฉุกเฉิน:</span> <strong class="text-[#e05646] font-bold" id="td-my-emergency">-</strong></div>
-            </div>
-          </div>
-
-          <div class="youestates-card p-4 space-y-2 border-l-4 border-l-[#e05646]">
-            <div class="flex justify-between items-center border-b border-stone-200 pb-1.5">
-              <span class="text-xs font-black text-stone-800">🔑 ข้อมูลติดต่อผู้ให้เช่า (Landlord)</span>
-              <span class="text-[10px] text-stone-400">เจ้าของห้อง</span>
-            </div>
-            <div class="space-y-1 text-xs" id="tenant-dash-lessor-contacts">
-              <div class="flex justify-between"><span class="text-stone-500">ผู้ให้เช่า:</span> <strong class="text-stone-800" id="td-lessor-name">-</strong></div>
-              <div class="flex justify-between"><span class="text-stone-500">เบอร์โทรศัพท์:</span> <strong class="text-stone-800" id="td-lessor-phone">-</strong></div>
-              <div class="flex justify-between"><span class="text-stone-500">LINE ID:</span> <strong class="text-emerald-700 font-bold" id="td-lessor-line">-</strong></div>
-              <div class="flex justify-between"><span class="text-stone-500">Facebook / Email:</span> <strong class="text-stone-800" id="td-lessor-social">-</strong></div>
-              <div class="flex justify-between"><span class="text-stone-500">X (Twitter):</span> <strong class="text-stone-800" id="td-lessor-x">-</strong></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="youestates-card overflow-hidden">
-            <div class="youestates-card-header flex justify-between items-center">
-              <span>🧾 ประวัติการชำระค่าเช่ารายเดือน</span>
-              <span class="text-xs text-stone-300 font-normal">ประวัติชำระเงิน</span>
-            </div>
-            <div class="p-5 space-y-2 text-xs max-h-[380px] overflow-y-auto pr-1" id="tenant-dash-payment-history"></div>
           </div>
 
           <div class="youestates-card overflow-hidden">
             <div class="youestates-card-header flex justify-between items-center">
-              <span>📦 รายการเฟอร์นิเจอร์ส่งมอบ</span>
-              <span class="text-xs text-stone-300 font-normal">คลิกรูปเพื่อขยาย</span>
+              <span>👤 TENANT PORTAL — ข้อมูลสิทธิ์ผู้เช่า</span>
+              <span class="text-xs text-stone-300 font-normal">Live System</span>
             </div>
-            <div class="p-5 space-y-2 text-xs" id="tenant-dash-inventory"></div>
+            <div class="p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h1 class="text-2xl font-black text-[#383838]" id="tenant-dash-welcome">ยินดีต้อนรับผู้เช่า</h1>
+                <p class="text-xs text-stone-500 font-medium mt-1">รายละเอียดสเปกห้องพัก ระยะเวลาเช่าสะสม และตารางกำหนดชำระเงิน</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="switchTab('contract')" class="youestates-btn-coral px-5 py-2.5 rounded-lg text-xs font-bold shadow-sm">
+                  📄 ดูสัญญาเช่าบ้าน A4
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="youestates-card p-5 space-y-1">
+              <span class="text-xs font-bold text-stone-400 uppercase tracking-wider block">🗓️ ระยะเวลาเช่าสะสม</span>
+              <div class="text-2xl font-black text-[#383838]" id="tenant-dash-months-elapsed">0 เดือน</div>
+              <div class="text-[11px] text-stone-500 font-medium" id="tenant-dash-start-date">ระบุในสัญญาเช่า</div>
+            </div>
+
+            <div class="youestates-card p-5 border-l-4 border-l-emerald-600 space-y-1">
+              <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider block">✅ จ่ายค่าเช่าแล้ว</span>
+              <div class="text-2xl font-black text-emerald-700" id="tenant-dash-months-paid">0 งวด</div>
+              <div class="text-[11px] text-emerald-700 font-bold" id="tenant-dash-sum-paid">ชำระสะสมรวม: ฿0</div>
+            </div>
+
+            <div class="youestates-card p-5 border-l-4 border-l-[#e05646] space-y-1 bg-stone-50">
+              <span class="text-xs font-bold text-[#e05646] uppercase tracking-wider block">⏳ กำหนดชำระงวดถัดไป</span>
+              <div class="text-2xl font-black text-[#e05646]" id="tenant-dash-days-due">-</div>
+              <div class="text-[11px] text-stone-600 font-bold" id="tenant-dash-next-due-date">ไม่มีค้างชำระ</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="youestates-card p-4">
+              <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">ทรัพย์สินที่เช่า</span>
+              <strong class="text-sm text-[#383838] font-extrabold" id="tenant-dash-unit">ระบุทรัพย์สิน</strong>
+            </div>
+            <div class="youestates-card p-4">
+              <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">ค่าเช่ารายเดือน</span>
+              <strong class="text-sm text-[#e05646] font-black" id="tenant-dash-rent">฿0 บาท/เดือน</strong>
+            </div>
+            <div class="youestates-card p-4">
+              <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">เงินประกันสัญญา</span>
+              <strong class="text-sm text-[#383838] font-bold" id="tenant-dash-deposit">฿0 บาท</strong>
+            </div>
+          </div>
+
+          <!-- CONTACT CHANNELS CARD FOR TENANT & LESSOR -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="youestates-card p-4 space-y-2 border-l-4 border-l-emerald-500">
+              <div class="flex justify-between items-center border-b border-stone-200 pb-1.5">
+                <span class="text-xs font-black text-stone-800">👤 ข้อมูลติดต่อผู้เช่า (My Contacts)</span>
+                <span class="text-[10px] text-stone-400">ผู้เช่าห้อง</span>
+              </div>
+              <div class="space-y-1 text-xs" id="tenant-dash-my-contacts">
+                <div class="flex justify-between"><span class="text-stone-500">ชื่อผู้เช่า:</span> <strong class="text-stone-800" id="td-my-name">-</strong></div>
+                <div class="flex justify-between"><span class="text-stone-500">เบอร์โทรศัพท์:</span> <strong class="text-stone-800" id="td-my-phone">-</strong></div>
+                <div class="flex justify-between"><span class="text-stone-500">LINE ID:</span> <strong class="text-emerald-700 font-bold" id="td-my-line">-</strong></div>
+                <div class="flex justify-between"><span class="text-stone-500">Facebook / Email:</span> <strong class="text-stone-800" id="td-my-social">-</strong></div>
+                <div class="flex justify-between"><span class="text-stone-500">ผู้ติดต่อฉุกเฉิน:</span> <strong class="text-[#e05646] font-bold" id="td-my-emergency">-</strong></div>
+              </div>
+            </div>
+
+            <div class="youestates-card p-4 space-y-2 border-l-4 border-l-[#e05646]">
+              <div class="flex justify-between items-center border-b border-stone-200 pb-1.5">
+                <span class="text-xs font-black text-stone-800">🔑 ข้อมูลติดต่อผู้ให้เช่า (Landlord)</span>
+                <span class="text-[10px] text-stone-400">เจ้าของห้อง</span>
+              </div>
+              <div class="space-y-1 text-xs" id="tenant-dash-lessor-contacts">
+                <div class="flex justify-between"><span class="text-stone-500">ผู้ให้เช่า:</span> <strong class="text-stone-800" id="td-lessor-name">-</strong></div>
+                <div class="flex justify-between"><span class="text-stone-500">เบอร์โทรศัพท์:</span> <strong class="text-stone-800" id="td-lessor-phone">-</strong></div>
+                <div class="flex justify-between"><span class="text-stone-500">LINE ID:</span> <strong class="text-emerald-700 font-bold" id="td-lessor-line">-</strong></div>
+                <div class="flex justify-between"><span class="text-stone-500">Facebook / Email:</span> <strong class="text-stone-800" id="td-lessor-social">-</strong></div>
+                <div class="flex justify-between"><span class="text-stone-500">X (Twitter):</span> <strong class="text-stone-800" id="td-lessor-x">-</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="youestates-card overflow-hidden">
+              <div class="youestates-card-header flex justify-between items-center">
+                <span>🧾 ประวัติการชำระค่าเช่ารายเดือน</span>
+                <span class="text-xs text-stone-300 font-normal">ประวัติชำระเงิน</span>
+              </div>
+              <div class="p-5 space-y-2 text-xs max-h-[380px] overflow-y-auto pr-1" id="tenant-dash-payment-history"></div>
+            </div>
+
+            <div class="youestates-card overflow-hidden">
+              <div class="youestates-card-header flex justify-between items-center">
+                <span>📦 รายการเฟอร์นิเจอร์ส่งมอบ</span>
+                <span class="text-xs text-stone-300 font-normal">คลิกรูปเพื่อขยาย</span>
+              </div>
+              <div class="p-5 space-y-2 text-xs" id="tenant-dash-inventory"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -1693,8 +1742,12 @@
             </button>
           </form>
 
-          <div class="pt-4 border-t border-stone-200 space-y-3">
-            <h3 class="font-black text-sm text-[#383838]">📋 รายชื่อผู้เช่าที่ลงทะเบียนไว้ในระบบ</h3>
+          <!-- REGISTERED TENANTS LIST (STRICTLY RESTRICTED TO LANDLORD MODE FOR PDPA PRIVACY) -->
+          <div class="pt-4 border-t border-stone-200 space-y-3" id="registered-tenants-section">
+            <div class="flex justify-between items-center">
+              <h3 class="font-black text-sm text-[#383838]">📋 รายชื่อผู้เช่าทั้งหมดในระบบ (เฉพาะผู้ให้เช่า 🔒)</h3>
+              <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Landlord Protected</span>
+            </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs" id="registered-tenants-container"></div>
           </div>
         </div>
