@@ -2319,8 +2319,8 @@
       if (badgeName) badgeName.innerText = 'ผู้ดูแลพอร์ต';
       if (roleTitle) roleTitle.innerText = 'ผู้ให้เช่า (Landlord Mode)';
       if (drawerRole) drawerRole.innerText = '🔑 ผู้ให้เช่า (Landlord)';
-      if (tabPropertyBtn) tabPropertyBtn.innerHTML = '<span>🏡</span> <span class="tab-label">สเปกทรัพย์สิน</span>';
-      if (pdHeaderBadge) pdHeaderBadge.innerText = 'ข้อมูลอสังหาฯ เพื่อการตัดสินใจเช่า';
+      const tabTenantBtn = document.getElementById('tab-tenant');
+      if (tabTenantBtn) tabTenantBtn.innerHTML = '<span>👤</span> <span class="tab-label">ลงทะเบียนผู้เช่า</span>';
 
       ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group', 'subtab-upload-gallery'].forEach(id => {
         const el = document.getElementById(id);
@@ -2337,6 +2337,9 @@
       if (tabPropertyBtn) tabPropertyBtn.innerHTML = '<span>🏡</span> <span class="tab-label">สเปกทรัพย์สิน</span>';
       if (pdHeaderBadge) pdHeaderBadge.innerText = 'ข้อมูลอสังหาฯ เพื่อการตัดสินใจเช่า';
 
+      const tabTenantBtn = document.getElementById('tab-tenant');
+      if (tabTenantBtn) tabTenantBtn.innerHTML = '<span>👤</span> <span class="tab-label">พอร์ทัลผู้เช่า</span>';
+
       ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group', 'subtab-upload-gallery'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
@@ -2350,12 +2353,18 @@
   }
 
   function switchTab(tab) {
+    let targetTab = tab;
+    // If tenant role clicks tenant tab, route to tenant-dashboard
+    if (tab === 'tenant' && state.currentRole === 'tenant') {
+      targetTab = 'tenant-dashboard';
+    }
+
     const views = ['landing', 'admin', 'property-detail', 'loan-management', 'register-lessor', 'tenant', 'contract', 'tenant-dashboard'];
     views.forEach(v => {
       const viewEl = document.getElementById(`view-${v}`);
       if (viewEl) viewEl.classList.add('hidden');
     });
-    const targetView = document.getElementById(`view-${tab}`);
+    const targetView = document.getElementById(`view-${targetTab}`);
     if (targetView) targetView.classList.remove('hidden');
 
     const tabs = ['landing', 'admin', 'property-detail', 'loan-management', 'register-lessor', 'tenant', 'contract'];
@@ -2381,6 +2390,11 @@
     if (activeMBtn) {
       activeMBtn.className = 'flex-1 flex flex-col items-center gap-0.5 text-[10px] font-black text-emerald-400 py-1 scale-105 transition-all';
     }
+
+    // Scroll back to top smoothly
+    const mainEl = document.querySelector('main');
+    if (mainEl) mainEl.scrollTop = 0;
+    window.scrollTo(0, 0);
 
     renderAllViews();
   }
