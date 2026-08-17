@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_52"></script>
+  <script src="js/engine.js?v=20260814_53"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -351,27 +351,88 @@
 
     @page {
       size: A4 portrait;
-      margin: 20mm 20mm 20mm 25mm;
+      margin: 15mm 15mm 15mm 20mm;
     }
 
     @media print {
-      .no-print { display: none !important; }
-      body { background: white !important; padding: 0 !important; margin: 0 !important; }
-      .pdfjs-container { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }
-      .pdfjs-toolbar, .pdfjs-sidebar { display: none !important; }
-      .pdfjs-viewport { background: transparent !important; padding: 0 !important; overflow: visible !important; max-height: none !important; box-shadow: none !important; display: block !important; }
-      .pdfjs-canvas-wrapper { transform: none !important; gap: 0 !important; display: block !important; }
-      .a4-sheet {
-        width: 100% !important;
-        min-height: 297mm !important;
-        height: auto !important;
+      body {
+        background: #ffffff !important;
         padding: 0 !important;
+        margin: 0 !important;
+        color: #000000 !important;
+      }
+      .no-print,
+      header,
+      nav,
+      footer,
+      #app-header,
+      #app-footer,
+      #login-overlay,
+      .pdfjs-toolbar,
+      .pdfjs-sidebar,
+      #view-overview,
+      #view-tenants,
+      #view-finance,
+      #view-settings,
+      #view-portfolio,
+      #modal-amortization-table,
+      #modal-add-property,
+      #modal-edit-property-detail {
+        display: none !important;
+      }
+      .youestates-window {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+      }
+      #view-contract {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      .pdfjs-container {
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .pdfjs-viewport {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+        max-height: none !important;
+        box-shadow: none !important;
+        display: block !important;
+      }
+      .pdfjs-canvas-wrapper {
+        transform: none !important;
+        gap: 0 !important;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .a4-sheet {
+        position: relative !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 260mm !important;
+        height: auto !important;
+        padding: 5mm 0 !important;
         margin: 0 !important;
         box-shadow: none !important;
         border: none !important;
         font-size: 16pt !important;
         page-break-after: always !important;
         break-after: page !important;
+        box-sizing: border-box !important;
       }
     }
   </style>
@@ -1473,7 +1534,7 @@
       <div id="view-contract" class="hidden space-y-4 max-w-5xl mx-auto">
         
         <!-- PDF.JS CONTAINER -->
-        <div class="pdfjs-container no-print">
+        <div class="pdfjs-container">
           <!-- PDF.JS AUTHENTIC TOOLBAR -->
           <div class="pdfjs-toolbar flex flex-wrap items-center justify-between gap-2 border-b border-stone-800">
             <!-- LEFT TOOLS -->
@@ -1514,7 +1575,7 @@
               <button type="button" onclick="downloadContractDocx()" class="pdfjs-btn bg-stone-700 hover:bg-stone-600 text-white font-bold px-3 py-1.5 rounded-lg shadow-sm border border-stone-600" title="ดาวน์โหลดไฟล์เพื่อเปิดแก้ไขและพิมพ์ใน LibreOffice Writer / MS Word">
                 <span>📥 ไฟล์ LibreOffice (.doc)</span>
               </button>
-              <button type="button" onclick="window.print()" class="pdfjs-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-lg shadow-md border-0" title="สั่งพิมพ์เอกสาร A4 หรือบันทึกเป็น PDF">
+              <button type="button" onclick="printA4Contract()" class="pdfjs-btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-1.5 rounded-lg shadow-md border-0" title="สั่งพิมพ์เอกสาร A4 หรือบันทึกเป็น PDF">
                 <span>🖨️ สั่งพิมพ์ A4 / PDF</span>
               </button>
             </div>

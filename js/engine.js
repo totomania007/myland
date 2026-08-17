@@ -2192,6 +2192,23 @@
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
+
+  function printA4Contract() {
+    switchTab('contract');
+    const prevZoom = pdfCurrentZoom;
+    const prevRot = pdfRotation;
+    pdfCurrentZoom = 1.0;
+    pdfRotation = 0;
+    pdfApplyZoomAndRotation();
+
+    setTimeout(() => {
+      window.print();
+      pdfCurrentZoom = prevZoom;
+      pdfRotation = prevRot;
+      pdfApplyZoomAndRotation();
+    }, 150);
+  }
+
   function toggleModal(id) {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('hidden');
@@ -2600,6 +2617,7 @@
   window.pdfZoomOut = pdfZoomOut;
   window.pdfRotate = pdfRotate;
   window.downloadContractDocx = downloadContractDocx;
+  window.printA4Contract = printA4Contract;
   window.copyPropertyPromoLink = copyPropertyPromoLink;
 
   // 12. AUTO-START & LIFECYCLE LISTENERS
