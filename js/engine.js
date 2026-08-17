@@ -2616,6 +2616,8 @@
   window.deleteGalleryItem = deleteGalleryItem;
   window.openGalleryLightbox = openGalleryLightbox;
   window.openPromoCoverLightbox = openPromoCoverLightbox;
+  window.prevLightboxMedia = prevLightboxMedia;
+  window.nextLightboxMedia = nextLightboxMedia;
   window.togglePdfSidebar = togglePdfSidebar;
   window.pdfJumpToPage = pdfJumpToPage;
   window.pdfPrevPage = pdfPrevPage;
