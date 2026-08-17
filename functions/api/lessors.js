@@ -12,9 +12,26 @@ const CREATE_TABLE_SQL = `
     phone TEXT,
     address TEXT,
     image_url TEXT,
+    line_id TEXT,
+    facebook TEXT,
+    email TEXT,
+    x_twitter TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )
 `;
+
+async function ensureLessorMigrations(env) {
+  if (!env || !env.DB) return;
+  const migrations = [
+    "ALTER TABLE lessors ADD COLUMN line_id TEXT",
+    "ALTER TABLE lessors ADD COLUMN facebook TEXT",
+    "ALTER TABLE lessors ADD COLUMN email TEXT",
+    "ALTER TABLE lessors ADD COLUMN x_twitter TEXT"
+  ];
+  for (const sql of migrations) {
+    try { await env.DB.prepare(sql).run(); } catch(e) {}
+  }
+}
 
 export async function onRequestGet(context) {
   const { env } = context;
@@ -27,9 +44,22 @@ export async function onRequestGet(context) {
 
   try {
     await env.DB.prepare(CREATE_TABLE_SQL).run();
+    await ensureLessorMigrations(env);
 
     const { results } = await env.DB.prepare(`
-      SELECT id, name, id_card as idCard, age, phone, address, image_url as imageUrl, created_at
+      SELECT 
+        id, 
+        name, 
+        id_card as idCard, 
+        age, 
+        phone, 
+        address, 
+        image_url as imageUrl,
+        line_id as lineId,
+        facebook,
+        email,
+        x_twitter as xTwitter,
+        created_at
       FROM lessors ORDER BY created_at DESC
     `).all();
 
@@ -60,6 +90,7 @@ export async function onRequestPost(context) {
 
   try {
     await env.DB.prepare(CREATE_TABLE_SQL).run();
+    await ensureLessorMigrations(env);
 
     const body = await request.json();
     const id = body.id || 'lessor-' + Date.now();
@@ -69,18 +100,26 @@ export async function onRequestPost(context) {
     const phone = body.phone || '';
     const address = body.address || '';
     const imageUrl = body.imageUrl || '';
+    const lineId = body.lineId || '';
+    const facebook = body.facebook || '';
+    const email = body.email || '';
+    const xTwitter = body.xTwitter || '';
 
     await env.DB.prepare(`
-      INSERT INTO lessors (id, name, id_card, age, phone, address, image_url)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO lessors (id, name, id_card, age, phone, address, image_url, line_id, facebook, email, x_twitter)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         id_card = excluded.id_card,
         age = excluded.age,
         phone = excluded.phone,
         address = excluded.address,
-        image_url = excluded.image_url
-    `).bind(id, name, idCard, age, phone, address, imageUrl).run();
+        image_url = excluded.image_url,
+        line_id = excluded.line_id,
+        facebook = excluded.facebook,
+        email = excluded.email,
+        x_twitter = excluded.x_twitter
+    `).bind(id, name, idCard, age, phone, address, imageUrl, lineId, facebook, email, xTwitter).run();
 
     return new Response(JSON.stringify({ success: true, id }), {
       status: 200,

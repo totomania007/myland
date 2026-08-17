@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_70"></script>
+  <script src="js/engine.js?v=20260814_71"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -874,6 +874,37 @@
           </div>
         </div>
 
+        <!-- CONTACT CHANNELS CARD FOR TENANT & LESSOR -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="youestates-card p-4 space-y-2 border-l-4 border-l-emerald-500">
+            <div class="flex justify-between items-center border-b border-stone-200 pb-1.5">
+              <span class="text-xs font-black text-stone-800">👤 ข้อมูลติดต่อผู้เช่า (My Contacts)</span>
+              <span class="text-[10px] text-stone-400">ผู้เช่าห้อง</span>
+            </div>
+            <div class="space-y-1 text-xs" id="tenant-dash-my-contacts">
+              <div class="flex justify-between"><span class="text-stone-500">ชื่อผู้เช่า:</span> <strong class="text-stone-800" id="td-my-name">-</strong></div>
+              <div class="flex justify-between"><span class="text-stone-500">เบอร์โทรศัพท์:</span> <strong class="text-stone-800" id="td-my-phone">-</strong></div>
+              <div class="flex justify-between"><span class="text-stone-500">LINE ID:</span> <strong class="text-emerald-700 font-bold" id="td-my-line">-</strong></div>
+              <div class="flex justify-between"><span class="text-stone-500">Facebook / Email:</span> <strong class="text-stone-800" id="td-my-social">-</strong></div>
+              <div class="flex justify-between"><span class="text-stone-500">ผู้ติดต่อฉุกเฉิน:</span> <strong class="text-[#e05646] font-bold" id="td-my-emergency">-</strong></div>
+            </div>
+          </div>
+
+          <div class="youestates-card p-4 space-y-2 border-l-4 border-l-[#e05646]">
+            <div class="flex justify-between items-center border-b border-stone-200 pb-1.5">
+              <span class="text-xs font-black text-stone-800">🔑 ข้อมูลติดต่อผู้ให้เช่า (Landlord)</span>
+              <span class="text-[10px] text-stone-400">เจ้าของห้อง</span>
+            </div>
+            <div class="space-y-1 text-xs" id="tenant-dash-lessor-contacts">
+              <div class="flex justify-between"><span class="text-stone-500">ผู้ให้เช่า:</span> <strong class="text-stone-800" id="td-lessor-name">-</strong></div>
+              <div class="flex justify-between"><span class="text-stone-500">เบอร์โทรศัพท์:</span> <strong class="text-stone-800" id="td-lessor-phone">-</strong></div>
+              <div class="flex justify-between"><span class="text-stone-500">LINE ID:</span> <strong class="text-emerald-700 font-bold" id="td-lessor-line">-</strong></div>
+              <div class="flex justify-between"><span class="text-stone-500">Facebook / Email:</span> <strong class="text-stone-800" id="td-lessor-social">-</strong></div>
+              <div class="flex justify-between"><span class="text-stone-500">X (Twitter):</span> <strong class="text-stone-800" id="td-lessor-x">-</strong></div>
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="youestates-card overflow-hidden">
             <div class="youestates-card-header flex justify-between items-center">
@@ -1056,30 +1087,61 @@
           <div class="youestates-card p-6 space-y-4 flex flex-col justify-between">
             <div class="space-y-4">
               <div class="flex justify-between items-center border-b border-stone-200 pb-3">
-                <h3 class="font-extrabold text-sm text-[#383838]">ขั้นตอนสำหรับผู้สนใจเช่า (Tenant Guide)</h3>
-                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">Easy Booking</span>
+                <h3 class="font-extrabold text-sm text-[#383838]">📞 ช่องทางติดต่อผู้ให้เช่า (Contact Landlord)</h3>
+                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">Verified Owner</span>
               </div>
-              <div class="space-y-3 text-xs text-stone-600">
-                <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-start gap-2.5">
-                  <span class="text-base">📸</span>
-                  <div>
-                    <strong class="text-stone-800 block">1. สำรวจภาพถ่าย & วิดีโอรีวิว</strong>
-                    <span class="text-stone-500 text-[11px]">ชมรูปภาพจริงทุกมุมและคลิปวิดีโอเพื่อความมั่นใจก่อนตัดสินใจ</span>
+              
+              <!-- DYNAMIC LESSOR CONTACT CHANNELS -->
+              <div class="space-y-2.5 text-xs">
+                <div class="flex items-center justify-between p-2.5 bg-stone-50 rounded-xl border border-stone-200">
+                  <div class="flex items-center gap-2">
+                    <span class="text-base">👤</span>
+                    <div>
+                      <span class="text-[10px] text-stone-400 block">ผู้ให้เช่า / เจ้าของห้อง</span>
+                      <strong class="text-stone-800 text-xs" id="pd-lessor-name">-</strong>
+                    </div>
                   </div>
+                  <a id="pd-lessor-tel-btn" href="tel:" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs flex items-center gap-1 shadow-sm">
+                    <span>📞</span> <span>โทร</span>
+                  </a>
                 </div>
-                <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-start gap-2.5">
-                  <span class="text-base">🛋️</span>
-                  <div>
-                    <strong class="text-stone-800 block">2. ตรวจสอบเฟอร์นิเจอร์ & อุปกรณ์</strong>
-                    <span class="text-stone-500 text-[11px]">รายการเครื่องใช้ไฟฟ้าและเฟอร์นิเจอร์ตกแต่งครบชุดพร้อมเข้าอยู่</span>
-                  </div>
+
+                <div class="grid grid-cols-2 gap-2" id="pd-lessor-social-grid">
+                  <a id="pd-lessor-line-btn" href="#" target="_blank" class="p-2.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl text-emerald-900 font-bold flex items-center gap-2 transition-colors">
+                    <span class="text-base">💬</span>
+                    <div class="truncate">
+                      <span class="text-[9px] text-emerald-600 block uppercase font-bold">LINE ID</span>
+                      <span class="text-xs truncate block" id="pd-lessor-line-txt">-</span>
+                    </div>
+                  </a>
+                  <a id="pd-lessor-fb-btn" href="#" target="_blank" class="p-2.5 bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-xl text-blue-900 font-bold flex items-center gap-2 transition-colors">
+                    <span class="text-base">🔵</span>
+                    <div class="truncate">
+                      <span class="text-[9px] text-blue-600 block uppercase font-bold">Facebook</span>
+                      <span class="text-xs truncate block" id="pd-lessor-fb-txt">-</span>
+                    </div>
+                  </a>
+                  <a id="pd-lessor-email-btn" href="mailto:" class="p-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl text-amber-900 font-bold flex items-center gap-2 transition-colors">
+                    <span class="text-base">✉️</span>
+                    <div class="truncate">
+                      <span class="text-[9px] text-amber-600 block uppercase font-bold">Email</span>
+                      <span class="text-xs truncate block" id="pd-lessor-email-txt">-</span>
+                    </div>
+                  </a>
+                  <a id="pd-lessor-x-btn" href="#" target="_blank" class="p-2.5 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-xl text-stone-900 font-bold flex items-center gap-2 transition-colors">
+                    <span class="text-base">𝕏</span>
+                    <div class="truncate">
+                      <span class="text-[9px] text-stone-500 block uppercase font-bold">X (Twitter)</span>
+                      <span class="text-xs truncate block" id="pd-lessor-x-txt">-</span>
+                    </div>
+                  </a>
                 </div>
-                <div class="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-start gap-2.5">
-                  <span class="text-base">📑</span>
-                  <div>
-                    <strong class="text-stone-800 block">3. ทำสัญญาเช่ามาตรฐาน A4</strong>
-                    <span class="text-stone-500 text-[11px]">ลงทะเบียนผู้เช่าและออกหนังสือสัญญาเช่ามาตรฐานถูกต้องตามกฎหมาย</span>
-                  </div>
+              </div>
+
+              <div class="space-y-2 text-xs text-stone-600 pt-2 border-t border-stone-200">
+                <div class="flex items-center gap-2 text-[11px] text-stone-500">
+                  <span>✨</span>
+                  <span>ติดต่อสอบถามข้อมูล นัดหมายเข้าชมห้อง หรือแจ้งความประสงค์เช่าได้โดยตรง</span>
                 </div>
               </div>
             </div>
@@ -1443,6 +1505,25 @@
               </div>
             </div>
 
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 bg-stone-50 rounded-xl border border-stone-200">
+              <div>
+                <label class="block font-bold text-stone-700 mb-1 text-[11px]">💬 LINE ID</label>
+                <input type="text" id="reg-lp-line" placeholder="@line_id" class="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-stone-800 outline-none focus:border-emerald-500 font-medium text-xs">
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1 text-[11px]">🔵 Facebook</label>
+                <input type="text" id="reg-lp-facebook" placeholder="ชื่อ Facebook / เพจ" class="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-stone-800 outline-none focus:border-blue-500 font-medium text-xs">
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1 text-[11px]">✉️ Email</label>
+                <input type="email" id="reg-lp-email" placeholder="example@email.com" class="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-stone-800 outline-none focus:border-amber-500 font-medium text-xs">
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1 text-[11px]">𝕏 X (Twitter)</label>
+                <input type="text" id="reg-lp-x" placeholder="@x_handle" class="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-stone-800 outline-none focus:border-stone-700 font-medium text-xs">
+              </div>
+            </div>
+
             <div>
               <label class="block font-bold text-stone-700 mb-1">ที่อยู่ผู้ให้เช่าตามบัตรประชาชน</label>
               <input type="text" id="reg-lp-address" required placeholder="บ้านเลขที่..." class="w-full bg-stone-100 border border-stone-300 rounded-lg px-3.5 py-2.5 text-stone-800 outline-none focus:bg-white focus:border-[#e05646] font-medium">
@@ -1565,9 +1646,34 @@
               </div>
             </div>
 
-            <div>
-              <label class="block font-bold text-stone-700 mb-1">ที่อยู่ตามบัตรประชาชนผู้เช่า</label>
-              <input type="text" id="t-address" required placeholder="บ้านเลขที่ 123/45..." class="w-full bg-stone-100 border border-stone-300 rounded-lg px-3.5 py-2.5 text-stone-800 outline-none focus:bg-white focus:border-[#e05646] font-medium">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 bg-stone-50 rounded-xl border border-stone-200">
+              <div>
+                <label class="block font-bold text-stone-700 mb-1 text-[11px]">💬 LINE ID</label>
+                <input type="text" id="t-line" placeholder="@line_id" class="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-stone-800 outline-none focus:border-emerald-500 font-medium text-xs">
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1 text-[11px]">🔵 Facebook</label>
+                <input type="text" id="t-facebook" placeholder="ชื่อ Facebook" class="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-stone-800 outline-none focus:border-blue-500 font-medium text-xs">
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1 text-[11px]">✉️ Email</label>
+                <input type="email" id="t-email" placeholder="example@email.com" class="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-stone-800 outline-none focus:border-amber-500 font-medium text-xs">
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1 text-[11px]">𝕏 X (Twitter)</label>
+                <input type="text" id="t-x" placeholder="@x_handle" class="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-stone-800 outline-none focus:border-stone-700 font-medium text-xs">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">ที่อยู่ตามบัตรประชาชนผู้เช่า</label>
+                <input type="text" id="t-address" required placeholder="บ้านเลขที่ 123/45..." class="w-full bg-stone-100 border border-stone-300 rounded-lg px-3.5 py-2.5 text-stone-800 outline-none focus:bg-white focus:border-[#e05646] font-medium">
+              </div>
+              <div>
+                <label class="block font-bold text-stone-700 mb-1">🚨 ผู้ติดต่อฉุกเฉิน (ชื่อ & เบอร์โทร)</label>
+                <input type="text" id="t-emergency" placeholder="คุณสมศรี (มารดา) 089-xxx-xxxx" class="w-full bg-stone-100 border border-stone-300 rounded-lg px-3.5 py-2.5 text-stone-800 outline-none focus:bg-white focus:border-[#e05646] font-medium">
+              </div>
             </div>
 
             <div>

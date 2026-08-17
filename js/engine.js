@@ -90,6 +90,10 @@
       idCard: '3100501989670',
       phone: '0616281777',
       address: '200/125 หมู่บ้าน ดิเอเทรียม เพิ่มสิน ซอยเพิ่มสิน 20 แยก 5 แขวงคลองถนน เขตสายไหม กรุงเทพมหานคร',
+      lineId: '@youestates',
+      facebook: 'YouEstates Property',
+      email: 'contact@youestates.com',
+      xTwitter: '@youestates',
       imageUrl: CONFIG.PLACEHOLDER_SVG
     },
     'lessor-1786649277545': {
@@ -99,6 +103,10 @@
       idCard: '4101200062631',
       phone: '0858456378',
       address: '202/60 ซอยลาดพร้าว 80 แยก 14 แขวงวังทองหลาง เขตวังทองหลาง กรุงเทพมหานคร 10310',
+      lineId: '@surachai.u',
+      facebook: 'Surachai Udomman',
+      email: 'surachai.udo@rmutr.ac.th',
+      xTwitter: '@surachai_u',
       imageUrl: CONFIG.PLACEHOLDER_SVG
     }
   };
@@ -109,8 +117,13 @@
       fullName: 'ผู้เช่าประจำห้องพัก',
       age: 35,
       idCard: '-',
-      phone: '-',
+      phone: '081-234-5678',
       address: '-',
+      lineId: '@tenant_line',
+      facebook: 'Tenant Name',
+      email: 'tenant@example.com',
+      xTwitter: '-',
+      emergencyContact: 'คุณสมศรี 089-999-8888',
       unitName: 'Silk Condominium',
       houseNo: '229/183',
       rent: 9000,
@@ -430,6 +443,7 @@
   function renderAllViews() {
     renderAdminData();
     renderPropertyDetailView();
+    renderTenantDashboardView();
     renderLoanManagementView();
     renderRegisteredLessorsList();
     renderRegisteredTenantsList();
@@ -438,6 +452,126 @@
     renderTenantPropertyDropdown();
     renderContractView();
     applyRolePermissions();
+  }
+
+  function renderTenantDashboardView() {
+    const prop = getCurrentProperty();
+    const tenants = Object.values(state.tenantDatabase || {});
+    const tenant = (prop ? tenants.find(t => String(t.propId) === String(prop.id)) : null) || tenants[0] || {
+      fullName: 'ผู้เช่า / ผู้สนใจเช่า',
+      phone: '-',
+      lineId: '-',
+      facebook: '-',
+      email: '-',
+      xTwitter: '-',
+      emergencyContact: '-',
+      rent: prop?.rent || 0,
+      deposit: prop?.deposit || 0,
+      startDate: prop?.startDate || '2026-08-13',
+      endDate: '2027-08-12',
+      duration: '1'
+    };
+
+    const lessor = (prop ? state.lessorProfiles[prop.lessorKey] : null) || Object.values(state.lessorProfiles)[0] || {
+      name: 'ผู้ให้เช่า',
+      phone: '-',
+      lineId: '-',
+      facebook: '-',
+      email: '-',
+      xTwitter: '-'
+    };
+
+    const safeSetText = (id, txt) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = txt;
+    };
+
+    safeSetText('tenant-dash-welcome', `ยินดีต้อนรับ คุณ ${tenant.fullName}`);
+    safeSetText('tenant-dash-unit', prop ? `${prop.name} (${prop.houseNo || '-'})` : (tenant.unitName || 'ยังไม่ระบุ'));
+    safeSetText('tenant-dash-rent', `฿${(tenant.rent || prop?.rent || 0).toLocaleString()} บาท/เดือน`);
+    safeSetText('tenant-dash-deposit', `฿${(tenant.deposit || prop?.deposit || 0).toLocaleString()} บาท`);
+    safeSetText('tenant-dash-start-date', `เริ่มสัญญา: ${tenant.startDate || '-'} ถึง ${tenant.endDate || '-'}`);
+
+    // Calculate elapsed months & payment calculation
+    if (tenant.startDate) {
+      const start = new Date(tenant.startDate);
+      const now = new Date();
+      let months = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+      if (months < 0) months = 0;
+      safeSetText('tenant-dash-months-elapsed', `${months} เดือน`);
+      safeSetText('tenant-dash-months-paid', `${months} งวด`);
+      const sumPaid = months * (tenant.rent || prop?.rent || 0);
+      safeSetText('tenant-dash-sum-paid', `ชำระสะสมรวม: ฿${sumPaid.toLocaleString()}`);
+
+      // Next due
+      const nextDue = new Date(now.getFullYear(), now.getMonth() + (now.getDate() > 5 ? 1 : 0), 5);
+      const diffDays = Math.ceil((nextDue - now) / (1000 * 60 * 60 * 24));
+      safeSetText('tenant-dash-days-due', `อีก ${diffDays} วัน`);
+      safeSetText('tenant-dash-next-due-date', `กำหนดชำระ: วันที่ 5 ของเดือน`);
+    }
+
+    // My Contacts (Tenant)
+    safeSetText('td-my-name', tenant.fullName || '-');
+    safeSetText('td-my-phone', tenant.phone || '-');
+    safeSetText('td-my-line', tenant.lineId || '-');
+    const mySocials = [tenant.facebook ? `FB: ${tenant.facebook}` : '', tenant.email ? `✉️ ${tenant.email}` : ''].filter(Boolean).join(' | ') || '-';
+    safeSetText('td-my-social', mySocials);
+    safeSetText('td-my-emergency', tenant.emergencyContact || '-');
+
+    // Landlord Contacts
+    safeSetText('td-lessor-name', lessor.name || '-');
+    safeSetText('td-lessor-phone', lessor.phone || '-');
+    safeSetText('td-lessor-line', lessor.lineId || '-');
+    const lessorSocials = [lessor.facebook ? `FB: ${lessor.facebook}` : '', lessor.email ? `✉️ ${lessor.email}` : ''].filter(Boolean).join(' | ') || '-';
+    safeSetText('td-lessor-social', lessorSocials);
+    safeSetText('td-lessor-x', lessor.xTwitter || '-');
+
+    // Payment History List
+    const payHistoryContainer = document.getElementById('tenant-dash-payment-history');
+    if (payHistoryContainer) {
+      payHistoryContainer.innerHTML = '';
+      const rentAmt = tenant.rent || prop?.rent || 0;
+      const historyItems = [
+        { month: 'งวดล่าสุด', status: '✅ ชำระแล้ว', date: '5 ส.ค. 2569', amt: rentAmt },
+        { month: 'งวดย้อนหลัง (เดือนที่ 1)', status: '✅ ชำระแล้ว', date: '5 ก.ค. 2569', amt: rentAmt },
+        { month: 'เงินประกันแรกเข้า', status: '✅ ชำระแล้ว', date: tenant.startDate || '1 ส.ค. 2569', amt: tenant.deposit || (rentAmt * 2) }
+      ];
+      historyItems.forEach(item => {
+        payHistoryContainer.innerHTML += `
+          <div class="p-2.5 bg-stone-50 rounded-xl border border-stone-200 flex justify-between items-center">
+            <div>
+              <strong class="text-stone-800 block">${item.month}</strong>
+              <span class="text-[10px] text-stone-400 font-medium">${item.date}</span>
+            </div>
+            <div class="text-right">
+              <span class="font-black text-emerald-700 block">฿${item.amt.toLocaleString()}</span>
+              <span class="text-[10px] text-emerald-600 font-bold">${item.status}</span>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // Inventory List in Tenant Dash
+    const invContainer = document.getElementById('tenant-dash-inventory');
+    if (invContainer && prop) {
+      invContainer.innerHTML = '';
+      const list = prop.inventoryList || [];
+      if (list.length === 0) {
+        invContainer.innerHTML = '<div class="text-stone-400 text-center py-2">ไม่มีรายการเฟอร์นิเจอร์</div>';
+      } else {
+        list.forEach(it => {
+          const name = typeof it === 'object' ? it.name : it;
+          const img = typeof it === 'object' ? it.img : CONFIG.PLACEHOLDER_SVG;
+          invContainer.innerHTML += `
+            <div class="p-2 bg-stone-50 rounded-lg border border-stone-200 flex justify-between items-center">
+              <span class="font-bold text-stone-800">${name}</span>
+              <img src="${img}" class="w-8 h-8 rounded object-cover cursor-pointer border border-stone-300" onclick="openMediaPreview('${name}', this.src)">
+            </div>
+          `;
+        });
+      }
+    }
   }
 
   function renderAdminData() {
@@ -716,10 +850,40 @@
     }
 
     // 3. Lessor Contact Details (Tenant Facing)
-    const lessor = state.lessorProfiles[prop.lessorKey] || Object.values(state.lessorProfiles)[0] || { name: 'ผู้ให้เช่า', phone: '-', address: '-' };
+    const lessor = state.lessorProfiles[prop.lessorKey] || Object.values(state.lessorProfiles)[0] || { name: 'ผู้ให้เช่า', phone: '-', address: '-', lineId: '-', facebook: '-', email: '-', xTwitter: '-' };
     if (document.getElementById('pd-lessor-display')) document.getElementById('pd-lessor-display').innerText = lessor.name || 'ผู้ให้เช่า';
+    if (document.getElementById('pd-lessor-name')) document.getElementById('pd-lessor-name').innerText = lessor.name || 'ผู้ให้เช่า';
     if (document.getElementById('pd-lessor-phone-detail')) document.getElementById('pd-lessor-phone-detail').innerText = `📞 เบอร์โทรศัพท์ติดต่อ: ${lessor.phone || '-'}`;
     if (document.getElementById('pd-lessor-address-detail')) document.getElementById('pd-lessor-address-detail').innerText = `📍 ที่อยู่: ${lessor.address || '-'}`;
+
+    const telBtn = document.getElementById('pd-lessor-tel-btn');
+    if (telBtn) {
+      telBtn.href = lessor.phone ? `tel:${lessor.phone}` : '#';
+      telBtn.style.display = lessor.phone && lessor.phone !== '-' ? 'inline-flex' : 'none';
+    }
+
+    const setSocialLink = (txtId, btnId, val, type) => {
+      const txtEl = document.getElementById(txtId);
+      const btnEl = document.getElementById(btnId);
+      if (txtEl) txtEl.innerText = val || '-';
+      if (btnEl) {
+        if (!val || val === '-') {
+          btnEl.href = '#';
+          btnEl.classList.add('opacity-40');
+        } else {
+          btnEl.classList.remove('opacity-40');
+          if (type === 'line') btnEl.href = val.startsWith('http') ? val : `https://line.me/ti/p/~${val.replace('@', '')}`;
+          else if (type === 'fb') btnEl.href = val.startsWith('http') ? val : `https://www.facebook.com/${encodeURIComponent(val)}`;
+          else if (type === 'email') btnEl.href = `mailto:${val}`;
+          else if (type === 'x') btnEl.href = val.startsWith('http') ? val : `https://x.com/${val.replace('@', '')}`;
+        }
+      }
+    };
+
+    setSocialLink('pd-lessor-line-txt', 'pd-lessor-line-btn', lessor.lineId, 'line');
+    setSocialLink('pd-lessor-fb-txt', 'pd-lessor-fb-btn', lessor.facebook, 'fb');
+    setSocialLink('pd-lessor-email-txt', 'pd-lessor-email-btn', lessor.email, 'email');
+    setSocialLink('pd-lessor-x-txt', 'pd-lessor-x-btn', lessor.xTwitter, 'x');
 
     // 4. Render Photo & Video Gallery
     renderPropertyGallery();
@@ -1643,11 +1807,20 @@
 
     keys.forEach(key => {
       const prof = state.lessorProfiles[key];
+      const contacts = [];
+      if (prof.phone) contacts.push(`📞 ${prof.phone}`);
+      if (prof.lineId) contacts.push(`💬 LINE: ${prof.lineId}`);
+      if (prof.facebook) contacts.push(`🔵 FB: ${prof.facebook}`);
+      if (prof.email) contacts.push(`✉️ ${prof.email}`);
+      if (prof.xTwitter) contacts.push(`𝕏 ${prof.xTwitter}`);
+
       container.innerHTML += `
-        <div class="p-3 bg-stone-100 border border-stone-300 rounded-xl space-y-1 shadow-sm">
+        <div class="p-3 bg-stone-100 border border-stone-300 rounded-xl space-y-1.5 shadow-sm">
           <div class="font-extrabold text-stone-800 text-xs">👤 ${prof.name} (${prof.age || '-'} ปี)</div>
           <div class="text-[11px] text-stone-600">🆔 บัตรประชาชน: ${prof.idCard || '-'}</div>
-          <div class="text-[11px] text-stone-600">📞 โทร: ${prof.phone || '-'}</div>
+          <div class="text-[11px] text-stone-600 font-medium">
+            ${contacts.length > 0 ? contacts.join(' | ') : '📞 ' + (prof.phone || '-')}
+          </div>
           <div class="text-[11px] text-stone-500 truncate">🏠 ที่อยู่: ${prof.address || '-'}</div>
           <div class="flex gap-2 pt-1">
             <button onclick="window.editRegisteredLessor('${key}')" class="flex-1 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 text-[10px] font-bold rounded transition-colors">
@@ -1675,10 +1848,21 @@
 
     keys.forEach(key => {
       const t = state.tenantDatabase[key];
+      const tContacts = [];
+      if (t.phone && t.phone !== '-') tContacts.push(`📞 ${t.phone}`);
+      if (t.lineId) tContacts.push(`💬 LINE: ${t.lineId}`);
+      if (t.facebook) tContacts.push(`🔵 FB: ${t.facebook}`);
+      if (t.email) tContacts.push(`✉️ ${t.email}`);
+      if (t.xTwitter) tContacts.push(`𝕏 ${t.xTwitter}`);
+      if (t.emergencyContact) tContacts.push(`🚨 ฉุกเฉิน: ${t.emergencyContact}`);
+
       container.innerHTML += `
-        <div class="p-3 bg-stone-100 border border-stone-300 rounded-xl space-y-1 shadow-sm">
+        <div class="p-3 bg-stone-100 border border-stone-300 rounded-xl space-y-1.5 shadow-sm">
           <div class="font-extrabold text-stone-800 text-xs">👤 ${t.fullName} (${t.age || '-'} ปี)</div>
           <div class="text-[11px] text-stone-600">🏠 ทรัพย์สินที่เช่า: ${t.unitName || '-'} (${t.houseNo || '-'})</div>
+          <div class="text-[11px] text-stone-700 font-medium">
+            ${tContacts.length > 0 ? tContacts.join(' | ') : '📞 ' + (t.phone || '-')}
+          </div>
           <div class="text-[11px] text-stone-600">💰 ค่าเช่า: ฿${(t.rent || 0).toLocaleString()} / เงินประกัน: ฿${(t.deposit || 0).toLocaleString()}</div>
           <div class="text-[11px] text-stone-500">🗓️ สัญญา: ${t.startDate || '-'} ถึง ${t.endDate || '-'}</div>
           <div class="flex gap-2 pt-1">
@@ -1818,6 +2002,11 @@
     safeSet('t-property-bind', t.propId || '');
     safeSet('t-startdate', t.startDate || '');
     safeSet('t-duration', t.duration || '1');
+    safeSet('t-line', t.lineId || '');
+    safeSet('t-facebook', t.facebook || '');
+    safeSet('t-email', t.email || '');
+    safeSet('t-x', t.xTwitter || '');
+    safeSet('t-emergency', t.emergencyContact || '');
     safeSet('editing-tenant-key', tKey);
 
     safeSet('tenant-fullname', t.fullName || '');
@@ -1870,6 +2059,11 @@
       idCard: (document.getElementById('t-idcard')?.value || document.getElementById('tenant-idcard')?.value || '-').trim(),
       phone: (document.getElementById('t-phone')?.value || document.getElementById('tenant-phone')?.value || '-').trim(),
       address: (document.getElementById('t-address')?.value || document.getElementById('tenant-address')?.value || '-').trim(),
+      lineId: (document.getElementById('t-line')?.value || '').trim(),
+      facebook: (document.getElementById('t-facebook')?.value || '').trim(),
+      email: (document.getElementById('t-email')?.value || '').trim(),
+      xTwitter: (document.getElementById('t-x')?.value || '').trim(),
+      emergencyContact: (document.getElementById('t-emergency')?.value || '').trim(),
       unitName: prop.name || '-',
       houseNo: prop.houseNo || '-',
       rent: prop.rent || 0,
@@ -1897,7 +2091,7 @@
     renderAdminData();
     alert(`✅ บันทึกลงทะเบียนผู้เช่า "${fullName}" เรียบร้อยแล้ว!`);
 
-    ['t-fullname', 't-age', 't-idcard', 't-phone', 't-address', 'tenant-fullname', 'tenant-age', 'tenant-idcard', 'tenant-phone', 'tenant-address'].forEach(id => {
+    ['t-fullname', 't-age', 't-idcard', 't-phone', 't-address', 't-line', 't-facebook', 't-email', 't-x', 't-emergency', 'tenant-fullname', 'tenant-age', 'tenant-idcard', 'tenant-phone', 'tenant-address'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
@@ -1937,6 +2131,10 @@
     if (document.getElementById('reg-lp-age')) document.getElementById('reg-lp-age').value = prof.age || 45;
     if (document.getElementById('reg-lp-phone')) document.getElementById('reg-lp-phone').value = prof.phone || '';
     if (document.getElementById('reg-lp-address')) document.getElementById('reg-lp-address').value = prof.address || '';
+    if (document.getElementById('reg-lp-line')) document.getElementById('reg-lp-line').value = prof.lineId || '';
+    if (document.getElementById('reg-lp-facebook')) document.getElementById('reg-lp-facebook').value = prof.facebook || '';
+    if (document.getElementById('reg-lp-email')) document.getElementById('reg-lp-email').value = prof.email || '';
+    if (document.getElementById('reg-lp-x')) document.getElementById('reg-lp-x').value = prof.xTwitter || '';
     if (document.getElementById('editing-lessor-key')) document.getElementById('editing-lessor-key').value = key;
 
     const btn = document.getElementById('btn-submit-lessor');
@@ -1963,6 +2161,10 @@
       age: parseInt(document.getElementById('reg-lp-age')?.value) || 45,
       phone: document.getElementById('reg-lp-phone')?.value.trim() || '',
       address: document.getElementById('reg-lp-address')?.value.trim() || '',
+      lineId: document.getElementById('reg-lp-line')?.value.trim() || '',
+      facebook: document.getElementById('reg-lp-facebook')?.value.trim() || '',
+      email: document.getElementById('reg-lp-email')?.value.trim() || '',
+      xTwitter: document.getElementById('reg-lp-x')?.value.trim() || '',
       imageUrl: CONFIG.PLACEHOLDER_SVG
     };
 
@@ -1982,7 +2184,7 @@
     renderAdminData();
     alert(`✅ บันทึกข้อมูลผู้ให้เช่า "${fullName}" เรียบร้อยแล้ว!`);
 
-    ['reg-lp-fullname', 'reg-lp-idcard', 'reg-lp-age', 'reg-lp-phone', 'reg-lp-address'].forEach(id => {
+    ['reg-lp-fullname', 'reg-lp-idcard', 'reg-lp-age', 'reg-lp-phone', 'reg-lp-address', 'reg-lp-line', 'reg-lp-facebook', 'reg-lp-email', 'reg-lp-x'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
@@ -2986,6 +3188,7 @@
   window.handleDetailPropertySwitch = handleDetailPropertySwitch;
   window.handleLoanPropertySwitch = handleLoanPropertySwitch;
   window.renderPropertyDetailView = renderPropertyDetailView;
+  window.renderTenantDashboardView = renderTenantDashboardView;
   window.renderLoanManagementView = renderLoanManagementView;
   window.openAmortizationModal = openAmortizationModal;
   window.renderRatePeriodEditors = renderRatePeriodEditors;
