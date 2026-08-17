@@ -139,7 +139,7 @@
 
   // 3. UNIFIED GLOBAL STATE
   const state = {
-    currentRole: localStorage.getItem('property_os_active_role') || 'tenant',
+    currentRole: sessionStorage.getItem('property_os_active_role') || 'tenant',
     currentPropertyId: localStorage.getItem('property_os_current_prop_id') || DEFAULT_PROPERTIES[0].id,
     currentTenantId: 'tenant-1',
     currentGalleryFilter: 'all',
@@ -2424,6 +2424,7 @@
     if (matchedAdmin) {
       state.currentRole = 'landlord';
       state.activeAdmin = matchedAdmin;
+      sessionStorage.setItem('property_os_active_role', 'landlord');
       localStorage.setItem('property_os_active_role', 'landlord');
 
       const badgeName = document.getElementById('user-badge-name');
@@ -2446,6 +2447,18 @@
     }
   }
 
+  function logoutLandlord() {
+    if (!confirm('คุณต้องการออกจากระบบผู้ให้เช่า และกลับสู่โหมดผู้เช่า/บุคคลทั่วไปใช่หรือไม่?')) return;
+    state.currentRole = 'tenant';
+    state.activeAdmin = null;
+    sessionStorage.removeItem('property_os_active_role');
+    localStorage.removeItem('property_os_active_role');
+    applyRolePermissions();
+    switchTab('landing');
+    forceScrollToTop();
+    alert('🚪 ออกจากระบบผู้ให้เช่าเรียบร้อยแล้ว กลับสู่โหมดผู้เช่า/บุคคลทั่วไป');
+  }
+
   function applyRolePermissions() {
     const isLandlord = state.currentRole === 'landlord';
     const badgeRole = document.getElementById('user-badge-role');
@@ -2455,6 +2468,7 @@
     const tabPropertyBtn = document.getElementById('tab-property-detail');
     const pdHeaderBadge = document.getElementById('pd-header-badge');
     const navGrid = document.getElementById('main-nav-grid');
+    const actionBtn = document.getElementById('user-badge-action-btn');
 
     if (navGrid) {
       navGrid.className = isLandlord
@@ -2470,6 +2484,11 @@
       if (badgeName) badgeName.innerText = state.activeAdmin?.name || 'ผู้ดูแลพอร์ต';
       if (roleTitle) roleTitle.innerText = 'ผู้ให้เช่า (Landlord Mode)';
       if (drawerRole) drawerRole.innerText = '🔑 ผู้ให้เช่า (Landlord)';
+      if (actionBtn) {
+        actionBtn.innerText = '🚪 ออกจากระบบ';
+        actionBtn.className = 'ml-2 text-rose-600 hover:text-rose-800 text-[11px] font-bold underline cursor-pointer';
+        actionBtn.onclick = logoutLandlord;
+      }
       const tabTenantBtn = document.getElementById('tab-tenant');
       if (tabTenantBtn) tabTenantBtn.innerHTML = '<span>👤</span> <span class="tab-label">ลงทะเบียนผู้เช่า</span>';
 
@@ -2485,6 +2504,11 @@
       if (badgeName) badgeName.innerText = 'ผู้เช่า / บุคคลทั่วไป';
       if (roleTitle) roleTitle.innerText = 'ผู้เช่า (Tenant Portal)';
       if (drawerRole) drawerRole.innerText = '👤 ผู้เช่า (Tenant)';
+      if (actionBtn) {
+        actionBtn.innerText = '🔑 สลับโหมด';
+        actionBtn.className = 'ml-2 text-stone-500 hover:text-[#e05646] text-[11px] font-bold underline cursor-pointer';
+        actionBtn.onclick = openLoginOverlay;
+      }
       if (tabPropertyBtn) tabPropertyBtn.innerHTML = '<span>🏡</span> <span class="tab-label">สเปกทรัพย์สิน</span>';
       if (pdHeaderBadge) pdHeaderBadge.innerText = 'ข้อมูลอสังหาฯ เพื่อการตัดสินใจเช่า';
 
@@ -2552,7 +2576,9 @@
     forceScrollToTop();
     renderAllViews();
     forceScrollToTop();
-    requestAnimationFrame(() => forceScrollToTop());
+    if (typeof requestAnimationFrame !== 'undefined') {
+      requestAnimationFrame(() => forceScrollToTop());
+    }
   }
 
   function switchTenantSubView(sub) {
@@ -2862,6 +2888,7 @@
   window.setCurrentRole = setCurrentRole;
   window.openAdminPinModal = openAdminPinModal;
   window.verifyAdminPinSubmit = verifyAdminPinSubmit;
+  window.logoutLandlord = logoutLandlord;
   window.renderAdminAccountsList = renderAdminAccountsList;
   window.handleAddAdminSubmit = handleAddAdminSubmit;
   window.deleteAdminAccount = deleteAdminAccount;
