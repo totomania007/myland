@@ -2386,20 +2386,30 @@
   }
 
   function switchSubTab(sub) {
+    const isLandlord = state.currentRole === 'landlord';
+    if (!isLandlord && sub === 'upload-gallery') {
+      sub = 'gallery';
+    }
+
     ['specs', 'gallery', 'furniture', 'lessor', 'upload-gallery'].forEach(s => {
       const view = document.getElementById(`subview-${s}`);
       if (view) view.classList.add('hidden');
       const btn = document.getElementById(`subtab-${s}`);
       if (btn) {
-        btn.className = 'px-2 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-sm transition-all';
+        btn.classList.remove('bg-[#383838]', 'text-white', 'shadow-md');
+        btn.classList.add('bg-white', 'text-stone-700', 'hover:bg-stone-100', 'shadow-sm');
       }
     });
+
     const activeView = document.getElementById(`subview-${sub}`);
     if (activeView) activeView.classList.remove('hidden');
     const activeBtn = document.getElementById(`subtab-${sub}`);
     if (activeBtn) {
-      activeBtn.className = 'px-2 py-2.5 bg-[#383838] text-white rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-md transition-all';
+      activeBtn.classList.remove('bg-white', 'text-stone-700', 'hover:bg-stone-100', 'shadow-sm');
+      activeBtn.classList.add('bg-[#383838]', 'text-white', 'shadow-md');
     }
+
+    applyRolePermissions();
   }
 
   function addFurnitureEditRow(name = '', img = CONFIG.PLACEHOLDER_SVG) {
