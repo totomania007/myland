@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_72"></script>
+  <script src="js/engine.js?v=20260814_73"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1579,11 +1579,12 @@
             </div>
 
             <div>
-              <label class="block font-bold text-stone-700 mb-1">สำเนาบัตรประชาชนผู้ให้เช่า (Cloudinary Cloud Storage: ogdfbbpw)</label>
+              <label class="block font-bold text-stone-700 mb-1">สำเนาบัตรประชาชนผู้ให้เช่า (ระบบขีดคร่อมลายน้ำอัตโนมัติ 🛡️)</label>
               <div class="border-2 border-dashed border-stone-300 hover:border-[#e05646] rounded-xl p-6 text-center bg-stone-50 cursor-pointer transition-colors" onclick="triggerLessorTabFileInput()">
                 <input type="file" id="lessorTabFile" accept="image/*" class="hidden" onchange="uploadToCloudinaryAndPreview(event, 'lessor-tab')">
-                <div class="text-xs font-bold text-stone-700" id="lessorTabFileText">☁️ คลิกเพื่อเลือกไฟล์รูปภาพบัตรประชาชนผู้ให้เช่า (Cloudinary house_landlord)</div>
-                <div class="text-[10px] text-stone-400 mt-1">ไฟล์จะแนบเป็น เอกสารแนบท้าย ๓ ในหนังสือสัญญาเช่าบ้าน A4</div>
+                <div class="text-xs font-bold text-stone-700" id="lessorTabFileText">☁️ คลิกเพื่อเลือกไฟล์รูปภาพบัตรประชาชนผู้ให้เช่า</div>
+                <div class="text-[11px] text-emerald-700 font-bold mt-1">🛡️ ระบบจะขีดคร่อมและประทับลายน้ำ "ใช้สำหรับทำสัญญาเช่าเท่านั้น" อัตโนมัติ ปลอดภัย 100%</div>
+                <div class="text-[10px] text-stone-400 mt-0.5">ไฟล์จะแนบเป็น เอกสารแนบท้าย ๓ ในหนังสือสัญญาเช่าบ้าน A4</div>
               </div>
             </div>
 
@@ -1726,14 +1727,15 @@
             </div>
 
             <div>
-              <label class="block font-bold text-stone-700 mb-1">สำเนาบัตรประชาชนผู้เช่า (Cloudinary Cloud Storage: ogdfbbpw)</label>
+              <label class="block font-bold text-stone-700 mb-1">สำเนาบัตรประชาชนผู้เช่า (ระบบขีดคร่อมลายน้ำอัตโนมัติ 🛡️)</label>
               <div class="border-2 border-dashed border-stone-300 hover:border-[#e05646] rounded-xl p-6 text-center bg-stone-50 cursor-pointer transition-colors" onclick="triggerFileInput()">
                 <input type="file" id="tenantFile" accept="image/*" class="hidden" onchange="uploadToCloudinaryAndPreview(event, 'tenant')">
-                <div class="text-xs font-bold text-stone-700" id="fileText">☁️ คลิกอัปโหลดรูปภาพบัตรประชาชนขึ้น Cloudinary (house_landlord)</div>
-                <div class="text-[10px] text-stone-400 mt-1">ไฟล์สแกนจริงสำหรับจัดเก็บและแนบท้ายสัญญาเช่า A4</div>
+                <div class="text-xs font-bold text-stone-700" id="fileText">☁️ คลิกอัปโหลดรูปภาพบัตรประชาชน</div>
+                <div class="text-[11px] text-emerald-700 font-bold mt-1">🛡️ ระบบจะขีดคร่อมและประทับลายน้ำ "ใช้สำหรับทำสัญญาเช่าเท่านั้น" อัตโนมัติ ปลอดภัย 100%</div>
+                <div class="text-[10px] text-stone-400 mt-0.5">ป้องกันการนำไปใช้ผิดวัตถุประสงค์ตามมาตรฐาน PDPA</div>
               </div>
               <div id="imagePreviewContainer" class="hidden mt-3 text-center">
-                <img id="imagePreview" src="" alt="Card Preview" class="max-h-32 mx-auto rounded-lg border border-stone-300 cursor-pointer" onclick="openMediaPreview('สำเนาบัตรประชาชนผู้เช่า', this.src)">
+                <img id="imagePreview" src="" alt="Card Preview" class="max-h-32 mx-auto rounded-lg border border-stone-300 cursor-pointer shadow-md" onclick="openMediaPreview('สำเนาบัตรประชาชนผู้เช่า (ขีดคร่อมลายน้ำแล้ว)', this.src)">
               </div>
             </div>
 

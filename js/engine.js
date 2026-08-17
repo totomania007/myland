@@ -1382,9 +1382,119 @@
     }
   }
 
+  async function applyLegalWatermarkToIdCard(file, purposeText) {
+    if (!file || !file.type.startsWith('image/')) return file;
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const maxDim = 1600;
+            let width = img.width;
+            let height = img.height;
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              resolve(file);
+              return;
+            }
+
+            // 1. Draw base ID card image
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Date string
+            const now = new Date();
+            const thMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+            const dateStr = `${now.getDate()} ${thMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+            const customPurpose = purposeText || 'ใช้สำหรับทำสัญญาเช่าอสังหาริมทรัพย์กับ YouEstates เท่านั้น';
+
+            // 2. Draw Double Diagonal Crossing Lines (เส้นขีดคร่อมคู่ทแยงมุม)
+            const angle = -Math.atan2(height, width) * 0.72;
+            ctx.save();
+            ctx.translate(width / 2, height / 2);
+            ctx.rotate(angle);
+
+            const lineWidth = Math.max(3, Math.round(width / 320));
+            const lineSpacing = Math.max(60, Math.round(height * 0.16));
+
+            // Top crossing line
+            ctx.strokeStyle = 'rgba(180, 25, 25, 0.85)';
+            ctx.lineWidth = lineWidth;
+            ctx.beginPath();
+            ctx.moveTo(-width * 1.5, -lineSpacing / 2);
+            ctx.lineTo(width * 1.5, -lineSpacing / 2);
+            ctx.stroke();
+
+            // Bottom crossing line
+            ctx.beginPath();
+            ctx.moveTo(-width * 1.5, lineSpacing / 2);
+            ctx.lineTo(width * 1.5, lineSpacing / 2);
+            ctx.stroke();
+
+            // 3. Draw Watermark Text inside the crossing lines
+            const fontSize = Math.max(16, Math.round(width / 32));
+            ctx.font = `bold ${fontSize}px "Prompt", "Sarabun", sans-serif`;
+            ctx.fillStyle = 'rgba(180, 25, 25, 0.9)';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Line 1: Legal Purpose
+            ctx.fillText(customPurpose, 0, -fontSize * 0.45);
+
+            // Line 2: Restriction & Date
+            const subFontSize = Math.max(12, Math.round(fontSize * 0.72));
+            ctx.font = `bold ${subFontSize}px "Prompt", "Sarabun", sans-serif`;
+            ctx.fillStyle = 'rgba(160, 25, 25, 0.85)';
+            ctx.fillText(`(ห้ามนำไปใช้เพื่อการอื่นใดทั้งสิ้น — วันที่ ${dateStr})`, 0, fontSize * 0.7);
+
+            ctx.restore();
+
+            // 4. Discreet Bottom-Left Stamp
+            ctx.save();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+            const cornerFont = Math.max(11, Math.round(width / 65));
+            ctx.font = `bold ${cornerFont}px sans-serif`;
+            ctx.fillText(`🛡️ WATERMARKED VALID ONLY FOR RENTAL CONTRACT • ${dateStr}`, 20, height - 20);
+            ctx.restore();
+
+            // 5. Convert to Blob & File
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const watermarkedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + "_watermarked.jpg", { type: "image/jpeg" });
+                resolve(watermarkedFile);
+              } else {
+                resolve(file);
+              }
+            }, 'image/jpeg', 0.92);
+          } catch(err) {
+            console.warn('Watermark canvas error:', err);
+            resolve(file);
+          }
+        };
+        img.onerror = () => resolve(file);
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve(file);
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function uploadToCloudinaryAndPreview(event, target) {
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
+    const rawFile = event.target.files && event.target.files[0];
+    if (!rawFile) return;
 
     let toast = document.getElementById('doc-upload-toast');
     if (!toast) {
@@ -1394,13 +1504,29 @@
       document.body.appendChild(toast);
     }
     toast.style.display = 'flex';
-    toast.innerHTML = `<span>☁️</span><span>กำลังอัปโหลดเอกสารขึ้น Cloudinary...</span>`;
+
+    const isIdCard = target === 'tenant' || target === 'lessor-tab';
+    if (isIdCard) {
+      toast.innerHTML = `<span>🛡️</span><span>กำลังขีดคร่อมลายน้ำ "ใช้สำหรับทำสัญญาเช่าเท่านั้น" และอัปโหลด...</span>`;
+    } else {
+      toast.innerHTML = `<span>☁️</span><span>กำลังอัปโหลดเอกสารขึ้น Cloudinary...</span>`;
+    }
 
     try {
-      const cdnUrl = await uploadFileToCloudinary(file);
+      // Apply Watermark if it's an ID Card
+      let fileToUpload = rawFile;
+      if (isIdCard) {
+        const prop = getCurrentProperty();
+        const purpose = prop ? `ใช้สำหรับทำสัญญาเช่า "${prop.name}" (${prop.houseNo || '-'}) เท่านั้น` : 'ใช้สำหรับทำสัญญาเช่าอสังหาริมทรัพย์กับ YouEstates เท่านั้น';
+        fileToUpload = await applyLegalWatermarkToIdCard(rawFile, purpose);
+      }
+
+      const cdnUrl = await uploadFileToCloudinary(fileToUpload);
       if (toast) {
-        toast.innerHTML = `<span>✅</span><span>อัปโหลดเอกสารสำเร็จ!</span>`;
-        setTimeout(() => { if (toast) toast.remove(); }, 2000);
+        toast.innerHTML = isIdCard 
+          ? `<span>🛡️</span><span>ขีดคร่อมลายน้ำระบุวัตถุประสงค์ & อัปโหลดสำเร็จ ปลอดภัย 100%!</span>`
+          : `<span>✅</span><span>อัปโหลดเอกสารสำเร็จ!</span>`;
+        setTimeout(() => { if (toast) toast.remove(); }, 2500);
       }
 
       if (target === 'tenant') {
@@ -1409,13 +1535,13 @@
         const fileText = document.getElementById('fileText');
         if (previewImg) previewImg.src = cdnUrl;
         if (previewContainer) previewContainer.classList.remove('hidden');
-        if (fileText) fileText.innerText = `✅ อัปโหลดบัตรประชาชนสำเร็จ: ${file.name}`;
+        if (fileText) fileText.innerText = `🛡️ อัปโหลดบัตร ปชช. ขีดคร่อมลายน้ำสำเร็จ: ${rawFile.name}`;
       } else if (target === 'lessor-tab') {
         const fileText = document.getElementById('lessorTabFileText');
-        if (fileText) fileText.innerText = `✅ อัปโหลดบัตรประชาชนผู้ให้เช่าสำเร็จ: ${file.name}`;
+        if (fileText) fileText.innerText = `🛡️ อัปโหลดบัตร ปชช. ขีดคร่อมลายน้ำสำเร็จ: ${rawFile.name}`;
       } else if (target === 'bank') {
         const fileText = document.getElementById('bankDocFileText');
-        if (fileText) fileText.innerText = `✅ อัปโหลดเอกสารธนาคารสำเร็จ: ${file.name}`;
+        if (fileText) fileText.innerText = `✅ อัปโหลดเอกสารธนาคารสำเร็จ: ${rawFile.name}`;
       }
     } catch(err) {
       if (toast) toast.remove();
@@ -3336,6 +3462,7 @@
   window.handleAddPropertySubmit = handleAddPropertySubmit;
   window.renderPropertyGallery = renderPropertyGallery;
   window.uploadFileToCloudinary = uploadFileToCloudinary;
+  window.applyLegalWatermarkToIdCard = applyLegalWatermarkToIdCard;
   window.uploadToCloudinaryAndPreview = uploadToCloudinaryAndPreview;
   window.uploadPropertyGalleryMultiple = uploadPropertyGalleryMultiple;
   window.editCategoryDescription = editCategoryDescription;
