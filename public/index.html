@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_75"></script>
+  <script src="js/engine.js?v=20260814_76"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2315,7 +2315,7 @@
             <span>หน้าแรก (Landing Page)</span>
           </button>
 
-          <button onclick="toggleModal('modal-mobile-menu'); switchTab('admin')" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
+          <button id="mdrawer-admin" onclick="toggleModal('modal-mobile-menu'); switchTab('admin')" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
             <span class="text-base">📊</span>
             <span>สรุปภาพรวมพอร์ต (Dashboard)</span>
           </button>
@@ -2335,9 +2335,9 @@
             <span>คลังรูปถ่าย & วิดีโอรีวิว</span>
           </button>
 
-          <button onclick="toggleModal('modal-mobile-menu'); switchTab('tenant')" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
+          <button id="mdrawer-tenant" onclick="toggleModal('modal-mobile-menu'); switchTab('tenant')" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
             <span class="text-base">👤</span>
-            <span>ลงทะเบียนผู้เช่า</span>
+            <span id="mdrawer-tenant-label">พอร์ทัลผู้เช่า</span>
           </button>
 
           <button onclick="toggleModal('modal-mobile-menu'); switchTab('register-lessor')" id="mdrawer-register-lessor" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 transition-colors">
@@ -2350,27 +2350,29 @@
             <span>หนังสือสัญญาเช่า A4</span>
           </button>
 
-          <div class="text-[10px] text-stone-400 uppercase font-bold px-2 pt-3">⚙️ เครื่องมือ & ระบบ (Tools)</div>
+          <div id="mdrawer-tools-section" class="space-y-1.5 pt-2">
+            <div class="text-[10px] text-stone-400 uppercase font-bold px-2 pt-1">⚙️ เครื่องมือผู้ให้เช่า (Landlord Tools)</div>
 
-          <button onclick="toggleModal('modal-mobile-menu'); openAmortizationModal();" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 text-emerald-400 transition-colors">
-            <span class="text-base">🏦</span>
-            <span>ตารางผ่อน & คำนวณ Retention</span>
-          </button>
+            <button onclick="toggleModal('modal-mobile-menu'); openAmortizationModal();" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 text-emerald-400 transition-colors">
+              <span class="text-base">🏦</span>
+              <span>ตารางผ่อน & คำนวณ Retention</span>
+            </button>
 
-          <button onclick="toggleModal('modal-mobile-menu'); toggleModal('modal-add-property');" class="w-full p-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 text-left font-bold flex items-center gap-3 border border-emerald-500/30 transition-colors">
-            <span class="text-base">🏡</span>
-            <span>+ เพิ่มทรัพย์สินใหม่</span>
-          </button>
+            <button onclick="toggleModal('modal-mobile-menu'); toggleModal('modal-add-property');" class="w-full p-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 text-left font-bold flex items-center gap-3 border border-emerald-500/30 transition-colors">
+              <span class="text-base">🏡</span>
+              <span>+ เพิ่มทรัพย์สินใหม่</span>
+            </button>
 
-          <button onclick="toggleModal('modal-mobile-menu'); toggleModal('modal-manage-admins');" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 text-stone-300 transition-colors">
-            <span class="text-base">👥</span>
-            <span>จัดการแอดมิน & PIN</span>
-          </button>
+            <button onclick="toggleModal('modal-mobile-menu'); toggleModal('modal-manage-admins');" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 text-stone-300 transition-colors">
+              <span class="text-base">👥</span>
+              <span>จัดการแอดมิน & PIN</span>
+            </button>
 
-          <button onclick="toggleModal('modal-mobile-menu'); syncFromCloudflareD1(false);" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 text-cyan-300 transition-colors">
-            <span class="text-base">🔄</span>
-            <span>ซิงค์ข้อมูล Cloudflare D1</span>
-          </button>
+            <button onclick="toggleModal('modal-mobile-menu'); syncFromCloudflareD1(false);" class="w-full p-3 rounded-xl bg-stone-800/60 hover:bg-stone-800 text-left font-bold flex items-center gap-3 text-cyan-300 transition-colors">
+              <span class="text-base">🔄</span>
+              <span>ซิงค์ข้อมูล Cloudflare D1</span>
+            </button>
+          </div>
         </div>
       </div>
 

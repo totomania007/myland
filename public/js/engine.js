@@ -3054,8 +3054,10 @@
       }
       const tabTenantBtn = document.getElementById('tab-tenant');
       if (tabTenantBtn) tabTenantBtn.innerHTML = '<span>👤</span> <span class="tab-label">ลงทะเบียนผู้เช่า</span>';
+      const mdrawerTenantLabel = document.getElementById('mdrawer-tenant-label');
+      if (mdrawerTenantLabel) mdrawerTenantLabel.innerText = 'ลงทะเบียนผู้เช่า';
 
-      ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group', 'subtab-upload-gallery', 'registered-tenants-section'].forEach(id => {
+      ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-admin', 'mdrawer-loan', 'mdrawer-register-lessor', 'mdrawer-tools-section', 'mnav-admin', 'fab-menu-add-prop', 'pd-admin-action-buttons', 'specs-edit-buttons-group', 'subtab-upload-gallery', 'registered-tenants-section'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.remove('hidden');
       });
@@ -3077,8 +3079,10 @@
 
       const tabTenantBtn = document.getElementById('tab-tenant');
       if (tabTenantBtn) tabTenantBtn.innerHTML = '<span>👤</span> <span class="tab-label">พอร์ทัลผู้เช่า</span>';
+      const mdrawerTenantLabel = document.getElementById('mdrawer-tenant-label');
+      if (mdrawerTenantLabel) mdrawerTenantLabel.innerText = 'พอร์ทัลผู้เช่า';
 
-      ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-loan', 'mdrawer-register-lessor', 'pd-admin-action-buttons', 'specs-edit-buttons-group', 'subtab-upload-gallery', 'registered-tenants-section'].forEach(id => {
+      ['tab-admin', 'tab-loan-management', 'tab-register-lessor', 'mdrawer-admin', 'mdrawer-loan', 'mdrawer-register-lessor', 'mdrawer-tools-section', 'mnav-admin', 'fab-menu-add-prop', 'pd-admin-action-buttons', 'specs-edit-buttons-group', 'subtab-upload-gallery', 'registered-tenants-section'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
       });
