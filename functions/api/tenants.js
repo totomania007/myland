@@ -43,12 +43,32 @@ async function ensureTenantMigrations(env) {
   }
 }
 
+function getCorsHeaders(request) {
+  const origin = (request && request.headers && request.headers.get("origin")) || "";
+  const isAllowed = origin.includes("youestates-property-os.pages.dev") || origin.includes("localhost") || origin.includes("127.0.0.1") || !origin;
+  const allowOrigin = isAllowed && origin ? origin : "https://youestates-property-os.pages.dev";
+  return {
+    "Content-Type": "application/json; charset=utf-8",
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Property-App-Key",
+    "X-Content-Type-Options": "nosniff"
+  };
+}
+
+export async function onRequestOptions(context) {
+  return new Response(null, {
+    status: 204,
+    headers: getCorsHeaders(context.request)
+  });
+}
+
 export async function onRequestGet(context) {
-  const { env } = context;
+  const { request, env } = context;
   if (!env || !env.DB) {
     return new Response(JSON.stringify([]), {
       status: 200,
-      headers: { "Content-Type": "application/json; charset=utf-8" }
+      headers: getCorsHeaders(request)
     });
   }
 
@@ -72,28 +92,25 @@ export async function onRequestGet(context) {
         duration, 
         end_date as endDate, 
         prop_id as propId, 
-        image_url as imageUrl,
-        line_id as lineId,
-        facebook,
-        email,
-        x_twitter as xTwitter,
-        emergency_contact as emergencyContact,
+        image_url as imageUrl, 
+        line_id as lineId, 
+        facebook, 
+        email, 
+        x_twitter as xTwitter, 
+        emergency_contact as emergencyContact, 
         created_at
       FROM tenants ORDER BY created_at DESC
     `).all();
 
     return new Response(JSON.stringify(results || []), {
       status: 200,
-      headers: { 
-        "Content-Type": "application/json; charset=utf-8",
-        "Access-Control-Allow-Origin": "*"
-      }
+      headers: getCorsHeaders(request)
     });
   } catch (err) {
     console.warn("D1 Tenants GET Warning:", err);
     return new Response(JSON.stringify([]), {
       status: 200,
-      headers: { "Content-Type": "application/json; charset=utf-8" }
+      headers: getCorsHeaders(request)
     });
   }
 }
@@ -103,7 +120,7 @@ export async function onRequestPost(context) {
   if (!env || !env.DB) {
     return new Response(JSON.stringify({ success: true, warning: "DB binding missing" }), {
       status: 200,
-      headers: { "Content-Type": "application/json; charset=utf-8" }
+      headers: getCorsHeaders(request)
     });
   }
 
@@ -160,16 +177,13 @@ export async function onRequestPost(context) {
 
     return new Response(JSON.stringify({ success: true, id }), {
       status: 200,
-      headers: { 
-        "Content-Type": "application/json; charset=utf-8",
-        "Access-Control-Allow-Origin": "*"
-      }
+      headers: getCorsHeaders(request)
     });
   } catch (err) {
     console.warn("D1 Tenants POST Warning:", err);
     return new Response(JSON.stringify({ success: true, warning: err.message }), {
       status: 200,
-      headers: { "Content-Type": "application/json; charset=utf-8" }
+      headers: getCorsHeaders(request)
     });
   }
 }
@@ -177,14 +191,14 @@ export async function onRequestPost(context) {
 export async function onRequestDelete(context) {
   const { request, env } = context;
   if (!env || !env.DB) {
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+    return new Response(JSON.stringify({ success: true }), { status: 200, headers: getCorsHeaders(request) });
   }
 
   try {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
     if (!id) {
-      return new Response(JSON.stringify({ error: "Missing id parameter" }), { status: 400 });
+      return new Response(JSON.stringify({ error: "Missing id parameter" }), { status: 400, headers: getCorsHeaders(request) });
     }
 
     await env.DB.prepare(CREATE_TENANTS_TABLE_SQL).run();
@@ -192,9 +206,9 @@ export async function onRequestDelete(context) {
 
     return new Response(JSON.stringify({ success: true, id }), {
       status: 200,
-      headers: { "Content-Type": "application/json; charset=utf-8" }
+      headers: getCorsHeaders(request)
     });
   } catch (err) {
-    return new Response(JSON.stringify({ success: true, warning: err.message }), { status: 200 });
+    return new Response(JSON.stringify({ success: true, warning: err.message }), { status: 200, headers: getCorsHeaders(request) });
   }
 }

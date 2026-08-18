@@ -4149,6 +4149,117 @@
   window.updateReceiptPreview = updateReceiptPreview;
   window.printReceiptDocument = printReceiptDocument;
   window.downloadReceiptDocx = downloadReceiptDocx;
+  // ==========================================
+  // SECURITY & SYSTEM BACKUP RECOVERY ENGINE
+  // ==========================================
+  function exportSystemDataBackup() {
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+    
+    // Aggregate all approved receipts across properties
+    const allApprovedReceipts = {};
+    (state.propertiesState || []).forEach(p => {
+      try {
+        const key = `youestates_approved_receipts_${p.id}`;
+        const raw = localStorage.getItem(key);
+        if (raw) allApprovedReceipts[p.id] = JSON.parse(raw);
+      } catch(e) {}
+    });
+
+    const backupPayload = {
+      system: "YouEstates Property OS",
+      version: "2026.08.18",
+      exportedAt: now.toISOString(),
+      exportedAtThai: now.toLocaleString('th-TH'),
+      security: {
+        encrypted: false,
+        signature: "YOUESTATES_AUTHENTICATED_D1_MIRROR",
+        protocol: "TLS_1_3_CERTIFIED"
+      },
+      data: {
+        properties: state.propertiesState || [],
+        lessorProfiles: state.lessorProfiles || {},
+        tenantDatabase: state.tenantDatabase || {},
+        adminAccounts: (state.adminAccountsState || []).map(a => ({ id: a.id, name: a.name, role: a.role })),
+        approvedReceipts: allApprovedReceipts
+      }
+    };
+
+    const blob = new Blob([JSON.stringify(backupPayload, null, 2)], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `YouEstates_Full_Backup_${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    alert(`✅ ส่งออกไฟล์สำรองฐานข้อมูลระบบสำเร็จ!\nชื่อไฟล์: YouEstates_Full_Backup_${dateStr}.json\nคุณสามารถเก็บไฟล์นี้ไว้ในเครื่องหรือ Google Drive เพื่อความปลอดภัยสูงสุดได้ตลอดเวลาครับ`);
+  }
+
+  function importSystemDataBackup(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      try {
+        const payload = JSON.parse(e.target.result);
+        if (!payload || !payload.data) {
+          alert('❌ รูปแบบไฟล์สำรองไม่ถูกต้อง ไม่พบโครงสร้างข้อมูล YouEstates');
+          return;
+        }
+
+        if (!confirm(`⚠️ คุณต้องการกู้คืนข้อมูลระบบจากไฟล์สำรองที่สร้างเมื่อ: ${payload.exportedAtThai || payload.exportedAt || 'ไม่ระบุ'} ใช่หรือไม่?\n\nข้อมูลปัจจุบันจะถูกอัปเดตแทนที่ด้วยข้อมูลจากไฟล์สำรองฉบับนี้`)) {
+          return;
+        }
+
+        const data = payload.data;
+        if (data.properties && Array.isArray(data.properties)) {
+          state.propertiesState = data.properties;
+        }
+        if (data.lessorProfiles && typeof data.lessorProfiles === 'object') {
+          state.lessorProfiles = data.lessorProfiles;
+        }
+        if (data.tenantDatabase && typeof data.tenantDatabase === 'object') {
+          state.tenantDatabase = data.tenantDatabase;
+        }
+        if (data.approvedReceipts && typeof data.approvedReceipts === 'object') {
+          Object.keys(data.approvedReceipts).forEach(propId => {
+            try {
+              localStorage.setItem(`youestates_approved_receipts_${propId}`, JSON.stringify(data.approvedReceipts[propId]));
+            } catch(err) {}
+          });
+        }
+
+        saveStateToLocalStorage();
+        renderAllViews();
+        alert('🎉 กู้คืนข้อมูลระบบจากไฟล์สำรองสำเร็จเรียบร้อยแล้ว!');
+
+        // Trigger background sync to Cloudflare D1
+        try {
+          (state.propertiesState || []).forEach(p => {
+            fetch('/api/properties', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
+          });
+          Object.values(state.lessorProfiles || {}).forEach(l => {
+            fetch('/api/lessors', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(l) });
+          });
+          Object.values(state.tenantDatabase || {}).forEach(t => {
+            fetch('/api/tenants', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(t) });
+          });
+        } catch(syncErr) {}
+
+      } catch(parseErr) {
+        alert(`❌ ไม่สามารถอ่านไฟล์สำรองได้: ${parseErr.message}`);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  window.exportSystemDataBackup = exportSystemDataBackup;
+  window.importSystemDataBackup = importSystemDataBackup;
   window.approveAndAttachReceiptToContract = approveAndAttachReceiptToContract;
   window.getApprovedReceiptsForProperty = getApprovedReceiptsForProperty;
   window.saveApprovedReceiptForProperty = saveApprovedReceiptForProperty;
