@@ -31,19 +31,10 @@
       installment: 9900,
       rate: 4.5,
       startDate: '2026-08-13',
-      meterElec: '12345',
-      meterWater: '67890',
-      inventoryList: [
-        { name: 'เครื่องปรับอากาศ (Air Conditioner)', img: CONFIG.PLACEHOLDER_SVG },
-        { name: 'เตียงนอน 6 ฟุต พร้อมฟูก (6ft Bed & Mattress)', img: CONFIG.PLACEHOLDER_SVG },
-        { name: 'ตู้เสื้อผ้า Built-in', img: CONFIG.PLACEHOLDER_SVG }
-      ],
-      gallery: [
-        { id: 'g-silk-1', type: 'image', title: 'ห้องนั่งเล่น Silk Condo', category: 'interior', url: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&auto=format&fit=crop&q=80', caption: 'ห้องนั่งเล่นโปร่งสบาย แสงธรรมชาติเข้าถึง' },
-        { id: 'g-silk-2', type: 'image', title: 'ห้องนอน Master Bedroom', category: 'interior', url: 'https://images.unsplash.com/photo-1540518614846-7ede433c4550?w=1200&auto=format&fit=crop&q=80', caption: 'เตียง 6 ฟุต พร้อมที่นอนเกรดพรีเมียม' },
-        { id: 'g-silk-3', type: 'image', title: 'สระว่ายน้ำโครงการ', category: 'exterior', url: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=1200&auto=format&fit=crop&q=80', caption: 'สระว่ายน้ำระบบเกลือพร้อมฟิตเนส' },
-        { id: 'g-silk-4', type: 'video', title: 'วิดีโอพาชมห้องจริง (Video Tour)', category: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ', caption: 'คลิปพาชมห้องแบบละเอียดทุกมุมมอง' }
-      ],
+      meterElec: '',
+      meterWater: '',
+      inventoryList: [],
+      gallery: [],
       rateSchedule: [
         { startMonth: 1, endMonth: 36, rate: 4.5, label: 'โปรโมชั่น Retention ปีที่ 1-3' },
         { startMonth: 37, endMonth: 360, rate: 6.0, label: 'อัตราดอกเบี้ยลอยตัว (MRR-0.5%)' }
@@ -63,18 +54,10 @@
       installment: 16500,
       rate: 4.5,
       startDate: '2026-08-13',
-      meterElec: '54321',
-      meterWater: '09876',
-      inventoryList: [
-        { name: 'เครื่องปรับอากาศ Inverter 2 เครื่อง', img: CONFIG.PLACEHOLDER_SVG },
-        { name: 'ชุดครัว Built-in พร้อมเตาไฟฟ้า', img: CONFIG.PLACEHOLDER_SVG }
-      ],
-      gallery: [
-        { id: 'g-atr-1', type: 'image', title: 'หน้าบ้านทาวน์โฮม The Atrium', category: 'exterior', url: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&auto=format&fit=crop&q=80', caption: 'หน้าบ้านกว้าง จอดรถได้ 2 คัน' },
-        { id: 'g-atr-2', type: 'image', title: 'ห้องรับแขก & โซนรับประทานอาหาร', category: 'interior', url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&auto=format&fit=crop&q=80', caption: 'เฟอร์นิเจอร์ตกแต่งครบชุด พร้อมเข้าอยู่' },
-        { id: 'g-atr-3', type: 'image', title: 'สวนพักผ่อนส่วนกลาง', category: 'highlight', url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&auto=format&fit=crop&q=80', caption: 'สวนสีเขียวและสนามเด็กเล่นร่มรื่น' },
-        { id: 'g-atr-4', type: 'video', title: 'วิดีโอรีวิวบ้าน The Atrium', category: 'video', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ', caption: 'พาทัวร์ดูบรรยากาศจริงในหมู่บ้าน' }
-      ],
+      meterElec: '',
+      meterWater: '',
+      inventoryList: [],
+      gallery: [],
       rateSchedule: [
         { startMonth: 1, endMonth: 36, rate: 4.5, label: 'โปรโมชั่น Retention ปีที่ 1-3' },
         { startMonth: 37, endMonth: 360, rate: 6.0, label: 'อัตราดอกเบี้ยลอยตัว (MRR-0.5%)' }
@@ -121,33 +104,7 @@
     }
   };
 
-  const DEFAULT_TENANTS = {
-    'tenant-1': {
-      id: 'tenant-1',
-      fullName: 'ผู้เช่าประจำห้องพัก',
-      age: 35,
-      idCard: '-',
-      phone: '081-234-5678',
-      address: '-',
-      lineId: '@tenant_line',
-      facebook: 'Tenant Name',
-      email: 'tenant@example.com',
-      xTwitter: '-',
-      emergencyContact: 'คุณสมศรี 089-999-8888',
-      unitName: 'Silk Condominium',
-      houseNo: '229/183',
-      rent: 9000,
-      deposit: 18000,
-      startDate: '2026-08-13',
-      duration: '1',
-      endDate: '2027-08-12',
-      monthsPaidCount: 1,
-      payDay: 5,
-      propId: 'prop-1786625500492',
-      inventory: [],
-      paymentHistory: []
-    }
-  };
+  const DEFAULT_TENANTS = {};
 
   function loadStoredData(key, defaultVal) {
     try {
@@ -639,33 +596,33 @@
     // Payment History List
     const payHistoryContainer = document.getElementById('tenant-dash-payment-history');
     if (payHistoryContainer) {
-      const rentAmt = tenant.rent || prop?.rent || 0;
-      const historyItems = [
-        { type: 'rent', month: 'งวดล่าสุด (ส.ค. 2569)', period: 'สิงหาคม 2569', status: '✅ ชำระแล้ว', date: '5 ส.ค. 2569', amt: rentAmt },
-        { type: 'rent', month: 'งวดย้อนหลัง (ก.ค. 2569)', period: 'กรกฎาคม 2569', status: '✅ ชำระแล้ว', date: '5 ก.ค. 2569', amt: rentAmt },
-        { type: 'deposit', month: 'เงินประกันแรกเข้า', period: 'เงินประกันสัญญาเช่า', status: '✅ ชำระแล้ว', date: tenant.startDate || '1 ส.ค. 2569', amt: tenant.deposit || (rentAmt * 2) }
-      ];
-      let historyHtml = '';
-      historyItems.forEach(item => {
-        historyHtml += `
-          <div class="p-2.5 bg-stone-50 rounded-xl border border-stone-200 flex justify-between items-center gap-2">
-            <div>
-              <strong class="text-stone-800 block">${item.month}</strong>
-              <span class="text-[10px] text-stone-400 font-medium">${item.date}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <div class="text-right">
-                <span class="font-black text-emerald-700 block text-xs">฿${item.amt.toLocaleString()}</span>
-                <span class="text-[10px] text-emerald-600 font-bold">${item.status}</span>
+      const propId = prop ? prop.id : 'prop-1';
+      const approvedReceipts = getApprovedReceiptsForProperty(propId);
+      if (approvedReceipts.length === 0) {
+        payHistoryContainer.innerHTML = '<div class="text-stone-400 text-center py-4 font-bold text-xs bg-stone-50 rounded-xl border border-stone-200">ยังไม่มีประวัติการชำระเงินที่อนุมัติ</div>';
+      } else {
+        let historyHtml = '';
+        approvedReceipts.forEach(item => {
+          historyHtml += `
+            <div class="p-2.5 bg-stone-50 rounded-xl border border-stone-200 flex justify-between items-center gap-2">
+              <div>
+                <strong class="text-stone-800 block">${item.title || item.period}</strong>
+                <span class="text-[10px] text-stone-400 font-medium">${item.paymentDate || '-'}</span>
               </div>
-              <button type="button" onclick="openReceiptModal('${item.type}', '${item.period}', ${item.amt})" class="px-2 py-1 bg-white hover:bg-stone-100 text-stone-700 border border-stone-300 rounded-lg text-[10px] font-bold shadow-sm flex items-center gap-1 transition-all" title="ดูและพิมพ์ใบเสร็จรับเงิน">
-                <span>🧾</span> <span>ใบเสร็จ</span>
-              </button>
+              <div class="flex items-center gap-2">
+                <div class="text-right">
+                  <span class="font-black text-emerald-700 block text-xs">฿${(item.amount || 0).toLocaleString()}</span>
+                  <span class="text-[10px] text-emerald-600 font-bold">✅ ชำระแล้ว</span>
+                </div>
+                <button type="button" onclick="openReceiptModal('${item.type || 'rent'}', '${item.period}', ${item.amount || 0})" class="px-2 py-1 bg-white hover:bg-stone-100 text-stone-700 border border-stone-300 rounded-lg text-[10px] font-bold shadow-sm flex items-center gap-1 transition-all" title="ดูและพิมพ์ใบเสร็จรับเงิน">
+                  <span>🧾</span> <span>ใบเสร็จ</span>
+                </button>
+              </div>
             </div>
-          </div>
-        `;
-      });
-      payHistoryContainer.innerHTML = historyHtml;
+          `;
+        });
+        payHistoryContainer.innerHTML = historyHtml;
+      }
     }
 
     // Inventory List in Tenant Dash
@@ -3053,23 +3010,15 @@
   }
 
   function getApprovedReceiptsForProperty(propId) {
-    const key = `youestates_approved_receipts_${propId || 'p1'}`;
+    if (!propId) return [];
+    const key = `youestates_approved_receipts_${propId}`;
     try {
       const saved = localStorage.getItem(key);
       if (saved) {
         return JSON.parse(saved);
       }
     } catch(e) {}
-
-    const prop = (state.propertiesState && state.propertiesState.find(p => String(p.id) === String(propId))) || getCurrentProperty() || { rent: 10000, deposit: 20000 };
-    const rentVal = prop.rent || 10000;
-    const depositVal = prop.deposit || rentVal * 2;
-
-    return [
-      { id: 'REC-256908-01', type: 'rent', title: 'ค่าเช่าบ้านและที่พักอาศัย', period: 'สิงหาคม 2569', amount: rentVal, paymentDate: '5 สิงหาคม 2569', method: 'โอนเงินผ่านบัญชีธนาคาร', approved: true, approvedDate: '5 สิงหาคม 2569' },
-      { id: 'REC-256907-01', type: 'rent', title: 'ค่าเช่าบ้านและที่พักอาศัย', period: 'กรกฎาคม 2569', amount: rentVal, paymentDate: '5 กรกฎาคม 2569', method: 'โอนเงินผ่านบัญชีธนาคาร', approved: true, approvedDate: '5 กรกฎาคม 2569' },
-      { id: 'REC-256906-DEP', type: 'deposit', title: 'เงินประกันการเช่าและทรัพย์สินเสียหาย', period: 'เงินประกันสัญญาเช่าแรกเข้า', amount: depositVal, paymentDate: '1 สิงหาคม 2569', method: 'โอนเงินผ่านบัญชีธนาคาร', approved: true, approvedDate: '1 สิงหาคม 2569' }
-    ];
+    return [];
   }
 
   function saveApprovedReceiptForProperty(propId, receiptObj) {
