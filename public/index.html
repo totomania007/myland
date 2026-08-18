@@ -6,11 +6,11 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_78"></script>
+  <script src="js/engine.js?v=20260814_79"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Prompt:wght@300;400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,700&display=swap" rel="stylesheet">
   <style>
     @font-face {
       font-family: 'TH Sarabun New';
@@ -35,8 +35,9 @@
       --color-coral-hover: #c94738;
       --color-obsidian: #090d16;
       --color-slate-card: #0f172a;
-      --color-bg-linen: #f4f3f0;
+      --color-bg-linen: #f8fafc;
       --font-ui: 'IBM Plex Sans Thai', 'Prompt', sans-serif;
+      --font-numeric: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
       --font-contract: 'TH Sarabun New', 'THSarabunNew', 'TH Sarabun PSK', 'Sarabun', sans-serif;
     }
 
@@ -47,7 +48,13 @@
       min-height: 100vh;
     }
 
-    /* 2026 Bento Grid & Glassmorphism System */
+    .font-numeric {
+      font-family: var(--font-numeric);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+
+    /* 2026 Bento Grid & Modern FinTech System */
     .bento-grid {
       display: grid;
       grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -57,22 +64,39 @@
     .youestates-window {
       background-color: #ffffff;
       border: 1px solid #e2e8f0;
-      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.06);
       border-radius: 1.75rem;
     }
 
     .youestates-card {
       background: #ffffff;
-      border-radius: 1.5rem;
+      border-radius: 1.25rem;
       border: 1px solid #e2e8f0;
       box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .youestates-card:hover {
-      border-color: rgba(16, 185, 129, 0.35);
+      border-color: rgba(16, 185, 129, 0.4);
       box-shadow: 0 12px 30px -5px rgba(16, 185, 129, 0.12);
       transform: translateY(-2px);
+    }
+
+    .bento-stat-card {
+      background: #ffffff;
+      border-radius: 1.25rem;
+      border: 1px solid #e2e8f0;
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.04);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .bento-stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 32px -6px rgba(15, 23, 42, 0.08);
+      border-color: #cbd5e1;
     }
 
     .youestates-card-header {
@@ -930,23 +954,39 @@
             </div>
           </div>
 
+          <!-- TENANT BENTO STATS -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="youestates-card p-5 space-y-1">
-              <span class="text-xs font-bold text-stone-400 uppercase tracking-wider block">🗓️ ระยะเวลาเช่าสะสม</span>
-              <div class="text-2xl font-black text-[#383838]" id="tenant-dash-months-elapsed">0 เดือน</div>
-              <div class="text-[11px] text-stone-500 font-medium" id="tenant-dash-start-date">ระบุในสัญญาเช่า</div>
+            <div class="bento-stat-card border-t-4 border-t-slate-700 flex flex-col justify-between">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">🗓️ ระยะเวลาเช่าสะสม</span>
+                  <span class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-sm font-bold shadow-xs">📅</span>
+                </div>
+                <div class="text-2xl font-black text-slate-900 font-numeric tracking-tight" id="tenant-dash-months-elapsed">0 เดือน</div>
+              </div>
+              <div class="mt-4 pt-2 border-t border-slate-100 text-[11px] text-slate-500 font-medium" id="tenant-dash-start-date">ระบุในสัญญาเช่า</div>
             </div>
 
-            <div class="youestates-card p-5 border-l-4 border-l-emerald-600 space-y-1">
-              <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider block">✅ จ่ายค่าเช่าแล้ว</span>
-              <div class="text-2xl font-black text-emerald-700" id="tenant-dash-months-paid">0 งวด</div>
-              <div class="text-[11px] text-emerald-700 font-bold" id="tenant-dash-sum-paid">ชำระสะสมรวม: ฿0</div>
+            <div class="bento-stat-card border-t-4 border-t-emerald-500 flex flex-col justify-between">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">✅ จ่ายค่าเช่าแล้ว</span>
+                  <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-bold shadow-xs">🛡️</span>
+                </div>
+                <div class="text-2xl font-black text-emerald-600 font-numeric tracking-tight" id="tenant-dash-months-paid">0 งวด</div>
+              </div>
+              <div class="mt-4 pt-2 border-t border-emerald-100/60 text-[11px] text-emerald-700 font-bold" id="tenant-dash-sum-paid">ชำระสะสมรวม: ฿0</div>
             </div>
 
-            <div class="youestates-card p-5 border-l-4 border-l-[#e05646] space-y-1 bg-stone-50">
-              <span class="text-xs font-bold text-[#e05646] uppercase tracking-wider block">⏳ กำหนดชำระงวดถัดไป</span>
-              <div class="text-2xl font-black text-[#e05646]" id="tenant-dash-days-due">-</div>
-              <div class="text-[11px] text-stone-600 font-bold" id="tenant-dash-next-due-date">ไม่มีค้างชำระ</div>
+            <div class="bento-stat-card border-t-4 border-t-[#e05646] bg-gradient-to-b from-white to-rose-50/20 flex flex-col justify-between">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-xs font-bold text-[#e05646] uppercase tracking-wider">⏳ กำหนดชำระงวดถัดไป</span>
+                  <span class="w-8 h-8 rounded-xl bg-rose-50 text-[#e05646] flex items-center justify-center text-sm font-bold shadow-xs">⏰</span>
+                </div>
+                <div class="text-2xl font-black text-[#e05646] font-numeric tracking-tight" id="tenant-dash-days-due">-</div>
+              </div>
+              <div class="mt-4 pt-2 border-t border-rose-100/60 text-[11px] text-[#e05646] font-bold" id="tenant-dash-next-due-date">ไม่มีค้างชำระ</div>
             </div>
           </div>
 
@@ -1038,32 +1078,71 @@
           </div>
         </div>
 
+        <!-- BENTO FINTECH KPI CARDS GRID -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="youestates-card p-5">
-            <div class="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">ยอดหนี้คงเหลือรวม</div>
-            <div class="text-2xl font-black text-[#383838]" id="m-principal">฿0</div>
-            <div class="w-full bg-stone-200 h-2 rounded-full overflow-hidden mt-3">
-              <div class="bg-[#e05646] h-full transition-all duration-500" id="m-progress-bar" style="width: 0%"></div>
+          <!-- CARD 1: RENT INCOME -->
+          <div class="bento-stat-card border-t-4 border-t-emerald-500 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">ค่าเช่ารับรวม / เดือน</span>
+                <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm shadow-xs font-bold">💵</span>
+              </div>
+              <div class="text-2xl font-black text-slate-900 font-numeric tracking-tight" id="m-income">฿0</div>
             </div>
-            <div class="text-[11px] text-stone-500 font-medium mt-2">ชำระเงินต้นแล้ว <strong class="text-[#e05646] font-bold" id="m-progress-txt">0%</strong></div>
+            <div class="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+              <span>ยูนิตที่มีผู้เช่า</span>
+              <span class="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">● รับเข้าปกติ</span>
+            </div>
           </div>
 
-          <div class="youestates-card p-5">
-            <div class="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">ค่าเช่ารับรวม / เดือน</div>
-            <div class="text-2xl font-black text-[#383838]" id="m-income">฿0</div>
-            <div class="text-[11px] text-stone-500 font-medium mt-3">จากยูนิตที่มีผู้เช่า</div>
+          <!-- CARD 2: MORTGAGE DUE -->
+          <div class="bento-stat-card border-t-4 border-t-slate-700 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">ค่างวดผ่อนรวม / เดือน</span>
+                <span class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-sm shadow-xs font-bold">🏦</span>
+              </div>
+              <div class="text-2xl font-black text-slate-900 font-numeric tracking-tight" id="m-installment">฿0</div>
+            </div>
+            <div class="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+              <span>ภาระค่างวดธนาคาร</span>
+              <span class="text-slate-700 font-semibold">ทุกวันที่ 5</span>
+            </div>
           </div>
 
-          <div class="youestates-card p-5">
-            <div class="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">ค่างวดผ่อนรวม / เดือน</div>
-            <div class="text-2xl font-black text-[#383838]" id="m-installment">฿0</div>
-            <div class="text-[11px] text-stone-500 font-medium mt-3">ภาระค่างวดธนาคาร</div>
+          <!-- CARD 3: NET CASHFLOW -->
+          <div class="bento-stat-card border-t-4 border-t-[#e05646] bg-gradient-to-b from-white to-rose-50/20 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-[#e05646] uppercase tracking-wider">Net Cashflow / เดือน</span>
+                <span class="w-8 h-8 rounded-xl bg-rose-50 text-[#e05646] flex items-center justify-center text-sm shadow-xs font-bold">✨</span>
+              </div>
+              <div class="text-2xl font-black text-[#e05646] font-numeric tracking-tight" id="m-cashflow">฿0</div>
+            </div>
+            <div class="mt-4 pt-2 border-t border-rose-100/60 flex items-center justify-between text-[11px] text-[#e05646]">
+              <span class="font-bold">กระแสเงินสดสุทธิ</span>
+              <span class="font-bold bg-rose-100/80 px-2 py-0.5 rounded-full">กำไรดำเนินงาน</span>
+            </div>
           </div>
 
-          <div class="youestates-card p-5 border-2 border-[#e05646] bg-stone-50">
-            <div class="text-xs font-bold text-[#e05646] uppercase tracking-wider mb-1">Net Cashflow / เดือน</div>
-            <div class="text-2xl font-black text-[#e05646]" id="m-cashflow">฿0</div>
-            <div class="text-[11px] font-bold text-[#e05646] mt-3">กระแสเงินสดสุทธิ</div>
+          <!-- CARD 4: TOTAL PRINCIPAL & PROGRESS -->
+          <div class="bento-stat-card border-t-4 border-t-amber-500 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">ยอดหนี้คงเหลือรวม</span>
+                <span class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm shadow-xs font-bold">📊</span>
+              </div>
+              <div class="text-2xl font-black text-slate-900 font-numeric tracking-tight" id="m-principal">฿0</div>
+            </div>
+            <div class="mt-3">
+              <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div class="bg-gradient-to-r from-amber-500 to-[#e05646] h-full transition-all duration-500" id="m-progress-bar" style="width: 0%"></div>
+              </div>
+              <div class="flex justify-between items-center text-[11px] text-slate-500 font-medium mt-1.5">
+                <span>ชำระเงินต้นสะสม</span>
+                <strong class="text-amber-700 font-bold" id="m-progress-txt">0%</strong>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1500,40 +1579,55 @@
           </div>
         </div>
 
-        <!-- 3 LOAN KPI METRIC CARDS -->
+        <!-- 3 LOAN KPI METRIC CARDS (BENTO) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="youestates-card p-5 bg-stone-900 text-white shadow-md">
-            <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">เงินต้นคงเหลือผ่อนชำระปัจจุบัน</span>
-            <div class="text-2xl font-black text-emerald-400 mt-1" id="lm-balance-display">฿0</div>
-            <div class="text-[11px] text-stone-300 mt-2 font-medium" id="lm-balance-progress">-</div>
+          <div class="bento-stat-card border-t-4 border-t-emerald-500 bg-slate-900 text-white flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs text-slate-400 font-bold uppercase tracking-wider block">เงินต้นคงเหลือผ่อนชำระปัจจุบัน</span>
+                <span class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-bold">💳</span>
+              </div>
+              <div class="text-2xl font-black text-emerald-400 font-numeric tracking-tight" id="lm-balance-display">฿0</div>
+            </div>
+            <div class="mt-4 pt-2 border-t border-slate-800 text-[11px] text-slate-300 font-medium" id="lm-balance-progress">-</div>
           </div>
 
-          <div class="youestates-card p-5 bg-white shadow-sm">
-            <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">ยอดเงินกู้เริ่มต้นจากสัญญา</span>
-            <div class="text-xl font-bold text-[#383838] mt-1" id="lm-principal-display">฿0</div>
-            <div class="text-[11px] text-stone-500 mt-2" id="lm-startdate-display">เริ่มสัญญาเงินกู้: -</div>
+          <div class="bento-stat-card border-t-4 border-t-slate-600 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs text-slate-500 font-bold uppercase tracking-wider block">ยอดเงินกู้เริ่มต้นจากสัญญา</span>
+                <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs font-bold">📑</span>
+              </div>
+              <div class="text-2xl font-black text-slate-900 font-numeric tracking-tight" id="lm-principal-display">฿0</div>
+            </div>
+            <div class="mt-4 pt-2 border-t border-slate-100 text-[11px] text-slate-500" id="lm-startdate-display">เริ่มสัญญาเงินกู้: -</div>
           </div>
 
-          <div class="youestates-card p-5 bg-white shadow-sm">
-            <span class="text-xs text-stone-400 font-bold uppercase tracking-wider block">ค่างวดผ่อนชำระต่อเดือน</span>
-            <div class="text-xl font-bold text-[#e05646] mt-1" id="lm-installment-display">฿0 /เดือน</div>
-            <div class="text-[11px] text-stone-500 mt-2" id="lm-rate-display">อัตราดอกเบี้ยปัจจุบัน: -% ต่อปี</div>
+          <div class="bento-stat-card border-t-4 border-t-[#e05646] flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-xs text-slate-500 font-bold uppercase tracking-wider block">ค่างวดผ่อนชำระต่อเดือน</span>
+                <span class="w-7 h-7 rounded-lg bg-rose-50 text-[#e05646] flex items-center justify-center text-xs font-bold">🏦</span>
+              </div>
+              <div class="text-2xl font-black text-[#e05646] font-numeric tracking-tight" id="lm-installment-display">฿0 /เดือน</div>
+            </div>
+            <div class="mt-4 pt-2 border-t border-slate-100 text-[11px] text-slate-500" id="lm-rate-display">อัตราดอกเบี้ยปัจจุบัน: -% ต่อปี</div>
           </div>
         </div>
 
-        <!-- CASH FLOW & PROFIT ANALYSIS -->
+        <!-- CASH FLOW & PROFIT ANALYSIS (BENTO) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="youestates-card p-5 bg-stone-50 border border-stone-200 space-y-1">
-            <span class="text-[11px] text-stone-500 font-bold block">💵 รายรับค่าเช่าต่อเดือน</span>
-            <strong class="text-lg font-black text-emerald-700" id="lm-rent-income">฿0</strong>
+          <div class="bento-stat-card border-t-4 border-t-emerald-500 bg-white space-y-1">
+            <span class="text-xs text-slate-500 font-bold uppercase tracking-wider block">💵 รายรับค่าเช่าต่อเดือน</span>
+            <div class="text-xl font-black text-emerald-700 font-numeric" id="lm-rent-income">฿0</div>
           </div>
-          <div class="youestates-card p-5 bg-stone-50 border border-stone-200 space-y-1">
-            <span class="text-[11px] text-stone-500 font-bold block">🏦 ค่างวดจ่ายธนาคารต่อเดือน</span>
-            <strong class="text-lg font-black text-[#e05646]" id="lm-loan-expense">฿0</strong>
+          <div class="bento-stat-card border-t-4 border-t-slate-700 bg-white space-y-1">
+            <span class="text-xs text-slate-500 font-bold uppercase tracking-wider block">🏦 ค่างวดจ่ายธนาคารต่อเดือน</span>
+            <div class="text-xl font-black text-[#e05646] font-numeric" id="lm-loan-expense">฿0</div>
           </div>
-          <div class="youestates-card p-5 bg-emerald-50 border border-emerald-300 space-y-1">
-            <span class="text-[11px] text-emerald-800 font-bold block">📈 กระแสเงินสดสุทธิ (Net Cash Flow)</span>
-            <strong class="text-lg font-black text-emerald-900" id="lm-net-cashflow">+฿0</strong>
+          <div class="bento-stat-card border-t-4 border-t-emerald-600 bg-gradient-to-b from-white to-emerald-50/30 space-y-1">
+            <span class="text-xs text-emerald-800 font-bold uppercase tracking-wider block">📈 กระแสเงินสดสุทธิ (Net Cash Flow)</span>
+            <div class="text-xl font-black text-emerald-900 font-numeric" id="lm-net-cashflow">+฿0</div>
           </div>
         </div>
 
