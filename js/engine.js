@@ -386,7 +386,12 @@
   }
 
   // 5. CLOUDFLARE D1 BACKGROUND SYNCHRONIZATION
+  let lastD1SyncTime = 0;
   async function syncFromCloudflareD1(silent = true) {
+    const now = Date.now();
+    if (now - lastD1SyncTime < 500) return;
+    lastD1SyncTime = now;
+
     try {
       const resP = await fetch('/api/properties');
       if (resP.ok) {
@@ -634,15 +639,15 @@
     // Payment History List
     const payHistoryContainer = document.getElementById('tenant-dash-payment-history');
     if (payHistoryContainer) {
-      payHistoryContainer.innerHTML = '';
       const rentAmt = tenant.rent || prop?.rent || 0;
       const historyItems = [
         { type: 'rent', month: 'งวดล่าสุด (ส.ค. 2569)', period: 'สิงหาคม 2569', status: '✅ ชำระแล้ว', date: '5 ส.ค. 2569', amt: rentAmt },
         { type: 'rent', month: 'งวดย้อนหลัง (ก.ค. 2569)', period: 'กรกฎาคม 2569', status: '✅ ชำระแล้ว', date: '5 ก.ค. 2569', amt: rentAmt },
         { type: 'deposit', month: 'เงินประกันแรกเข้า', period: 'เงินประกันสัญญาเช่า', status: '✅ ชำระแล้ว', date: tenant.startDate || '1 ส.ค. 2569', amt: tenant.deposit || (rentAmt * 2) }
       ];
+      let historyHtml = '';
       historyItems.forEach(item => {
-        payHistoryContainer.innerHTML += `
+        historyHtml += `
           <div class="p-2.5 bg-stone-50 rounded-xl border border-stone-200 flex justify-between items-center gap-2">
             <div>
               <strong class="text-stone-800 block">${item.month}</strong>
@@ -660,26 +665,28 @@
           </div>
         `;
       });
+      payHistoryContainer.innerHTML = historyHtml;
     }
 
     // Inventory List in Tenant Dash
     const invContainer = document.getElementById('tenant-dash-inventory');
     if (invContainer && prop) {
-      invContainer.innerHTML = '';
       const list = prop.inventoryList || [];
       if (list.length === 0) {
         invContainer.innerHTML = '<div class="text-stone-400 text-center py-2">ไม่มีรายการเฟอร์นิเจอร์</div>';
       } else {
+        let invHtml = '';
         list.forEach(it => {
           const name = typeof it === 'object' ? it.name : it;
           const img = typeof it === 'object' ? it.img : CONFIG.PLACEHOLDER_SVG;
-          invContainer.innerHTML += `
+          invHtml += `
             <div class="p-2 bg-stone-50 rounded-lg border border-stone-200 flex justify-between items-center">
               <span class="font-bold text-stone-800">${name}</span>
               <img src="${img}" class="w-8 h-8 rounded object-cover cursor-pointer border border-stone-300" onclick="openMediaPreview('${name}', this.src)">
             </div>
           `;
         });
+        invContainer.innerHTML = invHtml;
       }
     }
   }
@@ -702,6 +709,7 @@
         </div>
       `;
     } else {
+      let cardsHtml = '';
       state.propertiesState.forEach(p => {
         totP += (p.principal || 0);
         totInc += (p.rent || 0);
@@ -727,7 +735,7 @@
           occRow = `<div class="flex justify-between"><span class="text-stone-500">สถานะ:</span> <strong class="text-stone-600 font-bold">⚪ พร้อมปล่อยเช่าทันที</strong></div>`;
         }
 
-        container.innerHTML += `
+        cardsHtml += `
           <div class="youestates-card p-6 space-y-4">
             <div class="flex justify-between items-start">
               <div>
@@ -765,6 +773,7 @@
           </div>
         `;
       });
+      container.innerHTML = cardsHtml;
     }
 
     const net = totInc - totInst;
@@ -942,20 +951,21 @@
     // 2. Inventory Furniture List (Tenant Facing)
     const invContainer = document.getElementById('pd-inventory-container');
     if (invContainer) {
-      invContainer.innerHTML = '';
       const inventory = prop.inventoryList || [];
       if (inventory.length === 0) {
         invContainer.innerHTML = `<div class="col-span-full text-stone-400 text-center py-4 font-bold">ยังไม่มีรายการเฟอร์นิเจอร์</div>`;
       } else {
+        let invHtml = '';
         inventory.forEach(item => {
           const itemObj = typeof item === 'object' ? item : { name: item, img: CONFIG.PLACEHOLDER_SVG };
-          invContainer.innerHTML += `
+          invHtml += `
             <div class="p-3 bg-stone-50 border border-stone-200 rounded-xl flex items-center justify-between shadow-sm">
               <span class="font-bold text-stone-800">${itemObj.name}</span>
               <img src="${itemObj.img || CONFIG.PLACEHOLDER_SVG}" class="w-12 h-10 object-cover rounded-lg border border-stone-300 cursor-pointer shadow-sm" onclick="openMediaPreview('${itemObj.name}', this.src)">
             </div>
           `;
         });
+        invContainer.innerHTML = invHtml;
       }
     }
 
@@ -1056,16 +1066,16 @@
     // Retention Schedule Cards
     const retContainer = document.getElementById('lm-rate-schedule-summary');
     if (retContainer) {
-      retContainer.innerHTML = '';
       const schedule = (prop.rateSchedule && prop.rateSchedule.length > 0) ? prop.rateSchedule : [
         { startMonth: 1, endMonth: 36, rate: prop.rate || 4.5, label: 'โปรโมชั่น Retention ปีที่ 1-3' },
         { startMonth: 37, endMonth: 360, rate: (prop.rate || 4.5) + 1.5, label: 'อัตราดอกเบี้ยลอยตัว (MRR-0.5%)' }
       ];
 
+      let retHtml = '';
       schedule.forEach(item => {
         const startYear = Math.ceil(item.startMonth / 12);
         const endYear = Math.ceil(item.endMonth / 12);
-        retContainer.innerHTML += `
+        retHtml += `
           <div class="p-3.5 bg-stone-50 border border-stone-200 rounded-xl flex items-center justify-between text-xs">
             <div>
               <div class="font-extrabold text-[#383838]">📌 ช่วงเดือนที่ ${item.startMonth}–${item.endMonth} (ประมาณปีที่ ${startYear}–${endYear})</div>
@@ -1078,6 +1088,7 @@
           </div>
         `;
       });
+      retContainer.innerHTML = retHtml;
     }
 
     // Bank Docs Scans
@@ -1250,6 +1261,7 @@
       return;
     }
 
+    let galleryHtml = '';
     items.forEach((item, idx) => {
       const isVideo = item.type === 'video';
       let spanClasses = 'col-span-1 row-span-1';
@@ -1259,7 +1271,7 @@
         spanClasses = 'col-span-2 sm:col-span-1 row-span-1';
       }
 
-      container.innerHTML += `
+      galleryHtml += `
         <div class="${spanClasses} group relative rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-200 bg-stone-900 cursor-pointer select-none h-full min-h-[120px]" onclick="openGalleryLightbox('${item.id}')">
           <div class="w-full h-full">
             ${isVideo ? `
@@ -1288,12 +1300,12 @@
         </div>
       `;
     });
+    container.innerHTML = galleryHtml;
   }
 
   function renderLandlordManageGallery(items) {
     const container = document.getElementById('gallery-manage-list');
     if (!container) return;
-    container.innerHTML = '';
 
     if (!items || items.length === 0) {
       container.innerHTML = `
@@ -1306,11 +1318,12 @@
       return;
     }
 
+    let manageHtml = '';
     items.forEach(item => {
       const isExt = item.category === 'exterior';
       const isVideo = item.type === 'video';
 
-      container.innerHTML += `
+      manageHtml += `
         <div class="relative group rounded-xl overflow-hidden border border-stone-200 bg-stone-900 aspect-square shadow-sm">
           <div class="w-full h-full cursor-pointer" onclick="openGalleryLightbox('${item.id}')">
             ${isVideo ? `
@@ -1333,6 +1346,7 @@
         </div>
       `;
     });
+    container.innerHTML = manageHtml;
   }
 
   async function uploadPropertyGalleryMultiple(event, category = 'interior') {
@@ -2041,6 +2055,7 @@
       return;
     }
 
+    let lessorsHtml = '';
     keys.forEach(key => {
       const prof = state.lessorProfiles[key];
       const contacts = [];
@@ -2052,7 +2067,7 @@
 
       const payInfo = prof.bankAccount ? `💳 ${prof.bankName || 'ธนาคาร'}: ${prof.bankAccount} (พร้อมเพย์: ${prof.promptPay || prof.phone || '-'})` : '';
 
-      container.innerHTML += `
+      lessorsHtml += `
         <div class="p-3.5 bg-stone-100 border border-stone-300 rounded-xl space-y-1.5 shadow-sm">
           <div class="font-extrabold text-stone-800 text-xs">👤 ${prof.name} (${prof.age || '-'} ปี)</div>
           <div class="text-[11px] text-stone-600">🆔 บัตรประชาชน: ${prof.idCard || '-'}</div>
@@ -2072,12 +2087,12 @@
         </div>
       `;
     });
+    container.innerHTML = lessorsHtml;
   }
 
   function renderRegisteredTenantsList() {
     const container = document.getElementById('registered-tenants-container');
     if (!container) return;
-    container.innerHTML = '';
     const keys = Object.keys(state.tenantDatabase || {});
 
     if (keys.length === 0) {
@@ -2085,6 +2100,7 @@
       return;
     }
 
+    let tenantsHtml = '';
     keys.forEach(key => {
       const t = state.tenantDatabase[key];
       const tContacts = [];
@@ -2095,7 +2111,7 @@
       if (t.xTwitter) tContacts.push(`𝕏 ${t.xTwitter}`);
       if (t.emergencyContact) tContacts.push(`🚨 ฉุกเฉิน: ${t.emergencyContact}`);
 
-      container.innerHTML += `
+      tenantsHtml += `
         <div class="p-3 bg-stone-100 border border-stone-300 rounded-xl space-y-1.5 shadow-sm">
           <div class="font-extrabold text-stone-800 text-xs">👤 ${t.fullName} (${t.age || '-'} ปี)</div>
           <div class="text-[11px] text-stone-600">🏠 ทรัพย์สินที่เช่า: ${t.unitName || '-'} (${t.houseNo || '-'})</div>
@@ -2115,19 +2131,21 @@
         </div>
       `;
     });
+    container.innerHTML = tenantsHtml;
   }
 
   function renderLessorSelectOptions() {
     const selects = ['p-lessor', 'pde-lessor-select'];
+    const keys = Object.keys(state.lessorProfiles || {});
+    let optionsHtml = '';
+    keys.forEach(k => {
+      const prof = state.lessorProfiles[k];
+      optionsHtml += `<option value="${k}">👤 ${prof.name}</option>`;
+    });
+
     selects.forEach(id => {
       const el = document.getElementById(id);
-      if (!el) return;
-      el.innerHTML = '';
-      const keys = Object.keys(state.lessorProfiles || {});
-      keys.forEach(k => {
-        const prof = state.lessorProfiles[k];
-        el.innerHTML += `<option value="${k}">👤 ${prof.name}</option>`;
-      });
+      if (el) el.innerHTML = optionsHtml;
     });
   }
 
@@ -2576,7 +2594,7 @@
   function renderPdfSidebarThumbnails(totalPages) {
     const sidebar = document.getElementById('pdf-thumbnails-sidebar');
     if (!sidebar) return;
-    sidebar.innerHTML = `<div class="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1 px-1">Pages (${totalPages})</div>`;
+    let thumbHtml = `<div class="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1 px-1">Pages (${totalPages})</div>`;
     for (let p = 1; p <= totalPages; p++) {
       let pageLabel = `หน้า ${p}`;
       let subLabel = 'สัญญาหลัก';
@@ -2584,7 +2602,7 @@
       else if (p >= 4) subLabel = `ใบเสร็จ ${p - 3}`;
 
       const activeClass = p === pdfCurrentPage ? 'active' : '';
-      sidebar.innerHTML += `
+      thumbHtml += `
         <div id="pdf-thumb-${p}" onclick="pdfJumpToPage(${p})" class="pdfjs-thumb ${activeClass}">
           <div class="w-full aspect-[1/1.414] bg-stone-100 border border-stone-300 rounded flex flex-col p-1 text-[7px] text-stone-600 overflow-hidden select-none">
             <div class="font-bold text-center text-black border-b border-stone-300 pb-0.5">${pageLabel}</div>
@@ -2594,6 +2612,7 @@
         </div>
       `;
     }
+    sidebar.innerHTML = thumbHtml;
 
     const pageInput = document.getElementById('pdf-page-num');
     if (pageInput) {
@@ -2803,13 +2822,13 @@
 
     const tableBody = document.getElementById('c-inventory-table-body');
     if (tableBody) {
-      tableBody.innerHTML = '';
       const list = prop.inventoryList || [];
       if (list.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="5" class="border border-black p-2 text-center text-[12pt] text-stone-500">ไม่มีรายการเฟอร์นิเจอร์แนบท้าย</td></tr>`;
       } else {
+        let tableRowsHtml = '';
         list.forEach((item, idx) => {
-          tableBody.innerHTML += `
+          tableRowsHtml += `
             <tr class="border-b border-black text-center text-[12pt]">
               <td class="border border-black p-1.5">${idx + 1}</td>
               <td class="border border-black p-1.5 text-left font-semibold">${item.name || '-'}</td>
@@ -2821,6 +2840,7 @@
             </tr>
           `;
         });
+        tableBody.innerHTML = tableRowsHtml;
       }
     }
 
@@ -2828,11 +2848,11 @@
     const approvedReceipts = getApprovedReceiptsForProperty(prop.id);
     const annexContainer = document.getElementById('receipt-contract-annexes-container');
     if (annexContainer) {
-      annexContainer.innerHTML = '';
       const totalPages = 3 + approvedReceipts.length;
+      let annexesHtml = '';
       approvedReceipts.forEach((rec, idx) => {
         const pageNum = 4 + idx;
-        annexContainer.innerHTML += `
+        annexesHtml += `
           <div id="a4-sheet-page-${pageNum}" class="a4-sheet a4-sheet-receipt sarabun-contract flex flex-col justify-between">
             <div class="space-y-4">
               <!-- RECEIPT ANNEX HEADER -->
@@ -2925,6 +2945,7 @@
           </div>
         `;
       });
+      annexContainer.innerHTML = annexesHtml;
     }
 
     pdfTotalPages = 3 + approvedReceipts.length;
