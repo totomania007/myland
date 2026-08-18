@@ -1144,14 +1144,91 @@
     });
   }
 
+  // ==========================================
+  // SMART CLIENT-SIDE IMAGE COMPRESSION ENGINE
+  // ==========================================
+  async function compressImageFile(file, maxDimension = 1920, quality = 0.85) {
+    if (!file || !file.type.startsWith('image/') || file.type === 'image/svg+xml') {
+      return file; // Skip non-images or SVGs
+    }
+
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          try {
+            let width = img.width;
+            let height = img.height;
+
+            // If already small (< 300KB) and fits dimension, skip canvas re-encoding
+            if (file.size < 300 * 1024 && width <= maxDimension && height <= maxDimension) {
+              resolve(file);
+              return;
+            }
+
+            if (width > maxDimension || height > maxDimension) {
+              if (width > height) {
+                height = Math.round((height * maxDimension) / width);
+                width = maxDimension;
+              } else {
+                width = Math.round((width * maxDimension) / height);
+                height = maxDimension;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              resolve(file);
+              return;
+            }
+
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob((blob) => {
+              if (blob && blob.size < file.size) {
+                const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                  type: "image/jpeg",
+                  lastModified: Date.now()
+                });
+                resolve(compressedFile);
+              } else {
+                resolve(file);
+              }
+            }, 'image/jpeg', quality);
+          } catch (err) {
+            console.warn('Image compression fallback:', err);
+            resolve(file);
+          }
+        };
+        img.onerror = () => resolve(file);
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve(file);
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function uploadFileToCloudinary(file) {
     const cloudName = CONFIG.CLOUDINARY_CLOUD_NAME || 'ogdfbbpw';
     const uploadPreset = CONFIG.CLOUDINARY_UPLOAD_PRESET || 'house_landlord';
 
+    // Auto compress before uploading if image
+    let fileToUpload = file;
+    if (file && file.type && file.type.startsWith('image/')) {
+      try {
+        fileToUpload = await compressImageFile(file, 1920, 0.85);
+      } catch (cErr) {
+        fileToUpload = file;
+      }
+    }
+
     // 1. Direct Cloudinary Client-Side Upload
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', fileToUpload);
       formData.append('upload_preset', uploadPreset);
 
       const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
@@ -1172,7 +1249,7 @@
     // 2. Fallback via Cloudflare Pages Function /api/upload
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', fileToUpload);
 
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -1699,6 +1776,9 @@
 
     if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรูปภาพนี้ออกจากคลัง?')) return;
 
+    const targetItem = prop.gallery[itemIdx];
+    const targetUrl = targetItem ? targetItem.url : null;
+
     prop.gallery.splice(itemIdx, 1);
 
     const propIdx = state.propertiesState.findIndex(p => String(p.id) === String(prop.id));
@@ -1721,6 +1801,19 @@
         body: JSON.stringify(prop)
       });
     } catch (err) {}
+
+    // Trigger Cloudinary Server-Side Deletion
+    if (targetUrl && (targetUrl.includes('cloudinary.com') || targetUrl.includes('res.cloudinary.com'))) {
+      try {
+        fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', url: targetUrl })
+        });
+      } catch (cloudDelErr) {
+        console.warn('Cloudinary delete request failed:', cloudDelErr);
+      }
+    }
   }
 
   function openGalleryLightbox(itemId) {

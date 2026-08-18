@@ -5,10 +5,30 @@ function getCorsHeaders(request) {
   return {
     "Content-Type": "application/json; charset=utf-8",
     "Access-Control-Allow-Origin": allowOrigin,
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Methods": "POST, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Property-App-Key",
     "X-Content-Type-Options": "nosniff"
   };
+}
+
+async function sha1Hex(str) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(str);
+  const hashBuffer = await crypto.subtle.digest("SHA-1", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+function extractPublicId(urlOrId) {
+  if (!urlOrId) return "";
+  if (!urlOrId.startsWith("http")) return urlOrId;
+  const match = urlOrId.match(/\/upload\/(?:v\d+\/)?([^\.]+)/);
+  if (match && match[1]) {
+    return match[1];
+  }
+  const parts = urlOrId.split("/");
+  const filename = parts[parts.length - 1];
+  return filename.replace(/\.[^/.]+$/, "");
 }
 
 export async function onRequestOptions(context) {
@@ -21,6 +41,16 @@ export async function onRequestOptions(context) {
 export async function onRequestPost(context) {
   const { request, env } = context;
   try {
+    const contentType = request.headers.get("content-type") || "";
+
+    // If JSON action delete
+    if (contentType.includes("application/json")) {
+      const body = await request.json();
+      if (body.action === "delete" || body.url || body.publicId) {
+        return handleCloudinaryDelete(body.url || body.publicId, env, request);
+      }
+    }
+
     const formData = await request.formData();
     const file = formData.get("file");
 
@@ -47,7 +77,8 @@ export async function onRequestPost(context) {
 
     return new Response(JSON.stringify({
       success: true,
-      url: data.secure_url || data.url
+      url: data.secure_url || data.url,
+      publicId: data.public_id
     }), {
       headers: getCorsHeaders(request)
     });
@@ -57,4 +88,87 @@ export async function onRequestPost(context) {
       headers: getCorsHeaders(request)
     });
   }
+}
+
+export async function onRequestDelete(context) {
+  const { request, env } = context;
+  try {
+    const url = new URL(request.url);
+    const targetUrl = url.searchParams.get("url") || url.searchParams.get("publicId");
+    if (!targetUrl) {
+      return new Response(JSON.stringify({ error: "Missing url or publicId query parameter" }), {
+        status: 400,
+        headers: getCorsHeaders(request)
+      });
+    }
+    return handleCloudinaryDelete(targetUrl, env, request);
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: getCorsHeaders(request)
+    });
+  }
+}
+
+async function handleCloudinaryDelete(urlOrPublicId, env, request) {
+  const cloudName = env.CLOUDINARY_CLOUD_NAME || "ogdfbbpw";
+  const apiKey = env.CLOUDINARY_API_KEY;
+  const apiSecret = env.CLOUDINARY_API_SECRET;
+  const publicId = extractPublicId(urlOrPublicId);
+
+  if (!publicId) {
+    return new Response(JSON.stringify({ error: "Invalid publicId or URL" }), {
+      status: 400,
+      headers: getCorsHeaders(request)
+    });
+  }
+
+  // If Cloudinary API credentials are provided in env, call Destroy API
+  if (apiKey && apiSecret) {
+    try {
+      const timestamp = Math.floor(Date.now() / 1000);
+      const signaturePayload = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
+      const signature = await sha1Hex(signaturePayload);
+
+      const destroyFormData = new FormData();
+      destroyFormData.append("public_id", publicId);
+      destroyFormData.append("api_key", apiKey);
+      destroyFormData.append("timestamp", String(timestamp));
+      destroyFormData.append("signature", signature);
+
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`, {
+        method: "POST",
+        body: destroyFormData
+      });
+      const data = await res.json();
+
+      return new Response(JSON.stringify({
+        success: true,
+        cloudDeleted: data.result === "ok",
+        result: data.result,
+        publicId
+      }), {
+        headers: getCorsHeaders(request)
+      });
+    } catch (apiErr) {
+      return new Response(JSON.stringify({
+        success: true,
+        cloudDeleted: false,
+        warning: apiErr.message,
+        publicId
+      }), {
+        headers: getCorsHeaders(request)
+      });
+    }
+  }
+
+  // If secret is not yet set in Cloudflare env, return success for app record deletion
+  return new Response(JSON.stringify({
+    success: true,
+    cloudDeleted: false,
+    publicId,
+    note: "Deleted from database and application. To delete cloud file automatically, add CLOUDINARY_API_KEY & CLOUDINARY_API_SECRET to Cloudflare environment variables."
+  }), {
+    headers: getCorsHeaders(request)
+  });
 }
