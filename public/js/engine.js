@@ -2508,6 +2508,7 @@
 
   // 9. LEASE CONTRACT & PDF.JS REALISTIC VIEWER ENGINE
   let pdfCurrentPage = 1;
+  let pdfTotalPages = 3;
   let pdfCurrentZoom = 1.0;
   let pdfRotation = 0;
   let isPdfSidebarOpen = true;
@@ -2526,22 +2527,52 @@
     }
   }
 
+  function renderPdfSidebarThumbnails(totalPages) {
+    const sidebar = document.getElementById('pdf-thumbnails-sidebar');
+    if (!sidebar) return;
+    sidebar.innerHTML = `<div class="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1 px-1">Pages (${totalPages})</div>`;
+    for (let p = 1; p <= totalPages; p++) {
+      let pageLabel = `หน้า ${p}`;
+      let subLabel = 'สัญญาหลัก';
+      if (p === 3) subLabel = 'แนบท้าย 1-3';
+      else if (p >= 4) subLabel = `ใบเสร็จ ${p - 3}`;
+
+      const activeClass = p === pdfCurrentPage ? 'active' : '';
+      sidebar.innerHTML += `
+        <div id="pdf-thumb-${p}" onclick="pdfJumpToPage(${p})" class="pdfjs-thumb ${activeClass}">
+          <div class="w-full aspect-[1/1.414] bg-stone-100 border border-stone-300 rounded flex flex-col p-1 text-[7px] text-stone-600 overflow-hidden select-none">
+            <div class="font-bold text-center text-black border-b border-stone-300 pb-0.5">${pageLabel}</div>
+            <div class="text-[6px] text-stone-500 text-center mt-1">${subLabel}</div>
+          </div>
+          <span class="text-[10px] text-stone-400 font-semibold mt-1">${p}</span>
+        </div>
+      `;
+    }
+
+    const pageInput = document.getElementById('pdf-page-num');
+    if (pageInput) {
+      pageInput.max = totalPages;
+      const totalDisplay = pageInput.nextElementSibling;
+      if (totalDisplay) totalDisplay.innerText = `/ ${totalPages}`;
+    }
+  }
+
   function pdfJumpToPage(pageNum) {
     pageNum = parseInt(pageNum) || 1;
     if (pageNum < 1) pageNum = 1;
-    if (pageNum > 3) pageNum = 3;
+    if (pageNum > pdfTotalPages) pageNum = pdfTotalPages;
     pdfCurrentPage = pageNum;
 
     const pageInput = document.getElementById('pdf-page-num');
     if (pageInput) pageInput.value = pageNum;
 
-    [1, 2, 3].forEach(p => {
+    for (let p = 1; p <= pdfTotalPages; p++) {
       const thumb = document.getElementById(`pdf-thumb-${p}`);
       if (thumb) {
         if (p === pageNum) thumb.classList.add('active');
         else thumb.classList.remove('active');
       }
-    });
+    }
 
     const targetSheet = document.getElementById(`a4-sheet-page-${pageNum}`);
     if (targetSheet) {
@@ -2556,7 +2587,7 @@
   }
 
   function pdfNextPage() {
-    if (pdfCurrentPage < 3) {
+    if (pdfCurrentPage < pdfTotalPages) {
       pdfJumpToPage(pdfCurrentPage + 1);
     }
   }
@@ -2746,6 +2777,195 @@
         });
       }
     }
+
+    // Dynamic Approved Receipt Annexes (Pages 4, 5, ...)
+    const approvedReceipts = getApprovedReceiptsForProperty(prop.id);
+    const annexContainer = document.getElementById('receipt-contract-annexes-container');
+    if (annexContainer) {
+      annexContainer.innerHTML = '';
+      const totalPages = 3 + approvedReceipts.length;
+      approvedReceipts.forEach((rec, idx) => {
+        const pageNum = 4 + idx;
+        annexContainer.innerHTML += `
+          <div id="a4-sheet-page-${pageNum}" class="a4-sheet a4-sheet-receipt sarabun-contract flex flex-col justify-between">
+            <div class="space-y-4">
+              <!-- RECEIPT ANNEX HEADER -->
+              <div class="flex justify-between items-center border-b-2 border-black pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">🧾</span>
+                  <div>
+                    <div class="font-bold text-[16pt] text-black">เอกสารแนบท้ายสัญญาเช่าบ้าน: ใบเสร็จรับเงินค่าเช่า / ใบรับเงิน</div>
+                    <div class="text-[11pt] text-stone-600">RENT PAYMENT RECEIPT ANNEX (ประวัติการชำระเงินตามสัญญา)</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="font-black text-[13pt] text-black">เลขที่: ${rec.id}</div>
+                  <div class="text-[11pt] text-stone-600">วันที่ออก: ${rec.paymentDate}</div>
+                </div>
+              </div>
+
+              <!-- LESSOR & TENANT BOXES -->
+              <div class="grid grid-cols-2 gap-3 text-[12pt]">
+                <div class="p-3 border border-black rounded bg-stone-50/40 leading-snug">
+                  <div class="font-bold text-black border-b border-stone-300 pb-1 mb-1">ผู้รับเงิน (ผู้ให้เช่า):</div>
+                  <div><strong>ชื่อ:</strong> ${lessor.name || '-'}</div>
+                  <div><strong>ที่อยู่:</strong> ${lessor.address || '-'}</div>
+                  <div><strong>โทรศัพท์:</strong> ${lessor.phone || '-'}</div>
+                </div>
+                <div class="p-3 border border-black rounded bg-stone-50/40 leading-snug">
+                  <div class="font-bold text-black border-b border-stone-300 pb-1 mb-1">ผู้จ่ายเงิน (ผู้เช่า):</div>
+                  <div><strong>ชื่อ:</strong> ${tenant.fullName || '-'}</div>
+                  <div><strong>ห้อง/บ้านเลขที่:</strong> ${prop.name || ''} (${prop.houseNo || '-'})</div>
+                  <div><strong>โทรศัพท์:</strong> ${tenant.phone || '-'}</div>
+                </div>
+              </div>
+
+              <!-- ITEM TABLE -->
+              <table class="w-full border-collapse border border-black text-[12pt]">
+                <thead>
+                  <tr class="bg-stone-100 border-b border-black font-bold text-center">
+                    <th class="border border-black p-1.5 w-12">ลำดับ</th>
+                    <th class="border border-black p-1.5 text-left">รายการ</th>
+                    <th class="border border-black p-1.5 w-36">งวดประจำเดือน</th>
+                    <th class="border border-black p-1.5 w-32 text-right">จำนวนเงิน (บาท)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-black">
+                    <td class="border border-black p-2 text-center">1</td>
+                    <td class="border border-black p-2 font-bold">${rec.title || 'ค่าเช่าบ้านและที่พักอาศัย'}</td>
+                    <td class="border border-black p-2 text-center">${rec.period}</td>
+                    <td class="border border-black p-2 text-right font-black">฿${rec.amount.toLocaleString()}</td>
+                  </tr>
+                  <tr class="border-b border-black font-bold bg-stone-50/30">
+                    <td colspan="3" class="border border-black p-2 text-right">จำนวนเงินรวมทั้งสิ้น (ตัวอักษร): <span class="font-normal font-bold">(${thaiBahtText(rec.amount)})</span></td>
+                    <td class="border border-black p-2 text-right font-black text-emerald-800">฿${rec.amount.toLocaleString()}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- PAYMENT METHOD & APPROVAL STAMP -->
+              <div class="p-3 border border-black rounded bg-stone-50/40 flex justify-between items-center text-[12pt]">
+                <div>
+                  <div><strong>ช่องทางชำระเงิน:</strong> ${rec.method || 'โอนเงินผ่านบัญชีธนาคาร'}</div>
+                  <div class="text-stone-600 text-[11pt]">สถานะ: อนุมัติและบันทึกประวัติแนบท้ายสัญญาเช่าเรียบร้อยแล้ว</div>
+                </div>
+                <div class="stamp-paid text-center border-2 border-emerald-700 p-1.5 rounded bg-emerald-50">
+                  <div class="font-black text-emerald-800 text-xs">✓ PAID / ชำระแล้ว</div>
+                  <div class="text-[9pt] text-emerald-900 font-bold">อนุมัติโดยผู้ให้เช่า</div>
+                </div>
+              </div>
+
+              <!-- SIGNATURES -->
+              <div class="pt-4 grid grid-cols-2 gap-8 text-center text-[12.5pt]">
+                <div class="space-y-1">
+                  <div>ลงชื่อ ............................................................ ผู้รับเงิน (ผู้ให้เช่า)</div>
+                  <div class="font-bold">( ${lessor.name || 'ผู้ให้เช่า'} )</div>
+                  <div class="text-[10.5pt] text-stone-500">อนุมัติ ณ วันที่ ${rec.approvedDate || rec.paymentDate}</div>
+                </div>
+                <div class="space-y-1">
+                  <div>ลงชื่อ ............................................................ ผู้จ่ายเงิน (ผู้เช่า)</div>
+                  <div class="font-bold">( ${tenant.fullName || 'ผู้เช่า'} )</div>
+                  <div class="text-[10.5pt] text-stone-500">ผู้ชำระเงินตามสัญญาเช่า</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- RECEIPT ANNEX FOOTER -->
+            <div class="pt-2 border-t border-stone-400 flex justify-between items-center text-[12pt] text-stone-600">
+              <div>เอกสารแนบท้ายสัญญาเช่าบ้าน — ใบเสร็จรับเงินค่าเช่า (YouEstates Property OS)</div>
+              <div class="font-bold">หน้าที่ ${pageNum} / ${totalPages}</div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    pdfTotalPages = 3 + approvedReceipts.length;
+    renderPdfSidebarThumbnails(pdfTotalPages);
+  }
+
+  function getApprovedReceiptsForProperty(propId) {
+    const key = `youestates_approved_receipts_${propId || 'p1'}`;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch(e) {}
+
+    const prop = (state.propertiesState && state.propertiesState.find(p => String(p.id) === String(propId))) || getCurrentProperty() || { rent: 10000, deposit: 20000 };
+    const rentVal = prop.rent || 10000;
+    const depositVal = prop.deposit || rentVal * 2;
+
+    return [
+      { id: 'REC-256908-01', type: 'rent', title: 'ค่าเช่าบ้านและที่พักอาศัย', period: 'สิงหาคม 2569', amount: rentVal, paymentDate: '5 สิงหาคม 2569', method: 'โอนเงินผ่านบัญชีธนาคาร', approved: true, approvedDate: '5 สิงหาคม 2569' },
+      { id: 'REC-256907-01', type: 'rent', title: 'ค่าเช่าบ้านและที่พักอาศัย', period: 'กรกฎาคม 2569', amount: rentVal, paymentDate: '5 กรกฎาคม 2569', method: 'โอนเงินผ่านบัญชีธนาคาร', approved: true, approvedDate: '5 กรกฎาคม 2569' },
+      { id: 'REC-256906-DEP', type: 'deposit', title: 'เงินประกันการเช่าและทรัพย์สินเสียหาย', period: 'เงินประกันสัญญาเช่าแรกเข้า', amount: depositVal, paymentDate: '1 สิงหาคม 2569', method: 'โอนเงินผ่านบัญชีธนาคาร', approved: true, approvedDate: '1 สิงหาคม 2569' }
+    ];
+  }
+
+  function saveApprovedReceiptForProperty(propId, receiptObj) {
+    const list = getApprovedReceiptsForProperty(propId);
+    const existingIdx = list.findIndex(r => r.id === receiptObj.id || (r.period === receiptObj.period && r.type === receiptObj.type));
+    if (existingIdx >= 0) {
+      list[existingIdx] = receiptObj;
+    } else {
+      list.unshift(receiptObj);
+    }
+    const key = `youestates_approved_receipts_${propId || 'p1'}`;
+    try {
+      localStorage.setItem(key, JSON.stringify(list));
+    } catch(e) {}
+    return list;
+  }
+
+  function approveAndAttachReceiptToContract() {
+    const { prop, tenant, lessor } = getActiveReceiptContext();
+    const type = document.getElementById('rec-type-select')?.value || 'rent';
+    const period = document.getElementById('rec-period-input')?.value || 'สิงหาคม 2569';
+    const amount = Number(document.getElementById('rec-amount-input')?.value) || 10000;
+    const method = document.getElementById('rec-method-select')?.value || 'โอนเงินผ่านบัญชีธนาคาร';
+
+    const now = new Date();
+    const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+    const dateFormatted = `${now.getDate()} ${thaiMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+    const receiptNo = `REC-${now.getFullYear() + 543}${String(now.getMonth() + 1).padStart(2, '0')}-${String(prop.id || '01').replace(/\D/g, '').slice(0, 3) || '01'}`;
+
+    let descTitle = 'ค่าเช่าบ้านและที่พักอาศัย';
+    if (type === 'deposit') descTitle = 'เงินประกันการเช่าและทรัพย์สินเสียหาย';
+    else if (type === 'utilities') descTitle = 'ค่าน้ำประปาและค่าไฟฟ้าประจำงวด';
+    else if (type === 'combined') descTitle = 'ค่าเช่าบ้านงวดแรก + เงินประกันสัญญาเช่า';
+
+    const newReceipt = {
+      id: receiptNo,
+      type,
+      title: descTitle,
+      period,
+      amount,
+      paymentDate: dateFormatted,
+      method,
+      approved: true,
+      approvedDate: dateFormatted
+    };
+
+    saveApprovedReceiptForProperty(prop.id, newReceipt);
+    renderContractView();
+    renderTenantDashboard();
+
+    const badge = document.getElementById('rec-approval-status-badge');
+    if (badge) {
+      badge.innerHTML = '<span>✅</span> <span>บันทึกอนุมัติ & แนบท้ายสัญญา A4 สำเร็จ!</span>';
+      badge.className = 'px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[11px] font-black flex items-center gap-1 animate-pulse';
+      setTimeout(() => {
+        if (badge) {
+          badge.className = 'px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-black flex items-center gap-1';
+          badge.innerHTML = '<span>●</span> <span>อนุมัติ & แนบท้ายสัญญา A4 แล้ว</span>';
+        }
+      }, 3000);
+    }
+
+    alert(`✅ อนุมัติและแนบใบเสร็จเลขที่ ${receiptNo} (${period}) เข้าสู่เอกสารสัญญาเช่า A4 เรียบร้อยแล้ว!\nคุณและผู้เช่าสามารถดูและสั่งพิมพ์สัญญาพร้อมใบเสร็จแนบท้ายได้ทันที`);
   }
 
   function downloadContractDocx() {
@@ -2762,6 +2982,86 @@
     const dates = calculateLeaseDates(tenant.startDate || prop.startDate || '2026-08-13', tenant.duration || 1);
     const rentVal = prop.rent || tenant.rent || 0;
     const depositVal = prop.deposit || tenant.deposit || 0;
+    const approvedReceipts = getApprovedReceiptsForProperty(prop.id);
+
+    let receiptsDocHtml = '';
+    approvedReceipts.forEach((rec, idx) => {
+      const pageNum = 4 + idx;
+      receiptsDocHtml += `
+        <div style="page-break-before: always; padding-top: 20pt;">
+          <div style="text-align: center; font-size: 18.0pt; font-weight: bold; margin-bottom: 4pt;">
+            เอกสารแนบท้ายสัญญาเช่าบ้าน: ใบเสร็จรับเงินค่าเช่า / ใบรับเงิน
+          </div>
+          <div style="text-align: center; font-size: 12.0pt; color: #555; margin-bottom: 12pt;">
+            RENT PAYMENT RECEIPT ANNEX (เลขที่: ${rec.id})
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 12pt;">
+            <tr>
+              <td style="width: 50%; border: 1pt solid black; padding: 6pt; vertical-align: top;">
+                <b>ผู้รับเงิน (ผู้ให้เช่า):</b><br>
+                ชื่อ: ${lessor.name || '-'}<br>
+                ที่อยู่: ${lessor.address || '-'}<br>
+                โทรศัพท์: ${lessor.phone || '-'}
+              </td>
+              <td style="width: 50%; border: 1pt solid black; padding: 6pt; vertical-align: top;">
+                <b>ผู้จ่ายเงิน (ผู้เช่า):</b><br>
+                ชื่อ: ${tenant.fullName || '-'}<br>
+                ห้อง/บ้านเลขที่: ${prop.name || ''} (${prop.houseNo || '-'})<br>
+                โทรศัพท์: ${tenant.phone || '-'}
+              </td>
+            </tr>
+          </table>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 12pt; text-align: center;">
+            <tr style="background-color: #f0f0f0; font-weight: bold;">
+              <th style="border: 1pt solid black; padding: 6pt; width: 10%;">ลำดับ</th>
+              <th style="border: 1pt solid black; padding: 6pt; width: 45%; text-align: left;">รายการ</th>
+              <th style="border: 1pt solid black; padding: 6pt; width: 25%;">งวดประจำเดือน</th>
+              <th style="border: 1pt solid black; padding: 6pt; width: 20%;">จำนวนเงิน (บาท)</th>
+            </tr>
+            <tr>
+              <td style="border: 1pt solid black; padding: 6pt;">1</td>
+              <td style="border: 1pt solid black; padding: 6pt; text-align: left;"><b>${rec.title || 'ค่าเช่าบ้าน'}</b></td>
+              <td style="border: 1pt solid black; padding: 6pt;">${rec.period}</td>
+              <td style="border: 1pt solid black; padding: 6pt; text-align: right;"><b>฿${rec.amount.toLocaleString()}</b></td>
+            </tr>
+            <tr style="font-weight: bold; background-color: #fafafa;">
+              <td colspan="3" style="border: 1pt solid black; padding: 6pt; text-align: right;">
+                จำนวนเงินรวมทั้งสิ้น: (${thaiBahtText(rec.amount)})
+              </td>
+              <td style="border: 1pt solid black; padding: 6pt; text-align: right; color: #059669;">
+                ฿${rec.amount.toLocaleString()}
+              </td>
+            </tr>
+          </table>
+
+          <div style="border: 1pt solid black; padding: 6pt; margin-bottom: 15pt;">
+            <b>ช่องทางชำระเงิน:</b> ${rec.method || 'โอนเงินผ่านบัญชีธนาคาร'} | <b>สถานะ:</b> ชำระแล้ว (อนุมัติโดยผู้ให้เช่า)<br>
+            <b>วันที่รับชำระ:</b> ${rec.paymentDate}
+          </div>
+
+          <table class="sig-table" style="width: 100%; margin-top: 20pt; text-align: center;">
+            <tr>
+              <td style="width: 50%;">
+                ลงชื่อ ............................................................ ผู้รับเงิน (ผู้ให้เช่า)<br>
+                ( <b>${lessor.name || 'ผู้ให้เช่า'}</b> )<br>
+                <span style="font-size: 11pt; color: #555;">วันที่ ${rec.approvedDate || rec.paymentDate}</span>
+              </td>
+              <td style="width: 50%;">
+                ลงชื่อ ............................................................ ผู้จ่ายเงิน (ผู้เช่า)<br>
+                ( <b>${tenant.fullName || 'ผู้เช่า'}</b> )<br>
+                <span style="font-size: 11pt; color: #555;">ผู้ชำระเงินตามสัญญา</span>
+              </td>
+            </tr>
+          </table>
+
+          <div style="margin-top: 30pt; text-align: right; font-size: 11pt; color: #555;">
+            หน้าที่ ${pageNum} / ${3 + approvedReceipts.length}
+          </div>
+        </div>
+      `;
+    });
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -2893,6 +3193,9 @@
             </td>
           </tr>
         </table>
+
+        <!-- APPROVED MONTHLY RENT RECEIPTS ANNEXES IN WORD DOC -->
+        ${receiptsDocHtml}
       </body>
       </html>
     `;
@@ -3800,6 +4103,10 @@
   window.updateReceiptPreview = updateReceiptPreview;
   window.printReceiptDocument = printReceiptDocument;
   window.downloadReceiptDocx = downloadReceiptDocx;
+  window.approveAndAttachReceiptToContract = approveAndAttachReceiptToContract;
+  window.getApprovedReceiptsForProperty = getApprovedReceiptsForProperty;
+  window.saveApprovedReceiptForProperty = saveApprovedReceiptForProperty;
+  window.renderPdfSidebarThumbnails = renderPdfSidebarThumbnails;
 
   // 12. AUTO-START & LIFECYCLE LISTENERS
   syncFromCloudflareD1(true);

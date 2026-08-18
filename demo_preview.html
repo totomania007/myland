@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_79"></script>
+  <script src="js/engine.js?v=20260814_80"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -512,7 +512,7 @@
         background: #ffffff !important;
       }
       .a4-sheet:last-child,
-      #a4-sheet-page-3 {
+      #receipt-contract-annexes-container > .a4-sheet:last-child {
         page-break-after: avoid !important;
         break-after: avoid !important;
       }
@@ -2149,6 +2149,9 @@
                   </div>
                 </div>
 
+                <!-- DYNAMIC APPROVED RECEIPT ANNEX SHEETS (PAGE 4, 5, ...) -->
+                <div id="receipt-contract-annexes-container" class="space-y-7 w-full flex flex-col items-center"></div>
+
               </div>
             </div>
           </div>
@@ -2408,6 +2411,21 @@
               <option value="เงินสด (Cash)">💵 เงินสด</option>
               <option value="พร้อมเพย์ (PromptPay)">📱 พร้อมเพย์</option>
             </select>
+          </div>
+        </div>
+
+        <!-- LANDLORD APPROVAL & ATTACH ACTION BAR -->
+        <div class="mt-3 pt-2.5 border-t border-stone-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-stone-700">🔒 สถานะเอกสาร:</span>
+            <span id="rec-approval-status-badge" class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-black flex items-center gap-1">
+              <span>●</span> <span>อนุมัติ & แนบท้ายสัญญา A4 แล้ว</span>
+            </span>
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button type="button" onclick="approveAndAttachReceiptToContract()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-xs shadow-sm flex items-center justify-center gap-1.5 transition-all">
+              <span>📎</span> <span>อนุมัติ & บันทึกแนบท้ายสัญญา A4</span>
+            </button>
           </div>
         </div>
       </div>
