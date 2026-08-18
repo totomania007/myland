@@ -354,21 +354,11 @@
       if (resP.ok) {
         const dbProps = await resP.json();
         if (Array.isArray(dbProps) && dbProps.length > 0) {
-          // Merge properties safely: preserve local gallery if it has newer/more images
-          const mergedProps = dbProps.map(dbp => {
-            const localP = (state.propertiesState || []).find(lp => String(lp.id) === String(dbp.id));
-            if (localP && localP.gallery && localP.gallery.length > 0) {
-              if (!dbp.gallery || dbp.gallery.length < localP.gallery.length) {
-                dbp.gallery = localP.gallery;
-              }
-            }
-            return dbp;
-          });
-          state.propertiesState = mergedProps;
-          localStorage.setItem('property_os_properties', JSON.stringify(mergedProps));
+          state.propertiesState = dbProps;
+          localStorage.setItem('property_os_properties', JSON.stringify(dbProps));
           localStorage.setItem('property_os_properties_synced', 'true');
-          if (!state.currentPropertyId || !mergedProps.find(p => String(p.id) === String(state.currentPropertyId))) {
-            state.currentPropertyId = mergedProps[0]?.id || null;
+          if (!state.currentPropertyId || !dbProps.find(p => String(p.id) === String(state.currentPropertyId))) {
+            state.currentPropertyId = dbProps[0]?.id || null;
           }
         }
       }
