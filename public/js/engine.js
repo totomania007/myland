@@ -182,6 +182,11 @@
     }
   }
 
+  function safeSetText(id, txt) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = (txt !== null && txt !== undefined) ? String(txt) : '-';
+  }
+
   function getCurrentProperty() {
     if (!state.propertiesState || state.propertiesState.length === 0) return null;
     const currentId = state.currentPropertyId || localStorage.getItem('property_os_current_prop_id');
@@ -615,20 +620,25 @@
       payHistoryContainer.innerHTML = '';
       const rentAmt = tenant.rent || prop?.rent || 0;
       const historyItems = [
-        { month: 'งวดล่าสุด', status: '✅ ชำระแล้ว', date: '5 ส.ค. 2569', amt: rentAmt },
-        { month: 'งวดย้อนหลัง (เดือนที่ 1)', status: '✅ ชำระแล้ว', date: '5 ก.ค. 2569', amt: rentAmt },
-        { month: 'เงินประกันแรกเข้า', status: '✅ ชำระแล้ว', date: tenant.startDate || '1 ส.ค. 2569', amt: tenant.deposit || (rentAmt * 2) }
+        { type: 'rent', month: 'งวดล่าสุด (ส.ค. 2569)', period: 'สิงหาคม 2569', status: '✅ ชำระแล้ว', date: '5 ส.ค. 2569', amt: rentAmt },
+        { type: 'rent', month: 'งวดย้อนหลัง (ก.ค. 2569)', period: 'กรกฎาคม 2569', status: '✅ ชำระแล้ว', date: '5 ก.ค. 2569', amt: rentAmt },
+        { type: 'deposit', month: 'เงินประกันแรกเข้า', period: 'เงินประกันสัญญาเช่า', status: '✅ ชำระแล้ว', date: tenant.startDate || '1 ส.ค. 2569', amt: tenant.deposit || (rentAmt * 2) }
       ];
       historyItems.forEach(item => {
         payHistoryContainer.innerHTML += `
-          <div class="p-2.5 bg-stone-50 rounded-xl border border-stone-200 flex justify-between items-center">
+          <div class="p-2.5 bg-stone-50 rounded-xl border border-stone-200 flex justify-between items-center gap-2">
             <div>
               <strong class="text-stone-800 block">${item.month}</strong>
               <span class="text-[10px] text-stone-400 font-medium">${item.date}</span>
             </div>
-            <div class="text-right">
-              <span class="font-black text-emerald-700 block">฿${item.amt.toLocaleString()}</span>
-              <span class="text-[10px] text-emerald-600 font-bold">${item.status}</span>
+            <div class="flex items-center gap-2">
+              <div class="text-right">
+                <span class="font-black text-emerald-700 block text-xs">฿${item.amt.toLocaleString()}</span>
+                <span class="text-[10px] text-emerald-600 font-bold">${item.status}</span>
+              </div>
+              <button type="button" onclick="openReceiptModal('${item.type}', '${item.period}', ${item.amt})" class="px-2 py-1 bg-white hover:bg-stone-100 text-stone-700 border border-stone-300 rounded-lg text-[10px] font-bold shadow-sm flex items-center gap-1 transition-all" title="ดูและพิมพ์ใบเสร็จรับเงิน">
+                <span>🧾</span> <span>ใบเสร็จ</span>
+              </button>
             </div>
           </div>
         `;
@@ -2916,6 +2926,285 @@
     }, 150);
   }
 
+  // ==========================================
+  // RECEIPT GENERATION & EXPORT ENGINE
+  // ==========================================
+  function getActiveReceiptContext() {
+    const prop = getCurrentProperty() || (state.propertiesState && state.propertiesState[0]) || { id: 'p1', name: 'บ้านเช่า YouEstates', houseNo: '-', rent: 10000 };
+    const lessor = (prop && prop.lessorKey && state.lessorProfiles[prop.lessorKey])
+                || (state.lessorFormState && state.lessorFormState.fullName ? { name: state.lessorFormState.fullName, address: state.lessorFormState.address, phone: state.lessorFormState.phone, idCard: state.lessorFormState.idCard } : null)
+                || Object.values(state.lessorProfiles)[0]
+                || { name: 'ผู้ให้เช่า', idCard: '-', address: '-', age: '-', phone: '-' };
+    const tenant = (prop && Object.values(state.tenantDatabase).find(t => t.propertyId === prop.id))
+                || (state.tenantFormState && state.tenantFormState.fullName ? state.tenantFormState : null)
+                || Object.values(state.tenantDatabase)[0]
+                || { fullName: 'ผู้เช่า', idCard: '-', address: '-', age: '-', phone: '-', startDate: prop?.startDate || '2026-08-13', duration: '1', rent: prop?.rent || 10000 };
+    return { prop, lessor, tenant };
+  }
+
+  function openReceiptModal(type = 'rent', customPeriod = null, customAmt = null) {
+    const { prop, tenant } = getActiveReceiptContext();
+    const typeSelect = document.getElementById('rec-type-select');
+    const periodInput = document.getElementById('rec-period-input');
+    const amountInput = document.getElementById('rec-amount-input');
+
+    if (typeSelect) typeSelect.value = type || 'rent';
+    
+    if (customPeriod && periodInput) {
+      periodInput.value = customPeriod;
+    } else {
+      const now = new Date();
+      const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+      if (periodInput) periodInput.value = `${thaiMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+    }
+
+    if (customAmt !== null && customAmt !== undefined && amountInput) {
+      amountInput.value = customAmt;
+    } else if (amountInput) {
+      const rentVal = tenant.rent || prop.rent || 10000;
+      amountInput.value = type === 'deposit' ? (tenant.deposit || rentVal * 2) : rentVal;
+    }
+
+    updateReceiptPreview();
+    const modal = document.getElementById('modal-receipt');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function handleReceiptTypeChange(type) {
+    const { prop, tenant } = getActiveReceiptContext();
+    const rentVal = tenant.rent || prop.rent || 10000;
+    const amountInput = document.getElementById('rec-amount-input');
+    const periodInput = document.getElementById('rec-period-input');
+    const now = new Date();
+    const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+    const currentMonthYear = `${thaiMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+
+    if (type === 'rent') {
+      if (amountInput) amountInput.value = rentVal;
+      if (periodInput) periodInput.value = currentMonthYear;
+    } else if (type === 'deposit') {
+      if (amountInput) amountInput.value = tenant.deposit || (rentVal * 2);
+      if (periodInput) periodInput.value = 'เงินประกันสัญญาเช่าแรกเข้า';
+    } else if (type === 'utilities') {
+      if (amountInput) amountInput.value = 1500;
+      if (periodInput) periodInput.value = `ค่าน้ำ-ไฟงวด ${currentMonthYear}`;
+    } else if (type === 'combined') {
+      const dep = tenant.deposit || (rentVal * 2);
+      if (amountInput) amountInput.value = rentVal + dep;
+      if (periodInput) periodInput.value = `ค่าเช่าแรกเข้า (${currentMonthYear}) + เงินประกัน`;
+    }
+
+    updateReceiptPreview();
+  }
+
+  function updateReceiptPreview() {
+    const { prop, tenant, lessor } = getActiveReceiptContext();
+
+    const type = document.getElementById('rec-type-select')?.value || 'rent';
+    const period = document.getElementById('rec-period-input')?.value || 'สิงหาคม 2569';
+    const amount = Number(document.getElementById('rec-amount-input')?.value) || 0;
+    const method = document.getElementById('rec-method-select')?.value || 'โอนเงินผ่านบัญชีธนาคาร';
+
+    const now = new Date();
+    const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+    const dateFormatted = `${now.getDate()} ${thaiMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+    const receiptNo = `REC-${now.getFullYear() + 543}${String(now.getMonth() + 1).padStart(2, '0')}-${String(prop.id || '01').replace(/\D/g, '').slice(0, 3) || '01'}`;
+
+    safeSetText('rec-doc-number', receiptNo);
+    safeSetText('rec-doc-date', dateFormatted);
+    safeSetText('rec-doc-unit', prop.name || 'บ้านเช่า YouEstates');
+
+    // Lessor Info
+    safeSetText('rec-doc-lessor-name', lessor.name || 'ผู้ให้เช่า');
+    safeSetText('rec-doc-lessor-address', lessor.address || '-');
+    safeSetText('rec-doc-lessor-phone', lessor.phone || '-');
+
+    // Tenant Info
+    safeSetText('rec-doc-tenant-name', tenant.fullName || 'ผู้เช่า');
+    safeSetText('rec-doc-tenant-unit', `${prop.name || ''} (บ้านเลขที่ ${prop.houseNo || '-'})`);
+    safeSetText('rec-doc-tenant-phone', tenant.phone || '-');
+
+    // Items table
+    let descTitle = 'ค่าเช่าบ้านและที่พักอาศัย';
+    let descSub = 'ตามสัญญาเช่าบ้านมาตรฐาน';
+    if (type === 'deposit') {
+      descTitle = 'เงินประกันการเช่าและทรัพย์สินเสียหาย';
+      descSub = 'เงินประกันตามสัญญาเช่า (คืนเมื่อครบกำหนดสัญญา)';
+    } else if (type === 'utilities') {
+      descTitle = 'ค่าน้ำประปาและค่าไฟฟ้าประจำงวด';
+      descSub = 'คำนวณตามหน่วยมิเตอร์ใช้งานจริง';
+    } else if (type === 'combined') {
+      descTitle = 'ค่าเช่าบ้านงวดแรก + เงินประกันสัญญาเช่า';
+      descSub = 'ชำระครบถ้วนในวันทำสัญญาเช่า';
+    }
+
+    safeSetText('rec-table-desc', descTitle);
+    safeSetText('rec-table-subdesc', descSub);
+    safeSetText('rec-table-period', period);
+    safeSetText('rec-table-amt', `฿${amount.toLocaleString()}`);
+    safeSetText('rec-table-total-amt', `฿${amount.toLocaleString()}`);
+    safeSetText('rec-table-baht-text', thaiBahtText(amount));
+    safeSetText('rec-doc-method', method);
+
+    safeSetText('rec-sig-lessor', lessor.name || 'ผู้ให้เช่า');
+    safeSetText('rec-sig-tenant', tenant.fullName || 'ผู้เช่า');
+  }
+
+  function printReceiptDocument() {
+    const docContent = document.getElementById('receipt-printable-doc');
+    if (!docContent) {
+      window.print();
+      return;
+    }
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="th">
+      <head>
+        <meta charset="UTF-8">
+        <title>ใบเสร็จรับเงินค่าเช่า — YouEstates</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+        <style>
+          body { font-family: 'Sarabun', sans-serif; background: #fff; padding: 20px; }
+          @media print {
+            @page { size: A4 portrait; margin: 15mm; }
+            body { padding: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="max-w-2xl mx-auto">
+          ${docContent.outerHTML}
+        </div>
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 300);
+          }
+        </script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  }
+
+  function downloadReceiptDocx() {
+    const { prop, tenant, lessor } = getActiveReceiptContext();
+    const type = document.getElementById('rec-type-select')?.value || 'rent';
+    const period = document.getElementById('rec-period-input')?.value || 'สิงหาคม 2569';
+    const amount = Number(document.getElementById('rec-amount-input')?.value) || 0;
+    const method = document.getElementById('rec-method-select')?.value || 'โอนเงินผ่านบัญชีธนาคาร';
+
+    const now = new Date();
+    const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+    const dateFormatted = `${now.getDate()} ${thaiMonths[now.getMonth()]} ${now.getFullYear() + 543}`;
+    const receiptNo = `REC-${now.getFullYear() + 543}${String(now.getMonth() + 1).padStart(2, '0')}-${String(prop.id || '01').replace(/\D/g, '').slice(0, 3) || '01'}`;
+
+    let descTitle = 'ค่าเช่าบ้านและที่พักอาศัย';
+    if (type === 'deposit') descTitle = 'เงินประกันการเช่าและทรัพย์สินเสียหาย';
+    else if (type === 'utilities') descTitle = 'ค่าน้ำประปาและค่าไฟฟ้าประจำงวด';
+    else if (type === 'combined') descTitle = 'ค่าเช่าบ้านงวดแรก + เงินประกันสัญญาเช่า';
+
+    const htmlContent = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>ใบเสร็จรับเงินค่าเช่า</title>
+        <style>
+          @page { size: 21.0cm 29.7cm; margin: 2.0cm; }
+          body { font-family: 'TH Sarabun PSK', 'TH Sarabun New', 'Cordia New', sans-serif; font-size: 15pt; line-height: 1.3; }
+          .title { text-align: center; font-size: 20pt; font-weight: bold; margin-bottom: 10pt; }
+          .table-box { width: 100%; border-collapse: collapse; margin-top: 15pt; margin-bottom: 15pt; }
+          .table-box th, .table-box td { border: 1px solid #000; padding: 6pt 10pt; }
+          .table-box th { background-color: #f2f2f2; font-weight: bold; }
+          .sig-table { width: 100%; margin-top: 30pt; border-collapse: collapse; }
+          .sig-table td { width: 50%; text-align: center; border: none; padding: 10pt; }
+        </style>
+      </head>
+      <body>
+        <div class="title">ใบเสร็จรับเงินค่าเช่า / ใบรับเงิน (RENT RECEIPT)</div>
+        <table style="width: 100%; margin-bottom: 15pt;">
+          <tr>
+            <td><strong>โครงการ:</strong> ${prop.name || '-'} (บ้านเลขที่ ${prop.houseNo || '-'})</td>
+            <td style="text-align: right;"><strong>เลขที่ใบเสร็จ:</strong> ${receiptNo}</td>
+          </tr>
+          <tr>
+            <td><strong>ผู้ให้เช่า (ผู้รับเงิน):</strong> ${lessor.name || '-'}</td>
+            <td style="text-align: right;"><strong>วันที่:</strong> ${dateFormatted}</td>
+          </tr>
+          <tr>
+            <td colspan="2"><strong>ผู้เช่า (ผู้จ่ายเงิน):</strong> ${tenant.fullName || '-'} (โทร: ${tenant.phone || '-'})</td>
+          </tr>
+        </table>
+
+        <table class="table-box">
+          <thead>
+            <tr>
+              <th style="width: 10%; text-align: center;">ลำดับ</th>
+              <th style="width: 50%; text-align: left;">รายการ</th>
+              <th style="width: 20%; text-align: center;">งวดประจำเดือน</th>
+              <th style="width: 20%; text-align: right;">จำนวนเงิน (บาท)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align: center;">1</td>
+              <td>${descTitle}</td>
+              <td style="text-align: center;">${period}</td>
+              <td style="text-align: right;">${amount.toLocaleString()}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2"><strong>จำนวนเงินตัวอักษร:</strong> (${thaiBahtText(amount)})</td>
+              <td style="text-align: center; font-weight: bold;">รวมทั้งสิ้น</td>
+              <td style="text-align: right; font-weight: bold;">${amount.toLocaleString()} บาท</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <p><strong>ช่องทางชำระเงิน:</strong> ${method} (สถานะ: ชำระเรียบร้อยแล้ว)</p>
+
+        <table class="sig-table">
+          <tr>
+            <td>
+              ลงชื่อ ............................................................ ผู้รับเงิน<br>
+              ( ${lessor.name || 'ผู้ให้เช่า'} )<br>
+              ผู้ให้เช่า
+            </td>
+            <td>
+              ลงชื่อ ............................................................ ผู้จ่ายเงิน<br>
+              ( ${tenant.fullName || 'ผู้เช่า'} )<br>
+              ผู้เช่า
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff', htmlContent], {
+      type: 'application/msword;charset=utf-8'
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ใบเสร็จรับเงินค่าเช่า_${receiptNo}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
   function toggleModal(id) {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('hidden');
@@ -3505,6 +3794,11 @@
   window.downloadContractDocx = downloadContractDocx;
   window.printA4Contract = printA4Contract;
   window.copyPropertyPromoLink = copyPropertyPromoLink;
+  window.openReceiptModal = openReceiptModal;
+  window.handleReceiptTypeChange = handleReceiptTypeChange;
+  window.updateReceiptPreview = updateReceiptPreview;
+  window.printReceiptDocument = printReceiptDocument;
+  window.downloadReceiptDocx = downloadReceiptDocx;
 
   // 12. AUTO-START & LIFECYCLE LISTENERS
   syncFromCloudflareD1(true);

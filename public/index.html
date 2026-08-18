@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_76"></script>
+  <script src="js/engine.js?v=20260814_77"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -957,7 +957,9 @@
             <div class="youestates-card overflow-hidden">
               <div class="youestates-card-header flex justify-between items-center">
                 <span>🧾 ประวัติการชำระค่าเช่ารายเดือน</span>
-                <span class="text-xs text-stone-300 font-normal">ประวัติชำระเงิน</span>
+                <button type="button" onclick="openReceiptModal('rent')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[11px] font-bold shadow-sm transition-all flex items-center gap-1">
+                  <span>🧾 ออกใบเสร็จ</span>
+                </button>
               </div>
               <div class="p-5 space-y-2 text-xs max-h-[380px] overflow-y-auto pr-1" id="tenant-dash-payment-history"></div>
             </div>
@@ -1052,6 +1054,9 @@
             <div class="flex flex-wrap items-center gap-2 w-full md:w-auto" id="pd-admin-action-buttons">
               <button onclick="toggleModal('modal-add-property')" class="flex-1 md:flex-none px-4 py-2.5 youestates-btn-coral text-white font-bold text-xs rounded-lg shadow-sm">
                 + เพิ่มทรัพย์สินใหม่
+              </button>
+              <button onclick="openReceiptModal('rent')" class="flex-1 md:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1">
+                <span>🧾 ออกใบเสร็จ</span>
               </button>
               <button onclick="openEditPropertyDetailModal()" class="flex-1 md:flex-none px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs rounded-lg border border-stone-300">
                 ✏️ แก้ไขสเปก
@@ -2209,6 +2214,170 @@
         <button onclick="toggleModal('modal-media-preview')" class="text-stone-400 font-bold">✕</button>
       </div>
       <img id="media-preview-img" src="" alt="Preview" class="max-h-[60vh] mx-auto rounded-lg object-contain">
+    </div>
+  </div>
+
+  <!-- MODAL: RENT & DEPOSIT RECEIPT GENERATOR (สำหรับผู้เช่า & ผู้ให้เช่า) -->
+  <div id="modal-receipt" class="fixed inset-0 bg-stone-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[95vh] flex flex-col overflow-hidden border border-stone-300">
+      
+      <!-- RECEIPT MODAL CONTROLS & TOOLBAR -->
+      <div class="no-print p-4 bg-stone-900 text-white flex flex-wrap justify-between items-center gap-3 border-b border-stone-800">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🧾</span>
+          <div>
+            <h3 class="font-black text-sm text-white">ระบบออกใบเสร็จรับเงินค่าเช่า (Rent Receipt)</h3>
+            <span class="text-[10px] text-stone-400">เอกสารหลักฐานการรับชำระเงินตามสัญญาเช่า</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="downloadReceiptDocx()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 rounded-lg text-xs font-bold transition-all" title="ดาวน์โหลดไฟล์เพื่อเปิดใน Word / LibreOffice">
+            <span>📥 Word (.doc)</span>
+          </button>
+          <button type="button" onclick="printReceiptDocument()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-md transition-all">
+            <span>🖨️ สั่งพิมพ์ A4 / PDF</span>
+          </button>
+          <button type="button" onclick="toggleModal('modal-receipt')" class="w-8 h-8 rounded-full bg-stone-800 text-stone-300 hover:text-white flex items-center justify-center font-bold text-sm">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- RECEIPT SETTINGS FORM (NO-PRINT) -->
+      <div class="no-print p-3.5 bg-stone-100 border-b border-stone-200 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+          <div>
+            <label class="block font-bold text-stone-700 mb-1">ประเภทการชำระ</label>
+            <select id="rec-type-select" onchange="handleReceiptTypeChange(this.value)" class="w-full bg-white border border-stone-300 rounded-lg p-2 font-bold text-stone-800 outline-none">
+              <option value="rent">💵 ค่าเช่าบ้านประจำเดือน</option>
+              <option value="deposit">🛡️ เงินประกันสัญญาเช่า</option>
+              <option value="utilities">⚡ ค่าน้ำประปา / ค่าไฟฟ้า</option>
+              <option value="combined">📦 ค่าเช่า + เงินประกันแรกเข้า</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-stone-700 mb-1">งวดประจำเดือน / รายละเอียด</label>
+            <input type="text" id="rec-period-input" value="สิงหาคม 2569" oninput="updateReceiptPreview()" class="w-full bg-white border border-stone-300 rounded-lg p-2 font-medium text-stone-800 outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-stone-700 mb-1">จำนวนเงิน (บาท)</label>
+            <input type="number" id="rec-amount-input" value="10000" oninput="updateReceiptPreview()" class="w-full bg-white border border-stone-300 rounded-lg p-2 font-bold text-emerald-700 outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-stone-700 mb-1">ช่องทางชำระเงิน</label>
+            <select id="rec-method-select" onchange="updateReceiptPreview()" class="w-full bg-white border border-stone-300 rounded-lg p-2 font-medium text-stone-800 outline-none">
+              <option value="โอนเงินผ่านบัญชีธนาคาร">🏦 โอนเงินผ่านธนาคาร</option>
+              <option value="เงินสด (Cash)">💵 เงินสด</option>
+              <option value="พร้อมเพย์ (PromptPay)">📱 พร้อมเพย์</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECEIPT PRINTABLE CANVAS / BODY -->
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6 bg-stone-200">
+        <div id="receipt-printable-doc" class="bg-white max-w-2xl mx-auto p-6 sm:p-8 rounded-xl shadow-lg border border-stone-300 text-[#222] font-sans text-xs space-y-5 leading-relaxed">
+          
+          <!-- RECEIPT HEADER -->
+          <div class="flex justify-between items-start border-b-2 border-stone-800 pb-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl font-black text-[#e05646]">You</span>
+                <span class="text-2xl font-black text-[#383838]">Estates</span>
+              </div>
+              <h2 class="text-lg font-black text-stone-900 tracking-tight">ใบเสร็จรับเงินค่าเช่า / ใบรับเงิน</h2>
+              <span class="text-[11px] text-stone-500 font-bold uppercase tracking-wider">OFFICIAL RENT PAYMENT RECEIPT</span>
+            </div>
+            <div class="text-right space-y-1 text-[11px]">
+              <div><strong>เลขที่ใบเสร็จ:</strong> <span id="rec-doc-number" class="font-mono font-bold text-stone-800">REC-202608-01</span></div>
+              <div><strong>วันที่ออกเอกสาร:</strong> <span id="rec-doc-date" class="font-medium text-stone-700">-</span></div>
+              <div><strong>โครงการ/ห้อง:</strong> <span id="rec-doc-unit" class="font-bold text-emerald-800">-</span></div>
+            </div>
+          </div>
+
+          <!-- LESSOR & TENANT INFORMATION GRID -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3.5 bg-stone-50 rounded-xl border border-stone-200 text-[11.5px]">
+            <div class="space-y-1">
+              <span class="text-[10px] uppercase font-bold text-stone-400 block">ผู้รับเงิน (ผู้ให้เช่า / Landlord)</span>
+              <div class="font-bold text-stone-900 text-xs" id="rec-doc-lessor-name">-</div>
+              <div class="text-stone-600" id="rec-doc-lessor-address">-</div>
+              <div class="text-stone-600">โทร: <span id="rec-doc-lessor-phone">-</span></div>
+            </div>
+            <div class="space-y-1 sm:border-l sm:border-stone-200 sm:pl-4">
+              <span class="text-[10px] uppercase font-bold text-stone-400 block">ผู้จ่ายเงิน (ผู้เช่า / Tenant)</span>
+              <div class="font-bold text-stone-900 text-xs" id="rec-doc-tenant-name">-</div>
+              <div class="text-stone-600">ทรัพย์สิน: <span id="rec-doc-tenant-unit" class="font-bold text-stone-800">-</span></div>
+              <div class="text-stone-600">โทร: <span id="rec-doc-tenant-phone">-</span></div>
+            </div>
+          </div>
+
+          <!-- ITEMIZED PAYMENT TABLE -->
+          <div>
+            <table class="w-full border-collapse border border-stone-300 text-xs">
+              <thead>
+                <tr class="bg-stone-100 text-stone-800 border-b border-stone-300 font-bold">
+                  <th class="p-2.5 text-center border-r border-stone-300 w-12">ลำดับ</th>
+                  <th class="p-2.5 text-left border-r border-stone-300">รายการรับชำระ (Description)</th>
+                  <th class="p-2.5 text-center border-r border-stone-300 w-28">งวดประจำเดือน</th>
+                  <th class="p-2.5 text-right w-28">จำนวนเงิน (บาท)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-stone-200">
+                  <td class="p-2.5 text-center border-r border-stone-300 text-stone-500">1</td>
+                  <td class="p-2.5 border-r border-stone-300">
+                    <strong class="text-stone-900 block" id="rec-table-desc">ค่าเช่าบ้านและที่พักอาศัย</strong>
+                    <span class="text-[10px] text-stone-500" id="rec-table-subdesc">ตามสัญญาเช่าบ้านมาตรฐาน</span>
+                  </td>
+                  <td class="p-2.5 text-center border-r border-stone-300 font-medium" id="rec-table-period">สิงหาคม 2569</td>
+                  <td class="p-2.5 text-right font-bold text-stone-900" id="rec-table-amt">฿10,000</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="bg-stone-50 border-t-2 border-stone-800">
+                  <td colspan="2" class="p-2.5 font-bold text-stone-700 border-r border-stone-300">
+                    จำนวนเงินตัวอักษร: <span id="rec-table-baht-text" class="text-emerald-800 font-black">หนึ่งหมื่นบาทถ้วน</span>
+                  </td>
+                  <td class="p-2.5 text-center font-bold text-stone-800 border-r border-stone-300">รวมทั้งสิ้น</td>
+                  <td class="p-2.5 text-right font-black text-sm text-emerald-700" id="rec-table-total-amt">฿10,000</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- PAYMENT STATUS & STAMP -->
+          <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+            <div class="text-[11px] text-emerald-900 space-y-0.5">
+              <div><strong>สถานะ:</strong> <span class="font-bold text-emerald-700">ชำระเงินเรียบร้อยแล้ว (Paid Full)</span></div>
+              <div><strong>ช่องทาง:</strong> <span id="rec-doc-method">โอนเงินผ่านบัญชีธนาคาร</span></div>
+            </div>
+            <div class="px-4 py-1.5 bg-emerald-600 text-white rounded-lg font-black text-xs tracking-wider shadow-sm border border-emerald-400 flex items-center gap-1.5">
+              <span>✅</span> <span>PAID / ชำระแล้ว</span>
+            </div>
+          </div>
+
+          <!-- SIGNATURES BLOCK -->
+          <div class="pt-6 border-t border-stone-300 grid grid-cols-2 gap-8 text-center text-xs">
+            <div class="space-y-1">
+              <div class="text-stone-400">ลงชื่อ ............................................................</div>
+              <div class="font-bold text-stone-800">( <span id="rec-sig-lessor">ผู้ให้เช่า</span> )</div>
+              <div class="text-[10px] text-stone-500 font-medium">ผู้รับเงิน / ผู้ให้เช่า</div>
+            </div>
+            <div class="space-y-1">
+              <div class="text-stone-400">ลงชื่อ ............................................................</div>
+              <div class="font-bold text-stone-800">( <span id="rec-sig-tenant">ผู้เช่า</span> )</div>
+              <div class="text-[10px] text-stone-500 font-medium">ผู้จ่ายเงิน / ผู้เช่า</div>
+            </div>
+          </div>
+
+          <div class="pt-2 text-[9px] text-stone-400 text-center border-t border-stone-200">
+            เอกสารนี้ออกโดยระบบบริหารจัดการอสังหาริมทรัพย์ YouEstates Property OS • เอกสารมีผลสมบูรณ์ตามกฎหมาย
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </div>
 
