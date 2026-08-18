@@ -94,6 +94,11 @@
       facebook: 'YouEstates Property',
       email: 'contact@youestates.com',
       xTwitter: '@youestates',
+      bankName: 'ธนาคารกสิกรไทย (KBANK)',
+      bankAccount: '098-2-34567-8',
+      bankAccountName: 'นางสาว ลัดดาวัลย์ รุ่งเรือง',
+      promptPay: '061-628-1777',
+      paymentInstructions: 'โอนเงินชำระค่าเช่าภายในวันที่ 5 ของทุกเดือน และแนบสลิปแจ้งทาง LINE',
       imageUrl: CONFIG.PLACEHOLDER_SVG
     },
     'lessor-1786649277545': {
@@ -107,6 +112,11 @@
       facebook: 'Surachai Udomman',
       email: 'surachai.udo@rmutr.ac.th',
       xTwitter: '@surachai_u',
+      bankName: 'ธนาคารไทยพาณิชย์ (SCB)',
+      bankAccount: '123-4-56789-0',
+      bankAccountName: 'นายสุรชัย อุดมมั่น',
+      promptPay: '085-845-6378',
+      paymentInstructions: 'โอนเงินชำระค่าเช่าภายในวันที่ 5 ของทุกเดือน และแนบสลิปแจ้งทาง LINE',
       imageUrl: CONFIG.PLACEHOLDER_SVG
     }
   };
@@ -613,6 +623,13 @@
     const lessorSocials = [lessor.facebook ? `FB: ${lessor.facebook}` : '', lessor.email ? `✉️ ${lessor.email}` : ''].filter(Boolean).join(' | ') || '-';
     safeSetText('td-lessor-social', lessorSocials);
     safeSetText('td-lessor-x', lessor.xTwitter || '-');
+
+    // Landlord Payment Channels for Tenant
+    safeSetText('td-pay-bank-name', lessor.bankName || 'ธนาคารกสิกรไทย (KBANK)');
+    safeSetText('td-pay-bank-acc', lessor.bankAccount || '098-2-34567-8');
+    safeSetText('td-pay-bank-owner', lessor.bankAccountName || lessor.name || 'ผู้ให้เช่า');
+    safeSetText('td-pay-promptpay', lessor.promptPay || lessor.phone || '085-845-6378');
+    safeSetText('td-pay-instruction', lessor.paymentInstructions || 'โอนเงินภายในวันที่ 5 ของทุกเดือน และแนบสลิปแจ้งทาง LINE');
 
     // Payment History List
     const payHistoryContainer = document.getElementById('tenant-dash-payment-history');
@@ -2033,13 +2050,16 @@
       if (prof.email) contacts.push(`✉️ ${prof.email}`);
       if (prof.xTwitter) contacts.push(`𝕏 ${prof.xTwitter}`);
 
+      const payInfo = prof.bankAccount ? `💳 ${prof.bankName || 'ธนาคาร'}: ${prof.bankAccount} (พร้อมเพย์: ${prof.promptPay || prof.phone || '-'})` : '';
+
       container.innerHTML += `
-        <div class="p-3 bg-stone-100 border border-stone-300 rounded-xl space-y-1.5 shadow-sm">
+        <div class="p-3.5 bg-stone-100 border border-stone-300 rounded-xl space-y-1.5 shadow-sm">
           <div class="font-extrabold text-stone-800 text-xs">👤 ${prof.name} (${prof.age || '-'} ปี)</div>
           <div class="text-[11px] text-stone-600">🆔 บัตรประชาชน: ${prof.idCard || '-'}</div>
           <div class="text-[11px] text-stone-600 font-medium">
             ${contacts.length > 0 ? contacts.join(' | ') : '📞 ' + (prof.phone || '-')}
           </div>
+          ${payInfo ? `<div class="text-[11px] text-emerald-800 font-bold bg-emerald-50 px-2 py-1 rounded border border-emerald-200">${payInfo}</div>` : ''}
           <div class="text-[11px] text-stone-500 truncate">🏠 ที่อยู่: ${prof.address || '-'}</div>
           <div class="flex gap-2 pt-1">
             <button onclick="window.editRegisteredLessor('${key}')" class="flex-1 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 text-[10px] font-bold rounded transition-colors">
@@ -2341,6 +2361,22 @@
     try { fetch(`/api/lessors?id=${key}`, { method: 'DELETE' }); } catch(e) {}
   }
 
+  function copyPaymentText(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const txt = el.innerText.trim();
+    if (!txt || txt === '-') return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(() => {
+        alert(`📋 คัดลอก "${txt}" ไปยังคลิปบอร์ดเรียบร้อยแล้ว!`);
+      }).catch(() => {
+        alert(`เลขที่: ${txt}`);
+      });
+    } else {
+      alert(`เลขที่: ${txt}`);
+    }
+  }
+
   function editRegisteredLessor(key) {
     const prof = state.lessorProfiles[key];
     if (!prof) return;
@@ -2354,6 +2390,11 @@
     if (document.getElementById('reg-lp-facebook')) document.getElementById('reg-lp-facebook').value = prof.facebook || '';
     if (document.getElementById('reg-lp-email')) document.getElementById('reg-lp-email').value = prof.email || '';
     if (document.getElementById('reg-lp-x')) document.getElementById('reg-lp-x').value = prof.xTwitter || '';
+    if (document.getElementById('reg-lp-bank-name')) document.getElementById('reg-lp-bank-name').value = prof.bankName || 'ธนาคารกสิกรไทย (KBANK)';
+    if (document.getElementById('reg-lp-bank-account')) document.getElementById('reg-lp-bank-account').value = prof.bankAccount || '';
+    if (document.getElementById('reg-lp-bank-account-name')) document.getElementById('reg-lp-bank-account-name').value = prof.bankAccountName || prof.name || '';
+    if (document.getElementById('reg-lp-promptpay')) document.getElementById('reg-lp-promptpay').value = prof.promptPay || prof.phone || '';
+    if (document.getElementById('reg-lp-payment-note')) document.getElementById('reg-lp-payment-note').value = prof.paymentInstructions || '';
     if (document.getElementById('editing-lessor-key')) document.getElementById('editing-lessor-key').value = key;
 
     const btn = document.getElementById('btn-submit-lessor');
@@ -2384,6 +2425,11 @@
       facebook: document.getElementById('reg-lp-facebook')?.value.trim() || '',
       email: document.getElementById('reg-lp-email')?.value.trim() || '',
       xTwitter: document.getElementById('reg-lp-x')?.value.trim() || '',
+      bankName: document.getElementById('reg-lp-bank-name')?.value.trim() || 'ธนาคารกสิกรไทย (KBANK)',
+      bankAccount: document.getElementById('reg-lp-bank-account')?.value.trim() || '',
+      bankAccountName: document.getElementById('reg-lp-bank-account-name')?.value.trim() || fullName,
+      promptPay: document.getElementById('reg-lp-promptpay')?.value.trim() || '',
+      paymentInstructions: document.getElementById('reg-lp-payment-note')?.value.trim() || 'โอนเงินภายในวันที่ 5 ของทุกเดือน และแนบสลิปแจ้งทาง LINE',
       imageUrl: CONFIG.PLACEHOLDER_SVG
     };
 
@@ -4107,6 +4153,7 @@
   window.getApprovedReceiptsForProperty = getApprovedReceiptsForProperty;
   window.saveApprovedReceiptForProperty = saveApprovedReceiptForProperty;
   window.renderPdfSidebarThumbnails = renderPdfSidebarThumbnails;
+  window.copyPaymentText = copyPaymentText;
 
   // 12. AUTO-START & LIFECYCLE LISTENERS
   syncFromCloudflareD1(true);
