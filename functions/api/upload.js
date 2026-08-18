@@ -63,10 +63,24 @@ export async function onRequestPost(context) {
 
     const cloudName = env.CLOUDINARY_CLOUD_NAME || "ogdfbbpw";
     const uploadPreset = env.CLOUDINARY_UPLOAD_PRESET || "house_landlord";
+    const apiKey = env.CLOUDINARY_API_KEY;
+    const apiSecret = env.CLOUDINARY_API_SECRET;
 
     const cloudinaryFormData = new FormData();
     cloudinaryFormData.append("file", file);
-    cloudinaryFormData.append("upload_preset", uploadPreset);
+
+    // If API Key & Secret are configured, use Signed Upload (No unsigned preset restriction)
+    if (apiKey && apiSecret) {
+      const timestamp = Math.floor(Date.now() / 1000);
+      const signaturePayload = `timestamp=${timestamp}${apiSecret}`;
+      const signature = await sha1Hex(signaturePayload);
+
+      cloudinaryFormData.append("timestamp", String(timestamp));
+      cloudinaryFormData.append("api_key", apiKey);
+      cloudinaryFormData.append("signature", signature);
+    } else {
+      cloudinaryFormData.append("upload_preset", uploadPreset);
+    }
 
     const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
       method: "POST",
@@ -74,6 +88,19 @@ export async function onRequestPost(context) {
     });
 
     const data = await res.json();
+
+    if (!res.ok || data.error) {
+      const errMsg = data.error && data.error.message ? data.error.message : "Cloudinary upload rejected";
+      return new Response(JSON.stringify({ 
+        error: errMsg,
+        help: errMsg.includes("whitelisted for unsigned uploads") 
+          ? "กรุณาตั้งค่า Signing Mode ของ Upload Preset 'house_landlord' ใน Cloudinary Settings ให้เป็น 'Unsigned' หรือเพิ่ม CLOUDINARY_API_KEY / SECRET ใน Cloudflare" 
+          : errMsg
+      }), {
+        status: 400,
+        headers: getCorsHeaders(request)
+      });
+    }
 
     return new Response(JSON.stringify({
       success: true,

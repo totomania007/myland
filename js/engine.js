@@ -1657,6 +1657,8 @@
       } else if (target === 'lessor-tab') {
         const fileText = document.getElementById('lessorTabFileText');
         if (fileText) fileText.innerText = `🛡️ อัปโหลดบัตร ปชช. ขีดคร่อมลายน้ำสำเร็จ: ${rawFile.name}`;
+        const hiddenImg = document.getElementById('reg-lp-image-url');
+        if (hiddenImg) hiddenImg.value = cdnUrl;
       } else if (target === 'bank') {
         const fileText = document.getElementById('bankDocFileText');
         if (fileText) fileText.innerText = `✅ อัปโหลดเอกสารธนาคารสำเร็จ: ${rawFile.name}`;
@@ -2506,6 +2508,7 @@
     if (document.getElementById('reg-lp-bank-account-name')) document.getElementById('reg-lp-bank-account-name').value = prof.bankAccountName || prof.name || '';
     if (document.getElementById('reg-lp-promptpay')) document.getElementById('reg-lp-promptpay').value = prof.promptPay || prof.phone || '';
     if (document.getElementById('reg-lp-payment-note')) document.getElementById('reg-lp-payment-note').value = prof.paymentInstructions || '';
+    if (document.getElementById('reg-lp-image-url')) document.getElementById('reg-lp-image-url').value = prof.imageUrl || '';
     if (document.getElementById('editing-lessor-key')) document.getElementById('editing-lessor-key').value = key;
 
     const btn = document.getElementById('btn-submit-lessor');
@@ -2525,6 +2528,10 @@
     const editingKey = document.getElementById('editing-lessor-key')?.value.trim();
     const key = editingKey || ('lessor-' + Date.now());
 
+    const uploadedImgUrl = document.getElementById('reg-lp-image-url')?.value.trim();
+    const existingLessor = editingKey ? state.lessorProfiles[editingKey] : null;
+    const finalImgUrl = uploadedImgUrl || (existingLessor ? existingLessor.imageUrl : CONFIG.PLACEHOLDER_SVG);
+
     const lessorData = {
       id: key,
       name: fullName,
@@ -2541,7 +2548,7 @@
       bankAccountName: document.getElementById('reg-lp-bank-account-name')?.value.trim() || fullName,
       promptPay: document.getElementById('reg-lp-promptpay')?.value.trim() || '',
       paymentInstructions: document.getElementById('reg-lp-payment-note')?.value.trim() || 'โอนเงินภายในวันที่ 5 ของทุกเดือน และแนบสลิปแจ้งทาง LINE',
-      imageUrl: CONFIG.PLACEHOLDER_SVG
+      imageUrl: finalImgUrl
     };
 
     state.lessorProfiles[key] = lessorData;
