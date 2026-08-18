@@ -2912,6 +2912,7 @@
 
   function printA4Contract() {
     switchTab('contract');
+    renderContractView();
     const prevZoom = pdfCurrentZoom;
     const prevRot = pdfRotation;
     pdfCurrentZoom = 1.0;
@@ -2923,7 +2924,7 @@
       pdfCurrentZoom = prevZoom;
       pdfRotation = prevRot;
       pdfApplyZoomAndRotation();
-    }, 150);
+    }, 200);
   }
 
   // ==========================================

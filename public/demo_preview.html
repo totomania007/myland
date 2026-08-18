@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_77"></script>
+  <script src="js/engine.js?v=20260814_78"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -370,11 +370,22 @@
     }
 
     @media print {
-      body {
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+      *, *::before, *::after {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      html, body {
         background: #ffffff !important;
         padding: 0 !important;
         margin: 0 !important;
         color: #000000 !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
       }
       .no-print,
       header,
@@ -385,15 +396,34 @@
       #login-overlay,
       .pdfjs-toolbar,
       .pdfjs-sidebar,
-      #view-overview,
-      #view-tenants,
-      #view-finance,
-      #view-settings,
-      #view-portfolio,
+      #view-landing,
+      #view-tenant-dashboard,
+      #view-admin,
+      #view-property-detail,
+      #view-loan-management,
+      #view-register-lessor,
+      #view-tenant,
+      #modal-receipt,
       #modal-amortization-table,
       #modal-add-property,
-      #modal-edit-property-detail {
+      #modal-edit-property-detail,
+      #modal-media-preview,
+      #modal-add-media-link,
+      #modal-gallery-lightbox,
+      #modal-admin-pin,
+      #modal-manage-admins,
+      #modal-quick-meter,
+      #modal-mobile-menu,
+      #fab-menu,
+      .fab-btn {
         display: none !important;
+      }
+      main {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        display: block !important;
       }
       .youestates-window {
         border: none !important;
@@ -402,6 +432,7 @@
         margin: 0 !important;
         background: transparent !important;
         border-radius: 0 !important;
+        width: 100% !important;
       }
       #view-contract {
         display: block !important;
@@ -417,6 +448,7 @@
         border-radius: 0 !important;
         padding: 0 !important;
         margin: 0 !important;
+        width: 100% !important;
       }
       .pdfjs-viewport {
         background: transparent !important;
@@ -426,6 +458,7 @@
         max-height: none !important;
         box-shadow: none !important;
         display: block !important;
+        width: 100% !important;
       }
       .pdfjs-canvas-wrapper {
         transform: none !important;
@@ -433,21 +466,31 @@
         display: block !important;
         margin: 0 !important;
         padding: 0 !important;
+        width: 100% !important;
       }
       .a4-sheet {
         position: relative !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        min-height: 260mm !important;
-        height: auto !important;
-        padding: 5mm 0 !important;
-        margin: 0 !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        max-height: 297mm !important;
+        min-height: 297mm !important;
+        padding: 1.8cm 1.8cm 1.5cm 2.2cm !important;
+        margin: 0 auto !important;
         box-shadow: none !important;
         border: none !important;
-        font-size: 16pt !important;
+        font-family: 'TH Sarabun New', 'THSarabunNew', 'TH Sarabun PSK', 'Sarabun', sans-serif !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
         page-break-after: always !important;
         break-after: page !important;
         box-sizing: border-box !important;
+        overflow: hidden !important;
+        background: #ffffff !important;
+      }
+      .a4-sheet:last-child,
+      #a4-sheet-page-3 {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
       }
     }
   </style>
@@ -1776,8 +1819,8 @@
               <button type="button" onclick="pdfPrevPage()" class="pdfjs-btn" title="หน้าก่อนหน้า">▲</button>
               <div class="flex items-center gap-1 text-xs font-semibold text-stone-300">
                 <span class="text-[11px] text-stone-400">หน้า</span>
-                <input type="number" id="pdf-page-num" value="1" min="1" max="2" onchange="pdfJumpToPage(this.value)" class="w-9 bg-stone-900 border border-stone-700 text-center rounded text-white text-xs py-0.5 font-bold">
-                <span class="text-[11px] text-stone-400">/ 2</span>
+                <input type="number" id="pdf-page-num" value="1" min="1" max="3" onchange="pdfJumpToPage(this.value)" class="w-9 bg-stone-900 border border-stone-700 text-center rounded text-white text-xs py-0.5 font-bold">
+                <span class="text-[11px] text-stone-400">/ 3</span>
               </div>
               <button type="button" onclick="pdfNextPage()" class="pdfjs-btn" title="หน้าถัดไป">▼</button>
             </div>
