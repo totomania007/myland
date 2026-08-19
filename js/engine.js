@@ -4158,20 +4158,68 @@
   // ==========================================
   // INTERACTIVE GOOGLE MAP & NAVIGATION ENGINE
   // ==========================================
-  function renderPropertyMapView(prop) {
-    if (!prop) return;
-    const mapAddress = prop.mapUrl || prop.address || prop.name || 'Bangkok, Thailand';
-    const queryEncoded = encodeURIComponent(mapAddress);
-    
-    // Auto format Google Maps embed URL
-    let embedSrc = `https://maps.google.com/maps?q=${queryEncoded}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-    if (prop.mapUrl && prop.mapUrl.includes('google.com/maps/embed')) {
-      embedSrc = prop.mapUrl;
+  function parseGoogleMapsInput(inputStr, fallbackAddress) {
+    if (!inputStr || !inputStr.trim()) {
+      const q = fallbackAddress ? encodeURIComponent(fallbackAddress) : 'Bangkok, Thailand';
+      return {
+        embedSrc: `https://maps.google.com/maps?q=${q}&t=&z=15&ie=UTF8&iwloc=&output=embed`,
+        navQuery: fallbackAddress || 'Bangkok, Thailand'
+      };
     }
 
+    let val = inputStr.trim();
+
+    // 1. If user pasted an <iframe> snippet from Google Maps
+    if (val.includes('<iframe') && val.includes('src=')) {
+      const match = val.match(/src=["']([^"']+)["']/);
+      if (match && match[1]) {
+        val = match[1];
+      }
+    }
+
+    // 2. If it's already an embed URL
+    if (val.includes('google.com/maps/embed')) {
+      return {
+        embedSrc: val,
+        navQuery: fallbackAddress || val
+      };
+    }
+
+    // 3. If user pasted coordinates like "13.7563, 100.5018"
+    const coordMatch = val.match(/[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)/);
+    if (coordMatch) {
+      const coords = coordMatch[0].replace(/\s+/g, '');
+      return {
+        embedSrc: `https://maps.google.com/maps?q=${encodeURIComponent(coords)}&t=&z=17&ie=UTF8&iwloc=&output=embed`,
+        navQuery: coords
+      };
+    }
+
+    // 4. If user pasted a URL with /@lat,lng/
+    const atCoordMatch = val.match(/@([-+]?\d+\.\d+),([-+]?\d+\.\d+)/);
+    if (atCoordMatch) {
+      const coords = `${atCoordMatch[1]},${atCoordMatch[2]}`;
+      return {
+        embedSrc: `https://maps.google.com/maps?q=${encodeURIComponent(coords)}&t=&z=17&ie=UTF8&iwloc=&output=embed`,
+        navQuery: coords
+      };
+    }
+
+    // 5. Default: query string / address
+    return {
+      embedSrc: `https://maps.google.com/maps?q=${encodeURIComponent(val)}&t=&z=16&ie=UTF8&iwloc=&output=embed`,
+      navQuery: val
+    };
+  }
+
+  function renderPropertyMapView(prop) {
+    if (!prop) return;
+    const fallbackAddr = `${prop.name || ''} ${prop.address || ''}`.trim();
+    const mapConfig = parseGoogleMapsInput(prop.mapUrl, fallbackAddr);
+
     const iframe = document.getElementById('pd-google-map-iframe');
-    if (iframe && iframe.src !== embedSrc) {
-      iframe.src = embedSrc;
+    if (iframe && iframe.src !== mapConfig.embedSrc) {
+      iframe.src = mapConfig.embedSrc;
     }
 
     if (document.getElementById('pd-map-subtitle')) {
@@ -4191,15 +4239,18 @@
   function openGoogleMapsNavigation() {
     const prop = getCurrentProperty();
     if (!prop) return;
-    const dest = prop.mapUrl || `${prop.name || ''} ${prop.address || ''}`.trim() || 'Bangkok, Thailand';
-    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dest)}`;
+    const fallbackAddr = `${prop.name || ''} ${prop.address || ''}`.trim() || 'Bangkok, Thailand';
+    const mapConfig = parseGoogleMapsInput(prop.mapUrl, fallbackAddr);
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapConfig.navQuery)}`;
     window.open(url, '_blank');
   }
 
   function copyPropertyAddressAndCoords() {
     const prop = getCurrentProperty();
     if (!prop) return;
-    const text = `${prop.name || ''} ${prop.houseNo ? `(ห้อง ${prop.houseNo})` : ''}\nที่อยู่: ${prop.address || '-'}\nGoogle Maps: https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(prop.mapUrl || prop.address || prop.name)}`;
+    const fallbackAddr = `${prop.name || ''} ${prop.address || ''}`.trim() || 'Bangkok, Thailand';
+    const mapConfig = parseGoogleMapsInput(prop.mapUrl, fallbackAddr);
+    const text = `${prop.name || ''} ${prop.houseNo ? `(ห้อง ${prop.houseNo})` : ''}\nที่อยู่: ${prop.address || '-'}\nGoogle Maps: https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapConfig.navQuery)}`;
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(() => {
         alert('📍 คัดลอกที่อยู่อสังหาฯ และลิงก์แผนที่เรียบร้อยแล้ว!');
