@@ -1320,14 +1320,8 @@
       prop.gallery = [];
     }
 
-    // 1. Promo Card Sync
-    if (document.getElementById('pd-promo-title')) document.getElementById('pd-promo-title').innerText = prop.name || 'อสังหาริมทรัพย์';
-    if (document.getElementById('pd-promo-location')) document.getElementById('pd-promo-location').innerText = prop.address || '-';
-    if (document.getElementById('pd-promo-price')) document.getElementById('pd-promo-price').innerText = `฿${(prop.rent || 0).toLocaleString()} /เดือน`;
-    if (document.getElementById('pd-promo-deposit')) document.getElementById('pd-promo-deposit').innerText = `฿${(prop.deposit || 0).toLocaleString()}`;
-    if (document.getElementById('pd-promo-cover-img')) {
-      document.getElementById('pd-promo-cover-img').src = (prop.gallery && prop.gallery.length > 0 && prop.gallery[0].url) ? prop.gallery[0].url : CONFIG.PLACEHOLDER_SVG;
-    }
+    // 1. Promo Card Interactive Slideshow Sync
+    renderPromoCard(prop);
 
     // 2. Separate into 2 categories: Exterior and Interior
     const allItems = prop.gallery || [];
@@ -1862,10 +1856,149 @@
     if (modal) modal.classList.remove('hidden');
   }
 
+  // ==========================================
+  // PROMO CARD INTERACTIVE SLIDESHOW & PICKER
+  // ==========================================
+  let currentPromoSlideIndex = 0;
+  let promoAutoplayInterval = null;
+  let isPromoAutoplay = false;
+
+  function renderPromoCard(prop) {
+    if (!prop) return;
+
+    if (document.getElementById('pd-promo-title')) document.getElementById('pd-promo-title').innerText = prop.name || 'อสังหาริมทรัพย์';
+    if (document.getElementById('pd-promo-location')) document.getElementById('pd-promo-location').innerText = prop.address || '-';
+    if (document.getElementById('pd-promo-price')) document.getElementById('pd-promo-price').innerText = `฿${(prop.rent || 0).toLocaleString()} /เดือน`;
+    if (document.getElementById('pd-promo-deposit')) document.getElementById('pd-promo-deposit').innerText = `฿${(prop.deposit || 0).toLocaleString()}`;
+    if (document.getElementById('pd-promo-size')) document.getElementById('pd-promo-size').innerText = prop.size || '35 ตร.ม.';
+
+    const gallery = (prop.gallery || []).filter(g => g.type !== 'video' || g.url);
+    if (gallery.length === 0) {
+      if (document.getElementById('pd-promo-cover-img')) {
+        document.getElementById('pd-promo-cover-img').src = CONFIG.PLACEHOLDER_SVG;
+      }
+      if (document.getElementById('pd-promo-index-badge')) {
+        document.getElementById('pd-promo-index-badge').innerText = '📸 0/0';
+      }
+      if (document.getElementById('pd-promo-img-title')) {
+        document.getElementById('pd-promo-img-title').innerText = 'ยังไม่มีรูปภาพ (อัปโหลดรูปในแท็บแกลเลอรี)';
+      }
+      const thumbContainer = document.getElementById('pd-promo-thumbnails');
+      if (thumbContainer) {
+        thumbContainer.innerHTML = '<div class="text-[10px] text-stone-500 py-1 italic">ยังไม่มีภาพในแกลเลอรี</div>';
+      }
+      return;
+    }
+
+    if (currentPromoSlideIndex >= gallery.length) {
+      currentPromoSlideIndex = 0;
+    }
+
+    updatePromoSlideDisplay(gallery);
+    renderPromoThumbnails(gallery);
+  }
+
+  function updatePromoSlideDisplay(gallery) {
+    if (!gallery || gallery.length === 0) return;
+    const currentItem = gallery[currentPromoSlideIndex] || gallery[0];
+
+    const coverImg = document.getElementById('pd-promo-cover-img');
+    if (coverImg) {
+      coverImg.src = currentItem.url || CONFIG.PLACEHOLDER_SVG;
+    }
+    const idxBadge = document.getElementById('pd-promo-index-badge');
+    if (idxBadge) {
+      idxBadge.innerText = `📸 ${currentPromoSlideIndex + 1}/${gallery.length}`;
+    }
+    const titleEl = document.getElementById('pd-promo-img-title');
+    if (titleEl) {
+      titleEl.innerText = currentItem.title || currentItem.caption || 'ภาพบรรยากาศห้อง';
+    }
+
+    // Highlight active thumbnail
+    const thumbs = document.querySelectorAll('.promo-thumb-btn');
+    thumbs.forEach((t, i) => {
+      if (i === currentPromoSlideIndex) {
+        t.className = 'promo-thumb-btn w-12 h-10 rounded-lg overflow-hidden shrink-0 border-2 border-emerald-400 ring-2 ring-emerald-400/40 scale-105 transition-all opacity-100 cursor-pointer shadow-md';
+      } else {
+        t.className = 'promo-thumb-btn w-12 h-10 rounded-lg overflow-hidden shrink-0 border border-stone-700 opacity-60 hover:opacity-100 hover:border-stone-500 transition-all cursor-pointer';
+      }
+    });
+  }
+
+  function renderPromoThumbnails(gallery) {
+    const thumbContainer = document.getElementById('pd-promo-thumbnails');
+    if (!thumbContainer) return;
+
+    let html = '';
+    gallery.forEach((g, idx) => {
+      const isActive = idx === currentPromoSlideIndex;
+      const borderClass = isActive 
+        ? 'border-2 border-emerald-400 ring-2 ring-emerald-400/40 scale-105 opacity-100 shadow-md'
+        : 'border border-stone-700 opacity-60 hover:opacity-100 hover:border-stone-500';
+
+      html += `
+        <button type="button" onclick="selectPromoSlide(${idx})" class="promo-thumb-btn w-12 h-10 rounded-lg overflow-hidden shrink-0 transition-all cursor-pointer ${borderClass}" title="${g.title || `ภาพที่ ${idx + 1}`}">
+          <img src="${g.url || CONFIG.PLACEHOLDER_SVG}" class="w-full h-full object-cover" alt="Thumb ${idx + 1}">
+        </button>
+      `;
+    });
+    thumbContainer.innerHTML = html;
+  }
+
+  function selectPromoSlide(idx) {
+    const prop = getCurrentProperty();
+    if (!prop || !prop.gallery || prop.gallery.length === 0) return;
+    currentPromoSlideIndex = Math.max(0, Math.min(idx, prop.gallery.length - 1));
+    updatePromoSlideDisplay(prop.gallery);
+  }
+
+  function prevPromoSlide(e) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    const prop = getCurrentProperty();
+    if (!prop || !prop.gallery || prop.gallery.length === 0) return;
+    currentPromoSlideIndex = (currentPromoSlideIndex - 1 + prop.gallery.length) % prop.gallery.length;
+    updatePromoSlideDisplay(prop.gallery);
+  }
+
+  function nextPromoSlide(e) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    const prop = getCurrentProperty();
+    if (!prop || !prop.gallery || prop.gallery.length === 0) return;
+    currentPromoSlideIndex = (currentPromoSlideIndex + 1) % prop.gallery.length;
+    updatePromoSlideDisplay(prop.gallery);
+  }
+
+  function togglePromoSlideshowAutoplay() {
+    isPromoAutoplay = !isPromoAutoplay;
+    const btn = document.getElementById('btn-promo-autoplay');
+    const icon = document.getElementById('promo-autoplay-icon');
+    const txt = document.getElementById('promo-autoplay-text');
+
+    if (isPromoAutoplay) {
+      if (icon) icon.innerText = '⏸️';
+      if (txt) txt.innerText = 'หยุดเล่นสไลด์';
+      if (btn) btn.className = 'px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all shadow-md cursor-pointer';
+      
+      promoAutoplayInterval = setInterval(() => {
+        nextPromoSlide();
+      }, 3500);
+    } else {
+      if (icon) icon.innerText = '▶️';
+      if (txt) txt.innerText = 'เล่นสไลด์อัตโนมัติ';
+      if (btn) btn.className = 'px-2.5 py-1 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all border border-stone-700 cursor-pointer shadow-sm';
+      if (promoAutoplayInterval) clearInterval(promoAutoplayInterval);
+      promoAutoplayInterval = null;
+    }
+  }
+
   function openPromoCoverLightbox() {
     const prop = getCurrentProperty();
     if (!prop || !prop.gallery || prop.gallery.length === 0) return;
-    openGalleryLightbox(prop.gallery[0].id);
+    const currentItem = prop.gallery[currentPromoSlideIndex] || prop.gallery[0];
+    if (currentItem) {
+      openGalleryLightbox(currentItem.id);
+    }
   }
 
   function displayLightboxContent(item) {
@@ -4291,6 +4424,11 @@
   window.deleteGalleryItem = deleteGalleryItem;
   window.openGalleryLightbox = openGalleryLightbox;
   window.openPromoCoverLightbox = openPromoCoverLightbox;
+  window.renderPromoCard = renderPromoCard;
+  window.selectPromoSlide = selectPromoSlide;
+  window.prevPromoSlide = prevPromoSlide;
+  window.nextPromoSlide = nextPromoSlide;
+  window.togglePromoSlideshowAutoplay = togglePromoSlideshowAutoplay;
   window.prevLightboxMedia = prevLightboxMedia;
   window.nextLightboxMedia = nextLightboxMedia;
   window.togglePdfSidebar = togglePdfSidebar;
