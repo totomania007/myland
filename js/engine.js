@@ -3546,14 +3546,22 @@
     const prevRot = pdfRotation;
     pdfCurrentZoom = 1.0;
     pdfRotation = 0;
-    pdfApplyZoomAndRotation();
+
+    // Clear inline transform so browser print engine paginates natively without raster clipping
+    const wrapper = document.getElementById('pdf-canvas-wrapper');
+    if (wrapper) {
+      wrapper.style.transform = 'none';
+      wrapper.style.webkitTransform = 'none';
+    }
 
     setTimeout(() => {
       window.print();
-      pdfCurrentZoom = prevZoom;
-      pdfRotation = prevRot;
-      pdfApplyZoomAndRotation();
-    }, 200);
+      setTimeout(() => {
+        pdfCurrentZoom = prevZoom;
+        pdfRotation = prevRot;
+        pdfApplyZoomAndRotation();
+      }, 500);
+    }, 300);
   }
 
   // ==========================================

@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_91"></script>
+  <script src="js/engine.js?v=20260814_92"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -401,6 +401,8 @@
       *, *::before, *::after {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
       }
       html, body {
         background: #ffffff !important;
@@ -408,7 +410,9 @@
         margin: 0 !important;
         color: #000000 !important;
         width: 100% !important;
+        min-width: 100% !important;
         height: auto !important;
+        min-height: 100% !important;
         overflow: visible !important;
       }
       .no-print,
@@ -420,6 +424,10 @@
       #login-overlay,
       .pdfjs-toolbar,
       .pdfjs-sidebar,
+      #pdf-thumbnails-sidebar,
+      #contract-property-tabs-container,
+      #pd-property-tabs-container,
+      #lm-property-tabs-container,
       #view-landing,
       #view-tenant-dashboard,
       #view-admin,
@@ -441,6 +449,7 @@
       #fab-menu,
       .fab-btn {
         display: none !important;
+        visibility: hidden !important;
       }
       main {
         background: transparent !important;
@@ -448,6 +457,7 @@
         margin: 0 !important;
         width: 100% !important;
         display: block !important;
+        overflow: visible !important;
       }
       .youestates-window {
         border: none !important;
@@ -457,13 +467,19 @@
         background: transparent !important;
         border-radius: 0 !important;
         width: 100% !important;
+        overflow: visible !important;
       }
       #view-contract {
         display: block !important;
+        visibility: visible !important;
         margin: 0 !important;
         padding: 0 !important;
         max-width: 100% !important;
         width: 100% !important;
+        overflow: visible !important;
+      }
+      #view-contract > .youestates-card:first-child {
+        display: none !important;
       }
       .pdfjs-container {
         background: transparent !important;
@@ -473,12 +489,14 @@
         padding: 0 !important;
         margin: 0 !important;
         width: 100% !important;
+        overflow: visible !important;
       }
       .pdfjs-viewport {
         background: transparent !important;
         padding: 0 !important;
         margin: 0 !important;
         overflow: visible !important;
+        height: auto !important;
         max-height: none !important;
         box-shadow: none !important;
         display: block !important;
@@ -486,18 +504,20 @@
       }
       .pdfjs-canvas-wrapper {
         transform: none !important;
+        -webkit-transform: none !important;
         gap: 0 !important;
         display: block !important;
         margin: 0 !important;
         padding: 0 !important;
         width: 100% !important;
+        overflow: visible !important;
       }
       .a4-sheet {
         position: relative !important;
         width: 210mm !important;
         height: 297mm !important;
-        max-height: 297mm !important;
         min-height: 297mm !important;
+        max-height: 297mm !important;
         padding: 1.8cm 1.8cm 1.5cm 2.2cm !important;
         margin: 0 auto !important;
         box-shadow: none !important;
@@ -510,6 +530,10 @@
         box-sizing: border-box !important;
         overflow: hidden !important;
         background: #ffffff !important;
+        color: #000000 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
       }
       .a4-sheet:last-child,
       #receipt-contract-annexes-container > .a4-sheet:last-child {
