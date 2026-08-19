@@ -4316,6 +4316,10 @@
 
   async function handlePropertyDetailEditSubmit(e) {
     if (e && e.preventDefault) e.preventDefault();
+    if (state.currentRole !== 'landlord') {
+      alert('⛔ เฉพาะผู้ให้เช่าเท่านั้นที่มีสิทธิ์แก้ไขสเปกทรัพย์สินครับ');
+      return;
+    }
     const prop = getCurrentProperty();
     if (!prop) return;
 
@@ -4323,38 +4327,6 @@
     prop.houseNo = document.getElementById('pde-houseno')?.value.trim() || prop.houseNo;
     prop.address = document.getElementById('pde-address')?.value.trim() || prop.address;
     prop.mapUrl = document.getElementById('pde-map-url')?.value.trim() || prop.mapUrl || '';
-    prop.rent = parseFloat(document.getElementById('pde-rent')?.value) || prop.rent;
-    prop.deposit = parseFloat(document.getElementById('pde-deposit')?.value) || prop.deposit;
-    prop.size = document.getElementById('pde-size')?.value.trim() || prop.size;
-    prop.meterElec = document.getElementById('pde-meter-elec')?.value.trim() || prop.meterElec;
-    prop.meterWater = document.getElementById('pde-meter-water')?.value.trim() || prop.meterWater;
-    prop.lessorKey = document.getElementById('pde-lessor-select')?.value || prop.lessorKey;
-
-    const furnContainer = document.getElementById('pde-furniture-rows-container');
-    if (furnContainer) {
-      furnContainer.innerHTML = '';
-      const list = prop.inventoryList || [];
-      if (list.length === 0) {
-        addFurnitureEditRow('เครื่องปรับอากาศ', CONFIG.PLACEHOLDER_SVG);
-      } else {
-        list.forEach(item => {
-          const itemObj = typeof item === 'object' ? item : { name: item, img: CONFIG.PLACEHOLDER_SVG };
-          addFurnitureEditRow(itemObj.name, itemObj.img);
-        });
-      }
-    }
-
-    toggleModal('modal-edit-property-detail');
-  }
-
-  async function handlePropertyDetailEditSubmit(e) {
-    if (e && e.preventDefault) e.preventDefault();
-    const prop = getCurrentProperty();
-    if (!prop) return;
-
-    prop.name = document.getElementById('pde-name')?.value.trim() || prop.name;
-    prop.houseNo = document.getElementById('pde-houseno')?.value.trim() || prop.houseNo;
-    prop.address = document.getElementById('pde-address')?.value.trim() || prop.address;
     prop.rent = parseFloat(document.getElementById('pde-rent')?.value) || prop.rent;
     prop.deposit = parseFloat(document.getElementById('pde-deposit')?.value) || prop.deposit;
     prop.size = document.getElementById('pde-size')?.value.trim() || prop.size;
@@ -4389,7 +4361,7 @@
     renderPropertyDetailView(prop.id);
     renderContractView();
     toggleModal('modal-edit-property-detail');
-    alert(`✅ บันทึกการแก้ไขสเปก & ที่อยู่ "${prop.name}" เรียบร้อยแล้ว!`);
+    alert(`✅ บันทึกการแก้ไขสเปก, ที่อยู่ & พิกัดแผนที่ "${prop.name}" เรียบร้อยแล้ว!`);
 
     try {
       await fetch('/api/properties', {

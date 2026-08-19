@@ -28,6 +28,7 @@ async function ensurePropertiesTable(env) {
 
   const migrations = [
     "ALTER TABLE properties ADD COLUMN gallery_json TEXT",
+    "ALTER TABLE properties ADD COLUMN map_url TEXT",
     "ALTER TABLE properties ADD COLUMN rate_schedule_json TEXT",
     "ALTER TABLE properties ADD COLUMN inventory_json TEXT",
     "ALTER TABLE properties ADD COLUMN meter_elec TEXT",
@@ -83,6 +84,7 @@ export async function onRequestGet(context) {
       type: r.type || 'อสังหาฯ เช่า',
       address: r.address || '',
       houseNo: r.house_no || '',
+      mapUrl: r.map_url || '',
       size: r.size || '',
       rent: Number(r.rent) || 0,
       deposit: Number(r.deposit) || 0,
@@ -115,14 +117,15 @@ export async function onRequestPost(context) {
     const id = data.id || `prop-${Date.now()}`;
     
     await env.DB.prepare(`
-      INSERT INTO properties (id, name, lessor_key, type, address, house_no, size, rent, deposit, principal, installment, rate, start_date, meter_elec, meter_water, inventory_json, rate_schedule_json, gallery_json)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO properties (id, name, lessor_key, type, address, house_no, map_url, size, rent, deposit, principal, installment, rate, start_date, meter_elec, meter_water, inventory_json, rate_schedule_json, gallery_json)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         lessor_key = excluded.lessor_key,
         type = excluded.type,
         address = excluded.address,
         house_no = excluded.house_no,
+        map_url = excluded.map_url,
         size = excluded.size,
         rent = excluded.rent,
         deposit = excluded.deposit,
@@ -142,6 +145,7 @@ export async function onRequestPost(context) {
       String(data.type || 'อสังหาฯ เช่า'),
       String(data.address || ''),
       String(data.houseNo || ''),
+      String(data.mapUrl || ''),
       String(data.size || '40 ตร.ม.'),
       Number(data.rent) || 0,
       Number(data.deposit) || 0,
