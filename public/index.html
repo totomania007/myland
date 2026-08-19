@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_87"></script>
+  <script src="js/engine.js?v=20260814_88"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1264,16 +1264,22 @@
       </div>
 
       <!-- VIEW 2: PROPERTY DETAILS (FOR TENANT DECISION & SHOWCASE) -->
-      <div id="view-property-detail" class="hidden space-y-6 max-w-6xl mx-auto">
-        <div class="youestates-card overflow-hidden">
-          <div class="youestates-card-header flex justify-between items-center">
+      <div id="view-property-detail" class="hidden space-y-4 max-w-6xl mx-auto">
+        <!-- PROPERTY SELECTOR TABS BAR (MODERN INTERACTIVE CHIP SWITCHER) -->
+        <div class="youestates-card p-3 md:p-4 bg-gradient-to-r from-stone-50 via-white to-stone-50 border border-stone-200 shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <span>🏡 เลือกทรัพย์สิน:</span>
-              <select id="pd-property-selector" onchange="window.handleDetailPropertySwitch(this.value)" class="bg-[#e05646] text-white font-bold text-xs rounded px-3 py-1 outline-none cursor-pointer">
-              </select>
+              <span class="text-xs font-black text-stone-700 uppercase tracking-wide flex items-center gap-1.5">
+                <span>🏡</span> <span>เลือกอสังหาริมทรัพย์ในพอร์ต:</span>
+              </span>
+              <span class="text-[10px] text-stone-400 font-medium hidden sm:inline">(คลิกแท็บเพื่อสลับดูข้อมูลได้ทันที)</span>
             </div>
-            <span class="text-xs text-stone-300 font-normal" id="pd-header-badge">ข้อมูลอสังหาฯ เพื่อการตัดสินใจเช่า</span>
+            <span class="text-[11px] text-stone-500 font-bold" id="pd-header-badge">ข้อมูลเพื่อการตัดสินใจเช่า</span>
           </div>
+          <div id="pd-property-tabs-container" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"></div>
+        </div>
+
+        <div class="youestates-card overflow-hidden">
 
           <div class="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
@@ -1654,18 +1660,24 @@
       </div>
 
       <!-- VIEW NEW: DEDICATED LOAN & MORTGAGE ASSET MANAGEMENT (FOR LANDLORD ONLY 🔒) -->
-      <div id="view-loan-management" class="hidden space-y-6 max-w-6xl mx-auto">
-        <div class="youestates-card overflow-hidden border-2 border-amber-500/30">
-          <div class="youestates-card-header flex justify-between items-center bg-stone-900 text-white">
+      <div id="view-loan-management" class="hidden space-y-4 max-w-6xl mx-auto">
+        <!-- PROPERTY SELECTOR TABS BAR (LOAN VIEW) -->
+        <div class="youestates-card p-3 md:p-4 bg-gradient-to-r from-stone-900 via-stone-850 to-stone-900 border border-stone-800 text-white shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <span>🏦 เลือกทรัพย์สินเพื่อดูสินเชื่อ:</span>
-              <select id="lm-property-selector" onchange="window.handleLoanPropertySwitch(this.value)" class="bg-[#e05646] text-white font-bold text-xs rounded px-3 py-1 outline-none cursor-pointer">
-              </select>
+              <span class="text-xs font-black text-amber-300 uppercase tracking-wide flex items-center gap-1.5">
+                <span>🏦</span> <span>เลือกทรัพย์สินเพื่อดูสินเชื่อ & Retention:</span>
+              </span>
+              <span class="text-[10px] text-stone-400 font-medium hidden sm:inline">(คลิกแท็บเพื่อสลับข้อมูลสินเชื่อ)</span>
             </div>
-            <span class="px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px] border border-amber-500/40">
-              🔒 เฉพาะผู้ให้เช่า & บริหารสินทรัพย์ (Landlord Only)
+            <span class="px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px] border border-amber-500/30">
+              🔒 Landlord Only
             </span>
           </div>
+          <div id="lm-property-tabs-container" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"></div>
+        </div>
+
+        <div class="youestates-card overflow-hidden border-2 border-amber-500/30">
 
           <div class="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white">
             <div>
@@ -2056,6 +2068,19 @@
 
       <!-- VIEW 4: CONTRACT GENERATOR (PDF.JS REALISTIC REAL-PRINT A4 VIEWER) -->
       <div id="view-contract" class="hidden space-y-4 max-w-5xl mx-auto">
+        <!-- PROPERTY SELECTOR TABS BAR (CONTRACT VIEW) -->
+        <div class="youestates-card p-3 md:p-4 bg-white border border-stone-200 shadow-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-black text-stone-700 uppercase tracking-wide flex items-center gap-1.5">
+                <span>📄</span> <span>เลือกสัญญาเช่าตามอสังหาริมทรัพย์:</span>
+              </span>
+              <span class="text-[10px] text-stone-400 font-medium hidden sm:inline">(คลิกแท็บเพื่อดูสัญญาของแต่ละหลัง)</span>
+            </div>
+            <span class="text-[11px] text-stone-500 font-bold">เอกสารสัญญาเช่า A4 Real-Print</span>
+          </div>
+          <div id="contract-property-tabs-container" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"></div>
+        </div>
         
         <!-- PDF.JS CONTAINER -->
         <div class="pdfjs-container">

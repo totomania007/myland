@@ -783,6 +783,83 @@
     }
   }
 
+  function renderPropertyTabSwitchers(targetPropId) {
+    const props = state.propertiesState || [];
+    if (props.length === 0) return;
+    const currentId = targetPropId || state.currentPropertyId || props[0].id;
+    state.currentPropertyId = currentId;
+
+    const renderTabsHtml = (context) => {
+      let html = '';
+      props.forEach(p => {
+        const isActive = String(p.id) === String(currentId);
+        const occ = getPropertyOccupancy(p.id);
+        
+        let statusBadge = '';
+        if (occ.status === 'occupied') {
+          statusBadge = isActive 
+            ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-white/20 text-white border border-white/30">🟢 มีผู้เช่า</span>`
+            : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">🟢 มีผู้เช่า</span>`;
+        } else if (occ.status === 'booked') {
+          statusBadge = isActive
+            ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-white/20 text-white border border-white/30">🟡 จองแล้ว</span>`
+            : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">🟡 จองแล้ว</span>`;
+        } else {
+          statusBadge = isActive
+            ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-white/20 text-white border border-white/30">⚪ ว่าง</span>`
+            : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-100 text-stone-600 border border-stone-300">⚪ ว่าง</span>`;
+        }
+
+        const activeClasses = isActive
+          ? 'bg-gradient-to-r from-[#e05646] to-[#c93b2c] text-white shadow-md ring-2 ring-[#e05646]/30 font-bold scale-[1.02]'
+          : (context === 'lm'
+              ? 'bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 shadow-sm hover:border-stone-500 font-medium'
+              : 'bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 shadow-sm hover:border-stone-300 font-medium');
+
+        const rentText = p.rent ? `฿${p.rent.toLocaleString()}/ด.` : '';
+
+        html += `
+          <button type="button" onclick="window.handleDetailPropertySwitch('${p.id}')" class="px-3.5 py-2 rounded-xl text-xs whitespace-nowrap flex items-center gap-2.5 transition-all cursor-pointer ${activeClasses}">
+            <span class="text-sm">🏡</span>
+            <div class="text-left">
+              <div class="font-extrabold flex items-center gap-1.5 leading-tight">
+                <span>${p.name}</span>
+                ${p.houseNo ? `<span class="text-[11px] opacity-80 font-normal">(${p.houseNo})</span>` : ''}
+              </div>
+              <div class="text-[10px] opacity-85 flex items-center gap-2 mt-0.5">
+                <span>${rentText}</span>
+              </div>
+            </div>
+            ${statusBadge}
+          </button>
+        `;
+      });
+
+      // Quick Add Property button
+      const addBtnClasses = context === 'lm'
+        ? 'bg-stone-800/80 hover:bg-stone-700 text-amber-300 border-dashed border-stone-700'
+        : 'bg-stone-100 hover:bg-stone-200 text-stone-700 border-dashed border-stone-300 hover:border-stone-400';
+
+      html += `
+        <button type="button" onclick="toggleModal('modal-add-property')" class="px-3 py-2 rounded-xl text-xs whitespace-nowrap flex items-center gap-1.5 font-bold border transition-all cursor-pointer shadow-sm ${addBtnClasses}">
+          <span>➕</span>
+          <span>เพิ่มทรัพย์สิน</span>
+        </button>
+      `;
+
+      return html;
+    };
+
+    const pdContainer = document.getElementById('pd-property-tabs-container');
+    if (pdContainer) pdContainer.innerHTML = renderTabsHtml('pd');
+
+    const lmContainer = document.getElementById('lm-property-tabs-container');
+    if (lmContainer) lmContainer.innerHTML = renderTabsHtml('lm');
+
+    const contractContainer = document.getElementById('contract-property-tabs-container');
+    if (contractContainer) contractContainer.innerHTML = renderTabsHtml('contract');
+  }
+
   function handleDetailPropertySwitch(propId) {
     if (!propId) {
       const sel = document.getElementById('pd-property-selector');
@@ -793,6 +870,7 @@
     state.currentPropertyId = propId;
     localStorage.setItem('property_os_current_prop_id', propId);
 
+    renderPropertyTabSwitchers(propId);
     renderPropertyDetailView(propId);
     renderLoanManagementView(propId);
     renderContractView();
@@ -809,6 +887,7 @@
     state.currentPropertyId = propId;
     localStorage.setItem('property_os_current_prop_id', propId);
 
+    renderPropertyTabSwitchers(propId);
     renderLoanManagementView(propId);
     renderPropertyDetailView(propId);
     renderContractView();
@@ -824,6 +903,8 @@
     const currentId = targetPropId || state.currentPropertyId || storedId || props[0].id;
     state.currentPropertyId = currentId;
     localStorage.setItem('property_os_current_prop_id', currentId);
+
+    renderPropertyTabSwitchers(currentId);
 
     const prop = props.find(p => String(p.id) === String(currentId)) || props[0];
     if (!prop) return;
@@ -967,6 +1048,8 @@
 
     const prop = props.find(p => String(p.id) === String(currentId)) || props[0];
     if (!prop) return;
+
+    renderPropertyTabSwitchers(currentId);
 
     const select = document.getElementById('lm-property-selector');
     if (select) {
@@ -2793,6 +2876,8 @@
   function renderContractView() {
     const prop = getCurrentProperty();
     if (!prop) return;
+
+    renderPropertyTabSwitchers(prop.id);
 
     const lessor = state.lessorProfiles[prop.lessorKey] || Object.values(state.lessorProfiles)[0] || { name: 'ผู้ให้เช่า', idCard: '-', address: '-', age: '-', imageUrl: CONFIG.PLACEHOLDER_SVG };
     const tenant = Object.values(state.tenantDatabase).find(t => t.propertyId === prop.id) 
