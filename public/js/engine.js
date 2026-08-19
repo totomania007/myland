@@ -835,17 +835,19 @@
         `;
       });
 
-      // Quick Add Property button
-      const addBtnClasses = context === 'lm'
-        ? 'bg-stone-800/80 hover:bg-stone-700 text-amber-300 border-dashed border-stone-700'
-        : 'bg-stone-100 hover:bg-stone-200 text-stone-700 border-dashed border-stone-300 hover:border-stone-400';
+      // Quick Add Property button (LANDLORD ONLY 🔒)
+      if (state.currentRole === 'landlord') {
+        const addBtnClasses = context === 'lm'
+          ? 'bg-stone-800/80 hover:bg-stone-700 text-amber-300 border-dashed border-stone-700'
+          : 'bg-stone-100 hover:bg-stone-200 text-stone-700 border-dashed border-stone-300 hover:border-stone-400';
 
-      html += `
-        <button type="button" onclick="toggleModal('modal-add-property')" class="px-3 py-2 rounded-xl text-xs whitespace-nowrap flex items-center gap-1.5 font-bold border transition-all cursor-pointer shadow-sm ${addBtnClasses}">
-          <span>➕</span>
-          <span>เพิ่มทรัพย์สิน</span>
-        </button>
-      `;
+        html += `
+          <button type="button" onclick="toggleModal('modal-add-property')" class="px-3 py-2 rounded-xl text-xs whitespace-nowrap flex items-center gap-1.5 font-bold border transition-all cursor-pointer shadow-sm ${addBtnClasses}">
+            <span>➕</span>
+            <span>เพิ่มทรัพย์สิน</span>
+          </button>
+        `;
+      }
 
       return html;
     };
@@ -3701,8 +3703,17 @@
   }
 
   function toggleModal(id) {
+    const landlordModals = ['modal-add-property', 'modal-edit-property-detail', 'modal-amortization-table', 'modal-quick-meters', 'modal-manage-admins'];
     const el = document.getElementById(id);
-    if (el) el.classList.toggle('hidden');
+    if (!el) return;
+
+    // Guard: Prevent tenants from opening landlord-only management modals
+    if (landlordModals.includes(id) && el.classList.contains('hidden') && state.currentRole !== 'landlord') {
+      openAdminPinModal();
+      return;
+    }
+
+    el.classList.toggle('hidden');
   }
 
   function openLoginOverlay() {
@@ -4149,6 +4160,10 @@
 
   async function handleAddPropertySubmit(e) {
     if (e && e.preventDefault) e.preventDefault();
+    if (state.currentRole !== 'landlord') {
+      alert('⛔ ไม่สามารถดำเนินการได้: เฉพาะผู้ให้เช่าเท่านั้นที่มีสิทธิ์เพิ่มทรัพย์สินใหม่เข้าสู่ระบบครับ');
+      return;
+    }
     const name = document.getElementById('p-name')?.value.trim();
     const houseNo = document.getElementById('p-houseno')?.value.trim();
     const address = document.getElementById('p-address')?.value.trim();
