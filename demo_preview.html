@@ -6,7 +6,7 @@
   <title>Rental Property OS — Auto Lease End Date Calculation</title>
 
   <!-- YOUESTATES UNIFIED CORE ENGINE (2026 SINGLE-SOURCE ARCHITECTURE) -->
-  <script src="js/engine.js?v=20260814_92"></script>
+  <script src="js/engine.js?v=20260814_93"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1328,22 +1328,25 @@
           </div>
         </div>
 
-        <!-- SUB-NAVIGATION: 5 COLUMNS COMPACT FIT, ZERO SCROLLBAR -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-1.5 md:gap-2 text-xs font-bold select-none p-1.5 bg-stone-200 rounded-2xl mb-2">
+        <!-- SUB-NAVIGATION: 6 COLUMNS COMPACT FIT, ZERO SCROLLBAR -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 md:gap-2 text-xs font-bold select-none p-1.5 bg-stone-200 rounded-2xl mb-2">
           <button onclick="switchSubTab('specs')" id="subtab-specs" class="px-2 py-2.5 bg-[#383838] text-white rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-md transition-all">
             <span>🏡 1. ข้อมูลห้อง</span>
           </button>
+          <button onclick="switchSubTab('map')" id="subtab-map" class="px-2 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-sm transition-all">
+            <span>📍 2. แผนที่ตั้ง</span>
+          </button>
           <button onclick="switchSubTab('gallery')" id="subtab-gallery" class="px-2 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-sm transition-all">
-            <span>📸 2. รูปถ่ายห้องจริง</span>
+            <span>📸 3. รูปห้องจริง</span>
           </button>
           <button onclick="switchSubTab('furniture')" id="subtab-furniture" class="px-2 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-sm transition-all">
-            <span>🛋️ 3. เฟอร์นิเจอร์</span>
+            <span>🛋️ 4. เฟอร์นิเจอร์</span>
           </button>
           <button onclick="switchSubTab('lessor')" id="subtab-lessor" class="px-2 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-sm transition-all">
-            <span>👤 4. ผู้ให้เช่า</span>
+            <span>👤 5. ผู้ให้เช่า</span>
           </button>
           <button onclick="switchSubTab('upload-gallery')" id="subtab-upload-gallery" class="hidden px-2 py-2.5 bg-white text-stone-700 hover:bg-stone-100 rounded-xl font-bold text-center flex items-center justify-center gap-1 shadow-sm transition-all">
-            <span>📤 5. อัปโหลดรูปภาพ</span>
+            <span>📤 6. จัดการรูปภาพ</span>
           </button>
         </div>
 
@@ -1377,7 +1380,15 @@
             <div class="space-y-3 text-xs">
               <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">ประเภททรัพย์สิน:</span> <strong class="text-stone-800 font-bold" id="pd-type">-</strong></div>
               <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">บ้านเลขที่ / เลขที่ห้อง:</span> <strong class="text-[#e05646] font-black" id="pd-houseno">-</strong></div>
-              <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">ทำเล & ที่อยู่อสังหาฯ:</span> <strong class="text-stone-800 font-bold text-right" id="pd-full-address">-</strong></div>
+              <div class="flex justify-between py-1.5 border-b border-stone-100 items-center">
+                <span class="text-stone-400 font-medium">ทำเล & แผนที่ตั้ง:</span> 
+                <div class="text-right space-y-1">
+                  <strong class="text-stone-800 font-bold block" id="pd-full-address">-</strong>
+                  <button type="button" onclick="switchSubTab('map')" class="text-emerald-700 hover:text-emerald-900 font-bold text-[11px] underline flex items-center gap-1 ml-auto">
+                    <span>📍 ดูแผนที่ & นำทาง ➔</span>
+                  </button>
+                </div>
+              </div>
               <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">ขนาดพื้นที่ใช้สอย:</span> <strong class="text-stone-800 font-bold" id="pd-size">-</strong></div>
               <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">อัตราค่าเช่า / เดือน:</span> <strong class="text-emerald-700 font-black text-sm" id="pd-rent">฿0 บาท</strong></div>
               <div class="flex justify-between py-1.5 border-b border-stone-100"><span class="text-stone-400 font-medium">เงินประกันสัญญาเช่า:</span> <strong class="text-stone-900 font-bold" id="pd-deposit">฿0 บาท</strong></div>
@@ -1464,6 +1475,73 @@
               <button onclick="switchTab('tenant')" class="w-full py-3 youestates-btn-coral text-white font-black text-xs rounded-xl shadow-md flex items-center justify-center gap-2">
                 <span>📝 ลงทะเบียนทำสัญญาเช่าห้องนี้ทันที ➔</span>
               </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBVIEW: INTERACTIVE MAP & NAVIGATION PIN FOR TENANTS -->
+        <div id="subview-map" class="hidden space-y-6">
+          <div class="youestates-card p-5 md:p-6 space-y-5">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-stone-200 pb-3">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-rose-100 text-[#e05646] flex items-center justify-center text-lg font-bold">
+                  📍
+                </div>
+                <div>
+                  <h3 class="font-black text-sm text-[#383838]">แผนที่ตั้ง & เส้นทางนำทางอสังหาริมทรัพย์</h3>
+                  <p class="text-[11px] text-stone-500" id="pd-map-subtitle">พิกัดและเส้นทางการเดินทางสำหรับผู้เช่า</p>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <button type="button" onclick="openGoogleMapsNavigation()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-1.5 transition-all cursor-pointer">
+                  <span>🚗</span> <span>เปิดนำทางด้วย Google Maps</span>
+                </button>
+                <button type="button" onclick="copyPropertyAddressAndCoords()" class="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold rounded-xl border border-stone-300 transition-all cursor-pointer">
+                  <span>📋 คัดลอกที่อยู่</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- INTERACTIVE MAP EMBED CONTAINER -->
+            <div class="w-full rounded-2xl overflow-hidden border border-stone-300 shadow-md bg-stone-100 relative min-h-[380px] sm:min-h-[460px]">
+              <iframe id="pd-google-map-iframe" class="w-full h-full min-h-[380px] sm:min-h-[460px] border-0" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src="about:blank"></iframe>
+              
+              <!-- FLOATING QUICK BADGE -->
+              <div class="absolute top-3 left-3 bg-white/95 backdrop-blur shadow-lg border border-stone-200 rounded-xl px-3 py-2 text-xs flex items-center gap-2 max-w-[90%] sm:max-w-md pointer-events-none">
+                <span class="text-base">📌</span>
+                <div class="truncate">
+                  <div class="font-extrabold text-stone-800 truncate" id="pd-map-float-title">-</div>
+                  <div class="text-[10px] text-stone-500 truncate" id="pd-map-float-address">-</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- LOCATION HIGHLIGHTS & TRANSPORT INFO -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div class="p-3.5 bg-stone-50 rounded-xl border border-stone-200 space-y-1">
+                <div class="text-[11px] font-bold text-stone-500 uppercase flex items-center gap-1.5">
+                  <span>🏢</span> <span>ที่อยู่และทำเลที่ตั้ง</span>
+                </div>
+                <div class="text-xs font-bold text-stone-800 leading-relaxed" id="pd-map-detail-address">-</div>
+              </div>
+
+              <div class="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-200 space-y-1">
+                <div class="text-[11px] font-bold text-emerald-800 uppercase flex items-center gap-1.5">
+                  <span>🚆</span> <span>การเดินทาง & ขนส่งสาธารณะ</span>
+                </div>
+                <div class="text-xs font-medium text-emerald-950 leading-relaxed" id="pd-map-transit-info">
+                  ใกล้ถนนสายหลัก เดินทางสะดวก เชื่อมต่อจุดขึ้น-ลงทางด่วน และระบบขนส่งสาธารณะ
+                </div>
+              </div>
+
+              <div class="p-3.5 bg-sky-50/60 rounded-xl border border-sky-200 space-y-1">
+                <div class="text-[11px] font-bold text-sky-800 uppercase flex items-center gap-1.5">
+                  <span>🛵</span> <span>เรียกรถ / สั่งอาหาร (Delivery)</span>
+                </div>
+                <div class="text-xs font-medium text-sky-950 leading-relaxed">
+                  รองรับ Grab, LINE MAN, Robinhood, ShopeeFood จัดส่งถึงหน้าบ้านสะดวกสบาย
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2499,6 +2577,11 @@
           <input type="text" id="pde-address" required value="" placeholder="เช่น ถนนสุขุมวิท 101 แขวงบางนา เขตบางนา กรุงเทพมหานคร" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2.5 font-medium text-stone-800">
         </div>
 
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">🔗 ลิงก์ Google Maps / พิกัด GPS (ไม่บังคับ - ระบบค้นหาอัตโนมัติ)</label>
+          <input type="text" id="pde-map-url" value="" placeholder="เช่น https://maps.app.goo.gl/... หรือ 13.7563, 100.5018" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2.5 font-medium text-stone-800">
+        </div>
+
         <div class="grid grid-cols-3 gap-2">
           <div><label class="block text-stone-500 font-medium mb-1">ค่าเช่า/เดือน (บาท)</label><input type="number" id="pde-rent" required value="" placeholder="12000" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2 font-black text-[#e05646]"></div>
           <div><label class="block text-stone-500 font-medium mb-1">เงินประกัน (บาท)</label><input type="number" id="pde-deposit" required value="" placeholder="24000" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2 font-bold"></div>
@@ -2585,6 +2668,11 @@
         <div>
           <label class="block font-bold text-stone-700 mb-1">รายละเอียดที่อยู่อสังหาริมทรัพย์ (ถนน, แขวง/ตำบล, เขต/อำเภอ, จังหวัด)</label>
           <input type="text" id="p-address" required placeholder="เช่น ถนนสุขุมวิท 101 แขวงบางนา เขตบางนา กรุงเทพมหานคร" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2.5 font-medium text-stone-800">
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">🔗 ลิงก์ Google Maps / พิกัด GPS (ไม่บังคับ - ระบบค้นหาอัตโนมัติ)</label>
+          <input type="text" id="p-map-url" placeholder="เช่น https://maps.app.goo.gl/... หรือ 13.7563, 100.5018" class="w-full bg-stone-100 border border-stone-300 rounded-lg p-2.5 font-medium text-stone-800">
         </div>
 
         <div>

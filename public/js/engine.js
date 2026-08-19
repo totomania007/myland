@@ -978,6 +978,9 @@
     if (document.getElementById('pd-meter-elec')) document.getElementById('pd-meter-elec').innerText = prop.meterElec || '-';
     if (document.getElementById('pd-meter-water')) document.getElementById('pd-meter-water').innerText = prop.meterWater || '-';
 
+    // 1.5 Interactive Map & Navigation System
+    renderPropertyMapView(prop);
+
     // 2. Inventory Furniture List (Tenant Facing)
     const invContainer = document.getElementById('pd-inventory-container');
     if (invContainer) {
@@ -4131,7 +4134,7 @@
       sub = 'gallery';
     }
 
-    ['specs', 'gallery', 'furniture', 'lessor', 'upload-gallery'].forEach(s => {
+    ['specs', 'map', 'gallery', 'furniture', 'lessor', 'upload-gallery'].forEach(s => {
       const view = document.getElementById(`subview-${s}`);
       if (view) view.classList.add('hidden');
       const btn = document.getElementById(`subtab-${s}`);
@@ -4150,6 +4153,60 @@
     }
 
     applyRolePermissions();
+  }
+
+  // ==========================================
+  // INTERACTIVE GOOGLE MAP & NAVIGATION ENGINE
+  // ==========================================
+  function renderPropertyMapView(prop) {
+    if (!prop) return;
+    const mapAddress = prop.mapUrl || prop.address || prop.name || 'Bangkok, Thailand';
+    const queryEncoded = encodeURIComponent(mapAddress);
+    
+    // Auto format Google Maps embed URL
+    let embedSrc = `https://maps.google.com/maps?q=${queryEncoded}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+    if (prop.mapUrl && prop.mapUrl.includes('google.com/maps/embed')) {
+      embedSrc = prop.mapUrl;
+    }
+
+    const iframe = document.getElementById('pd-google-map-iframe');
+    if (iframe && iframe.src !== embedSrc) {
+      iframe.src = embedSrc;
+    }
+
+    if (document.getElementById('pd-map-subtitle')) {
+      document.getElementById('pd-map-subtitle').innerText = `โครงการ ${prop.name || ''} (บ้านเลขที่ ${prop.houseNo || '-'})`;
+    }
+    if (document.getElementById('pd-map-float-title')) {
+      document.getElementById('pd-map-float-title').innerText = prop.name || 'ที่ตั้งอสังหาริมทรัพย์';
+    }
+    if (document.getElementById('pd-map-float-address')) {
+      document.getElementById('pd-map-float-address').innerText = prop.address || '-';
+    }
+    if (document.getElementById('pd-map-detail-address')) {
+      document.getElementById('pd-map-detail-address').innerText = `${prop.name || ''} ${prop.houseNo ? `(ห้อง ${prop.houseNo})` : ''} — ${prop.address || '-'}`;
+    }
+  }
+
+  function openGoogleMapsNavigation() {
+    const prop = getCurrentProperty();
+    if (!prop) return;
+    const dest = prop.mapUrl || `${prop.name || ''} ${prop.address || ''}`.trim() || 'Bangkok, Thailand';
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dest)}`;
+    window.open(url, '_blank');
+  }
+
+  function copyPropertyAddressAndCoords() {
+    const prop = getCurrentProperty();
+    if (!prop) return;
+    const text = `${prop.name || ''} ${prop.houseNo ? `(ห้อง ${prop.houseNo})` : ''}\nที่อยู่: ${prop.address || '-'}\nGoogle Maps: https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(prop.mapUrl || prop.address || prop.name)}`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('📍 คัดลอกที่อยู่อสังหาฯ และลิงก์แผนที่เรียบร้อยแล้ว!');
+      }).catch(() => alert(text));
+    } else {
+      alert(text);
+    }
   }
 
   function addFurnitureEditRow(name = '', img = CONFIG.PLACEHOLDER_SVG) {
@@ -4181,12 +4238,46 @@
     if (document.getElementById('pde-name')) document.getElementById('pde-name').value = prop.name || '';
     if (document.getElementById('pde-houseno')) document.getElementById('pde-houseno').value = prop.houseNo || '';
     if (document.getElementById('pde-address')) document.getElementById('pde-address').value = prop.address || '';
+    if (document.getElementById('pde-map-url')) document.getElementById('pde-map-url').value = prop.mapUrl || '';
     if (document.getElementById('pde-rent')) document.getElementById('pde-rent').value = prop.rent || 0;
     if (document.getElementById('pde-deposit')) document.getElementById('pde-deposit').value = prop.deposit || 0;
     if (document.getElementById('pde-size')) document.getElementById('pde-size').value = prop.size || '40 ตร.ม.';
     if (document.getElementById('pde-meter-elec')) document.getElementById('pde-meter-elec').value = prop.meterElec || '';
     if (document.getElementById('pde-meter-water')) document.getElementById('pde-meter-water').value = prop.meterWater || '';
     if (document.getElementById('pde-lessor-select')) document.getElementById('pde-lessor-select').value = prop.lessorKey || '';
+
+    const furnContainer = document.getElementById('pde-furniture-rows-container');
+    if (furnContainer) {
+      furnContainer.innerHTML = '';
+      const list = prop.inventoryList || [];
+      if (list.length === 0) {
+        addFurnitureEditRow('เครื่องปรับอากาศ', CONFIG.PLACEHOLDER_SVG);
+      } else {
+        list.forEach(item => {
+          const itemObj = typeof item === 'object' ? item : { name: item, img: CONFIG.PLACEHOLDER_SVG };
+          addFurnitureEditRow(itemObj.name, itemObj.img);
+        });
+      }
+    }
+
+    toggleModal('modal-edit-property-detail');
+  }
+
+  async function handlePropertyDetailEditSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const prop = getCurrentProperty();
+    if (!prop) return;
+
+    prop.name = document.getElementById('pde-name')?.value.trim() || prop.name;
+    prop.houseNo = document.getElementById('pde-houseno')?.value.trim() || prop.houseNo;
+    prop.address = document.getElementById('pde-address')?.value.trim() || prop.address;
+    prop.mapUrl = document.getElementById('pde-map-url')?.value.trim() || prop.mapUrl || '';
+    prop.rent = parseFloat(document.getElementById('pde-rent')?.value) || prop.rent;
+    prop.deposit = parseFloat(document.getElementById('pde-deposit')?.value) || prop.deposit;
+    prop.size = document.getElementById('pde-size')?.value.trim() || prop.size;
+    prop.meterElec = document.getElementById('pde-meter-elec')?.value.trim() || prop.meterElec;
+    prop.meterWater = document.getElementById('pde-meter-water')?.value.trim() || prop.meterWater;
+    prop.lessorKey = document.getElementById('pde-lessor-select')?.value || prop.lessorKey;
 
     const furnContainer = document.getElementById('pde-furniture-rows-container');
     if (furnContainer) {
@@ -4308,6 +4399,7 @@
     const name = document.getElementById('p-name')?.value.trim();
     const houseNo = document.getElementById('p-houseno')?.value.trim();
     const address = document.getElementById('p-address')?.value.trim();
+    const mapUrl = document.getElementById('p-map-url')?.value.trim() || '';
     const lessorKey = document.getElementById('p-lessor')?.value || 'lessor-1786648676672';
     const principal = parseFloat(document.getElementById('p-principal')?.value) || 0;
     const installment = parseFloat(document.getElementById('p-installment')?.value) || 0;
@@ -4325,6 +4417,7 @@
       name,
       houseNo,
       address,
+      mapUrl,
       lessorKey,
       type: 'อสังหาริมทรัพย์เพื่อการเช่า',
       size: '35 ตารางเมตร',
@@ -4432,6 +4525,9 @@
   window.deleteGalleryItem = deleteGalleryItem;
   window.openGalleryLightbox = openGalleryLightbox;
   window.openPromoCoverLightbox = openPromoCoverLightbox;
+  window.renderPropertyMapView = renderPropertyMapView;
+  window.openGoogleMapsNavigation = openGoogleMapsNavigation;
+  window.copyPropertyAddressAndCoords = copyPropertyAddressAndCoords;
   window.renderPromoCard = renderPromoCard;
   window.selectPromoSlide = selectPromoSlide;
   window.prevPromoSlide = prevPromoSlide;
